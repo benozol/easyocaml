@@ -11,4 +11,4 @@ else
   ./boot-c-parts.sh
 fi
 ./boot.sh $@
-./world.all.sh $@
+#./world.all.sh $@

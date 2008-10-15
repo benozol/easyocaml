@@ -1,6 +1,6 @@
 open EzyUtils
 
-(** {3} Data types describing the syntactic features *)
+(** {3 Data types describing the syntactic features} *)
 
 type pattern_feats = {
   p_wildcard : bool;
@@ -152,7 +152,7 @@ let print_program_feats ppf pf =
   Format.fprintf ppf "{@[expr: %a@ structure items: %a@]}"
     print_expr_feats pf.pr_expr_features print_struct_feats pf.pr_struct_features
 
-(** {3} Functions to generate complete and minimal syntactic feature descriptions *)
+(** {3 Functions to generate complete and minimal syntactic feature descriptions} *)
 
 let all_pattern_features b =
   {
@@ -233,7 +233,7 @@ let all_program_features b = {
 }
 
 
-(** {3} Functions to combine syntactic feature descriptions *)
+(** {3 Functions to combine syntactic feature descriptions} *)
 
 let pattern_features_union op f1 f2 = {
   p_wildcard = op f1.p_wildcard f2.p_wildcard ;

@@ -3,26 +3,31 @@
 true: -traverse
 
 # Traverse only these directories
-<{bytecomp,driver,toplevel,typing,easyocaml,utils,parsing,byterun}/**>: traverse
+<{bytecomp,driver,stdlib,tools,asmcomp,camlp4,easyocaml,ocamlbuild,toplevel,ocamldoc,typing,otherlibs,utils,debugger,lex,parsing,byterun,asmrun}/**>: traverse
 
 "boot" or "byterun" or "asmrun": not_hygienic
 
 # These should not be required but it fails on *BSD and Windows...
 "yacc" or "win32caml": not_hygienic
 
-"easyocaml/myCamlp4Ast2OCamlAst.ml": camlp4rf, pkg_camlp4
-"easyocaml/ezycamlgrammar.ml": camlp4of, pkg_camlp4
-"easyocaml/easyocaml.docdir/index.html": pkg_core
-#"easyadd/*.ml": 
+"easyocaml/ezyLang.ml" or "easyocaml/ezyMisc.ml": include_dynlink
+"easyocaml/ezyTyping.ml" or "easyocaml/ezyUtils.ml": include_unix
+"easyocaml/myCamlp4Ast2OCamlAst.ml": camlp4rf
+"easyocaml/ezycamlgrammar.ml": camlp4of, include_camlp4
+"easyocaml/myCamlp4Ast2OCamlAst.ml": include_camlp4
+"driver/errors.ml": include_camlp4
+"camlp4/Camlp4Parsers/Camlp4OCamlRevisedParser.ml": camlp4rf, include_camlp4
+"camlp4/Camlp4Parsers/Camlp4OCamlParser.ml": camlp4rf, include_camlp4
+"easyocaml/ezyErrors.ml": include_str, include_camlp4
 
 # We want -g everywhere it's possible
 true: debug
 
 # By default everything we link needs the stdlib
-#true: use_stdlib
+true: use_stdlib
 
 # The stdlib neither requires the stdlib nor debug information
-#<stdlib/**>: -use_stdlib, -debug
+<stdlib/**>: -use_stdlib, -debug
 
 <**/*.ml*>: warn_Alez
 
