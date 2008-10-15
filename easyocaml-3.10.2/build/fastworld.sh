@@ -20,13 +20,13 @@ $OCAMLBUILD $@ -log _boot_fast_log \
   $STDLIB_BYTE $OCAMLOPT_BYTE $STDLIB_NATIVE \
   $OCAMLOPT_NATIVE $OCAMLMKLIB_BYTE $OTHERLIBS_UNIX_NATIVE $OCAMLBUILD_NATIVE
 
-rm -f _build/myocamlbuild
-boot/ocamlrun boot/myocamlbuild \
-  -just-plugin -install-lib-dir _build/ocamlbuild \
-  -ocamlopt "../_build/ocamlopt.opt -nostdlib -I boot -I stdlib -I $UNIXDIR"
-cp _build/myocamlbuild boot/myocamlbuild.native
+#rm -f _build/myocamlbuild
+#boot/ocamlrun boot/myocamlbuild \
+#  -just-plugin -install-lib-dir _build/ocamlbuild \
+#  -ocamlopt "../_build/ocamlopt.opt -nostdlib -I boot -I stdlib -I $UNIXDIR"
+#cp _build/myocamlbuild boot/myocamlbuild.native
 
-./boot/myocamlbuild.native $@ \
-  $OCAMLC_NATIVE $TOPLEVEL $OTHERLIBS_BYTE $OTHERLIBS_NATIVE $OCAMLLEX_BYTE \
-  $OCAMLLEX_NATIVE $TOOLS_BYTE $TOOLS_NATIVE $DEBUGGER  \
-  $OCAMLDOC_BYTE $OCAMLDOC_NATIVE $OCAMLBUILD_BYTE $CAMLP4_BYTE $CAMLP4_NATIVE
+#./boot/myocamlbuild.native $@ \
+#  $OCAMLC_NATIVE $TOPLEVEL $OTHERLIBS_BYTE $OTHERLIBS_NATIVE $OCAMLLEX_BYTE \
+#  $OCAMLLEX_NATIVE $TOOLS_BYTE $TOOLS_NATIVE $DEBUGGER  \
+#  $OCAMLDOC_BYTE $OCAMLDOC_NATIVE $OCAMLBUILD_BYTE $CAMLP4_BYTE $CAMLP4_NATIVE

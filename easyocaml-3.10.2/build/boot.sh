@@ -18,6 +18,22 @@ boot/ocamlrun boot/myocamlbuild.boot \
 
 cp _build/myocamlbuild boot/myocamlbuild
 
-./boot/ocamlrun boot/myocamlbuild \
-  -tag-line "$TAG_LINE" \
-  $@ -log _boot_log2 boot/camlheader ocamlc
+./boot/ocamlrun boot/myocamlbuild tools/ocamlmklib.byte
+
+
+ocamlbuild=./boot/ocamlrun boot/myocamlbuild
+
+$ocamlbuild boot/camlheader 
+
+# other libs
+$ocamlbuild otherlibs/unix/unix.cma
+$ocamlbuild otherlibs/dynlink/dynlink.cma
+$ocamlbuild otherlibs/str/str.cma
+
+# camlp4
+#. ./build/camlp4-targets.sh
+$ocamlbuild camlp4/boot/Camlp4.cmo
+$ocamlbuild camlp4/Camlp4Parsers/Camlp4OCamlRevisedParser.cmo
+$ocamlbuild camlp4/Camlp4Parsers/Camlp4OCamlParser.cmo
+
+$ocamlbuild ecamlc
