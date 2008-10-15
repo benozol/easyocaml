@@ -1,8 +1,8 @@
 
 PREREQUISITES
 
+ * ocamlfind
  * prerequisites for OCaml as given in the file INSTALL
- * Jane Street Capital's Core library (http://ocaml.janestcapital.com/?q=node/13)
 
 1/ $ ./configure \
       [-prefix <path/to/install/dir>] \
@@ -11,8 +11,10 @@ PREREQUISITES
 2/ Tell ocamlfind to ignore ocaml's original objects in doubt:
    $ export OCAMLFIND_IGNORE_DUPS_IN=`ocamlc -where`
 
-3/ Build _build/ecaml and _build/ecamlc:
+3/ ./build/mkmyocamlbuild_config.sh
+
+4/ Build _build/ecaml and _build/ecamlc:
    $ make ecamlc; make ecaml
 
-4/ build an error reporting plugin:
+5/ build an error reporting plugin:
    $ ocamlbuild easyadd/htmlErrorReport.cmo

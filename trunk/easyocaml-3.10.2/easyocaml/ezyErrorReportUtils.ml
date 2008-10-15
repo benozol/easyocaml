@@ -1,3 +1,4 @@
+open EzyUtils
 open EzyAst
 open EzyOcamlmodules
 
