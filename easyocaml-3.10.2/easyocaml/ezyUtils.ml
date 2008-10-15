@@ -114,6 +114,9 @@ module Option = struct
   type 'a t = 'a option
   let is_none = function None -> true | _ -> false
   let is_some = function Some _ -> true | _ -> false
+  let map ~f = function
+    | None -> None
+    | Some x -> f x
   let iter o ~f =
     match o with
     | None -> ()

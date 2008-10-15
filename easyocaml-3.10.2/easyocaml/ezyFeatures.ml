@@ -1,3 +1,4 @@
+open EzyUtils
 
 (** {3} Data types describing the syntactic features *)
 
