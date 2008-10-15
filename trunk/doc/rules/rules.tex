@@ -1,0 +1,680 @@
+\documentclass{article}
+
+\usepackage{amsmath, amsfonts, amssymb}
+\usepackage{mathpartir}
+\usepackage{extarrows}
+\usepackage{multicol}
+\usepackage[usenames]{color}
+
+\title{Constraint Generation for EasyOcaml}
+\author{}
+
+\newcommand\etyjudge[5]{#1;\, #2\, \Downarrow_e\, \langle #3,\ #4,\ #5\rangle}
+\newcommand\styjudge[5]{#1;\, #2\, \Downarrow_s\, \langle #3,\ #4,\ #5 \rangle}
+\newcommand\ptyjudge[5]{#1;\, #2\, \Downarrow_p\, \langle #3,\ #4,\ #5 \rangle}
+\newcommand\rtyjudge[6]{#1;\, #2\, \Downarrow_r\, \langle #3,\ #4,\ #5,\ #6 \rangle}
+\newcommand\code[1]{{\texttt{#1}}}
+\newcommand\type[1]{\underline{#1}}
+\newcommand\onrecord{|_{rec}}
+\newcommand\onident{|_{\text{id}}}
+\newcommand\onvar{|_{\text{var}}}
+\newcommand\for[3]{\text{ for } #1=#2,\dots,#3}
+\newcommand\fresh{\text{ fresh}}
+\newcommand\mono{\textsf{mono}}
+\newcommand\poly{\textsf{poly}}
+\newcommand\mutable{\textsf{mutable}}
+\newcommand\immutable{\textsf{immutable}}
+
+\DeclareMathOperator{\dom}{dom}
+
+\begin{document}
+
+\maketitle
+
+The following relations describe the generation of constraints:
+
+\begin{itemize}
+  \item for expressions $\Delta;\ lexp \Downarrow_e \langle ty,\ C,\ u\rangle$
+  \item for structure items $\Delta;\ strit \Downarrow_s \langle \Delta,\ C,\ u\rangle$
+  \item for rules $\Delta;\ pat\ \code{->}\ lexp {\color{Gray}\ |\ rules} \Downarrow_r \langle ty_p,\ ty_e,\ C,\ u\rangle$ (just an auxiliary)
+  \item for patterns $\Delta;\ pat \Downarrow_p \langle ty,\ C,\ b\rangle$ where $b$ maps identifiers to $\langle ty\rangle^l$.
+\end{itemize}
+
+$C$ denotes a set of constraints, $a$ a type variable, $ty$ a type, $u$ a set of identifiers and $\Delta$ a general environment.
+A general environment $\Delta$ encapsulates environments for lookup of the
+\begin{itemize}
+  \item type of a variable:
+      \[\Delta\onident(lid) = \langle ty,\, \varpi, C\rangle^l\]
+    where $\varpi \in \{\textsf{mono}, \textsf{poly}\}$ and $lid$ has been bound accordingly.
+  \item types of record fields:
+    \[\Delta\onrecord(f) = \langle ty_r,\ ty_f,\ \mu\rangle\]
+    where $ty'_f$ is the type of field $f$ in record type $ty'_r$ and $ty_f, ty_r$ are fresh variants of $ty'_f, ty'_r$. $\mu \in \{\mutable,\ \immutable\}$
+  \item types of variants
+    \[\Delta\onvar(K) = \langle ty_r,\ [ty_1,\ \dots,\ ty_n]\rangle\]
+    where $ty'_1,\ \dots,\ ty'_n$ are the arguments for variant $k$ of type $ty'_r$ and $ty_1,\ \dots,\ ty_n, ty_r$ are fresh variants of $ty'_1,\ \dots,\ ty'_n, ty'_r$.
+\end{itemize}
+
+$\Delta|_X[x \mapsto y]$ designates the general environment $\Delta$ where $x$ is substituted by $y$ in the encapsulated environment $X$.
+
+$\Delta\onident\left[b,\ C,\ \varpi\right]$ is a shorthand for
+$\Delta\onident\left[ id \mapsto \langle ty,\ \varpi,\ C\rangle^l\ |\ id \mapsto \langle ty\rangle^l \in b\right]$,
+i.e. the substitution of all bindings of $b$ in $\Delta$ with constraints $C$ where $b$ maps identifiers to $\langle ty\rangle^l$.
+
+
+\section{Structure items}
+
+\inferrule[Eval]
+  {\etyjudge \Delta {lexp} {ty} C u}
+  {\styjudge \Delta {lexp} \Delta C u}
+
+\vspace{2em}
+
+%\inferrule[Value Decl] {
+%  \ptyjudge \Delta {pat} {ty_0} {C_0} b \\
+%  \etyjudge \Delta {lexp} {ty_1} {C_1} u \\
+%  \varpi := \textsf{poly} \text{ if } value\ lexp \text{ else } \textsf{mono} \\
+%  C = C_0 \cup C_1 \cup \{ ty_0 \xlongequal l ty_1 \} \\
+%} {
+%  \styjudge \Delta {(\code{let } pat \code{ = }lexp)^l} {\Delta\onident[b,\ C,\ \varpi]} C u
+%}
+
+\inferrule[Value decl] {
+  \ptyjudge \Delta {pat_i} {ty_{p,i}} {C_{p,i}} {b_i} \\
+  \etyjudge \Delta {exp_i} {ty_{e,i}} {C_{e,i}} {u_i} \\
+  \varpi_i := \textsf{poly} \text{ if } value\ lexp_i \text{ else } \textsf{mono} \\
+  C_{x,i} := C_{p,i} \cup C_{e,i} \cup \{ty_{p,i} \xlongequal l ty_{e,i}\} \\
+  \Delta' := \Delta\onident[b_i,\ C_{x,i},\ \varpi_i\ |\ i = 1,\dots,n ] \\
+  \dom(b_i) \cap \dom(b_j) = \emptyset \text{ for all } i \neq j \\
+} {
+  \styjudge
+    \Delta {(\code{let } pat_1 \code{ = }lexp_n \code{ and } \dots \code{ and } pat_n \code{ = } lexp_n)^l}
+    {\Delta'} {\bigcup_{i=1}^n C_{x,i}} {\bigcup_{i=1}^n u_i}
+}
+
+\vspace{2em}
+
+%\inferrule[Rec Value Decl] {
+%  \etyjudge {\Delta\onident[x \mapsto \langle a_x,\ \mono,\ \emptyset \rangle^l]} {lexp} {ty} C u \\
+%  \varpi := \textsf{poly} \text{ if } value\ lexp \text{ else } \textsf{mono} \\
+%  \Delta' = \Delta\onident[x \mapsto \langle ty,\ \varpi,\ C\rangle^l] \\
+%  a_x \fresh \\
+%} {
+%  \styjudge \Delta {(\code{let rec } x^l \code{ = }lexp)^l} {\Delta'} C u
+%}
+
+\inferrule[Rec value decl] {
+  \etyjudge {\Delta\onvar[x_j \mapsto \langle a_j,\ \mono,\ \emptyset\rangle^l\ |\ j=1,\dots,n]} {lexp_i} {ty_i} {C_i} {u_i} \\
+  \varpi_i := \textsf{poly} \text{ if } value\ lexp_i \text{ else } \textsf{mono} \\
+  \text{ for i=1,\dots,n} \\
+  \Delta' := \Delta\onvar[x_i \mapsto \langle ty_i,\ \varpi_i,\ C_i \cup \{ty_i \xlongequal l a_i\}\rangle^l\ |\ \text{for } i=1,\dots,n] \\
+  a_1,\ \dots,\ a_n \fresh \\
+  x_i = x_j \text{ iff } i = j \\
+} {
+  \styjudge
+    \Delta {(\code{let rec } x_1 \code{ = }lexp_n \code{ and } \dots \code{ and } x_n \code{ = } lexp_n)^l}
+    {\Delta'} {\bigcup_{i=1}^n C_{x,i}} {\bigcup_{i=1}^n u_i}
+}
+
+%\vspace{2em}
+%
+%\inferrule[Synonym-Decl]
+%{?}
+%{\styjudge \Delta {\code{type}\ t\ \code =\ dt} {\Delta'} \emptyset \emptyset}
+
+\vspace{2em}
+
+\inferrule[Record Decl]
+{\Delta' = \Delta\onrecord[t \mapsto \{ \langle f_1, ty_1\rangle^{l_1}, \dots, \langle f_n, ty_n\rangle^{l_n}\}^l]}
+{\styjudge \Delta {(\code{type}\ t = \{ f_1 \code :^{l_1} ty_1\code ;\ \dots \code ;\ f_n \code :^{l_n} \ ty_n\})^l} {\Delta'} \emptyset \emptyset}
+
+\vspace{2em}
+
+\inferrule[Variant Decl]
+{\Delta' = \Delta\onvar[t \mapsto \{ \langle K_1, ty_1\rangle^{l_1}, \dots, \langle K_n, ty_n\rangle^{l_n}\}^l]}
+{\styjudge \Delta {(\code{type}\ t = K_1\ \code{of}^{l_1}\ ty_1\ \code | \dots \code | K_n\ \code{of}^{l_n}\ ty_n)^l} {\Delta'} \emptyset \emptyset}
+
+\vspace{2em}
+
+
+\inferrule[Sequence] {
+  \styjudge \Delta {strit_1} {\Delta'} {C_1} {u_1} \\
+  \styjudge {\Delta'} {strit_2} {\Delta''} {C_2} {u_2} \\
+} {
+  \styjudge \Delta {strit_1\code{ ;; }strit_2} {\Delta''} {C_1 \cup C_2} {u_1 \cup u_2}
+}
+
+\vspace{2em}
+
+\section{Rules}
+
+\vspace{2em}
+
+\inferrule
+{ \ptyjudge \Delta {pat} {ty_p} {C_p} b \\
+  \etyjudge {\Delta\onident[b,\ C_p,\ \mono]} {lexp} {ty_e} {C_e} u \\
+  }
+{\rtyjudge \Delta {pat\ \code{->}\ lexp} {ty_p} {ty_e} {C_p \cup C_e} u}
+
+\vspace{2em}
+
+\inferrule
+{
+  \rtyjudge \Delta {pat\ \code{->}\ lexp} {ty_{p,1}} {ty_{e,1}} {C_1} {u_1} \\
+  \rtyjudge \Delta {rules} {ty_{p,2}} {ty_{e,2}} {C_2} {u_2} \\
+  C = \{ a_p \xlongequal l ty_{p,1},\ a_p \xlongequal l ty_{p,2},\ 
+  a_e \xlongequal l ty_{e,1},\ a_e \xlongequal l ty_{e,2}\} \cup C_1 \cup C_2 \\
+  a_p,\ a_e \text{ fresh}}
+  {\rtyjudge \Delta {(pat\ \code{->}\ lexp)^l\ |\ rules} {a_p} {a_e} C {u_1 \cup u_2}}
+
+%\inferrule
+%{\ptyjudge \Delta {pat} {ty_p} {C_p} b \\
+%\Delta' = \Delta\onident[id \mapsto \langle ty', \textsf{mono}, C'\rangle^l\ |\ id \mapsto \langle ty', C'\rangle^l \in b] \\
+%\etyjudge {\Delta'} {lexp} {ty_e} {C_e} u}
+%{\rtyjudge \Delta {pat\ \code{->}\ lexp} {ty_p} {ty_e} {C_p \cup C_e} u}
+%
+%\vspace{2em}
+%
+%\inferrule
+%{\rtyjudge \Delta {pat_i\ \code{->}\ lexp_i} {ty_{p,i}} {ty_{e,i}} {C_i} {u_i}  \text{ for } i = 1,\dots,n \\
+%C = \{ ty_p \xlongequal {l_i} ty_{p,i},\ ty_e \xlongequal {l_i} ty_{e,i}\ |\ i = 1,\dots,n\} \cup C_1 \cup\ \dots\ \cup C_n \\
+%u = u_1 \cup \dots \cup u_n \\
+%ty_p,\ ty_e \text{ fresh}}
+%{\rtyjudge \Delta {(pat_1\ \code{->}\ lexp_1)^{l_1}\ |\ \dots\ |\ (pat_n\ \code{->}\ lexp_n)^{l_n}} {ty_p} {ty_e} {C_p \cup C_e} u}
+
+\vspace{2em}
+
+
+\section{Expressions}
+
+\inferrule[Var-Mono]
+  {\Delta(x) = { \left< ty, \textsf{mono}, C \right> }^{l'} \\ a,\ a_x \text{ fresh}}
+  {\etyjudge {\Delta} {x^l}
+      {a} {C \cup \{a_x \xlongequal{l} a,\ ty \xlongequal{l'} a_x\}} {\emptyset}}
+
+\vspace{2em}
+
+\inferrule[Var-Poly]
+  {\Delta(x) = \langle ty, \textsf{poly}, C\rangle^{l'} \\
+   a,\ a_x \text{ fresh} \\
+   \langle ty', C'\rangle \text{ fresh variant of } \left< ty, C\right>}
+  {\etyjudge {\Delta} {x^l}
+      {a} {\{a_x \xlongequal{l} a,\ ty' \xlongequal{l'} a_x\} \cup C' } {\emptyset}}
+
+\vspace{2em}
+
+\inferrule[Var-Undef]
+  {x \notin \dom(\Delta)\\
+   a \text{ fresh}}
+  {\etyjudge {\Delta} {x^l} {a} {\emptyset} {\{x^l\}}}
+
+\vspace{2em}
+
+\inferrule[Const] {
+  C_0 = \{ ty \xlongequal{l} a\} \\
+  a \text{ fresh} \\
+  ty \text{ type of constant } c
+} {\etyjudge {\Delta} {c^l} {a} {C_0} {\emptyset}}
+
+%\vspace{2em}
+
+%\inferrule[Abstr]
+%  {\etyjudge{\Delta[x \mapsto \left< a_x, \textsf{mono}, \emptyset\right>^l]}
+%           {lexp} {ty} {C} {u}
+%   \\ a, a_x \text{ fresh}}
+%  {\etyjudge{\Delta}{(\code{fun}\ x^l\ \code{->}\ lexp)^{l'}}{a}{C \cup \{a \xlongequal{l'} a_x \rightarrow ty\}}{u}}
+
+\vspace{2em}
+
+\inferrule[Abstr] {
+  \rtyjudge \Delta {rules} {ty_p} {ty_e} {C_0} u \\
+  C_1 = \{ a \xlongequal l ty_p \rightarrow ty_e \} 
+} {
+  \etyjudge \Delta {(\code{function}\ rules)^l} a {C_0 \cup C_1} u
+}
+
+%\vspace{2em}
+
+%\inferrule[App]
+%  {\etyjudge {\Delta} {lexp_1} {ty_1} {C_1} {u_1} \\
+%   \etyjudge {\Delta} {lexp_2} {ty_2} {C_2} {u_2} \\
+%   C_0 = \{ty_1 \xlongequal l a_1 \rightarrow a_2,\ ty_2 \xlongequal l a_1,\ a \xlongequal l a_2\} \\
+%   a, a_1, a_2 \text{ fresh}}
+%  {\etyjudge{\Delta}{(lexp_1\; lexp_2)^l}{a} {C_0 \cup C_1 \cup C_2}{u_1 \cup u_2}}
+
+\vspace{2em}
+
+\inferrule[App] {
+  \etyjudge {\Delta} {lexp_i} {ty_i} {C_i} {u_i} \text{ for }i=0,\dots,n \\
+  C' = \{ a'_{i-1} \xlongequal {l-l_i} a_i \rightarrow a'_i,\ ty_i \xlongequal l a_i\ |\ i=1,\dots,n \} \cup 
+       \{ ty_0 \xlongequal l a'_0,\ a \xlongequal l a'_n \} \\
+   a, a_1, \dots, a_n, a'_0, \dots, a'_n \text{ fresh}
+} {
+\etyjudge {\Delta} {(lexp_0\ lexp_1^{l_1}\ \dots\ lexp_n^{l_n})^l}
+  {a} {C' \cup \bigcup_{i=0}^n C_i} {\bigcup_{i=1}^n u_i}
+}
+
+%\vspace{2em}
+
+%\inferrule[Let]
+%  {\etyjudge \Delta {lexp_1} {ty_1} {C_1} {u_1} \\
+%   \varpi := \textsf{poly} \text{ if value } lexp_1 \text{ else } \textsf{mono} \\
+%   %\varpi := \begin{cases}\textsf{poly} & \text{if value }lexp_1 \\ \textsf{mono} & \text{else}\end{cases} \\
+%   \etyjudge {\Delta[x \mapsto \left<ty_1, \varpi, C_1\right>^l]} {lexp_2} {ty_2} {C_2} {u_2} \\
+%   a \text{ fresh} }
+%{\etyjudge \Delta  {(\code{let}\ x^l\ \code{=}\ lexp_1\ \code{in}\ lexp_2)^{l'}}
+%  {a} {C_1 \cup C_2 \cup \{a \xlongequal{l'} ty_2\}} {u_1 \cup u_2}
+%}
+
+%\vspace{2em}
+
+%\inferrule[Let] {
+%  \ptyjudge \Delta {pat} {ty_0} {C_0} b \\
+%  \etyjudge \Delta {lexp_1} {ty_1} {C_1} {u_1} \\
+%  \varpi := \textsf{poly} \text{ if } value\ lexp_1 \text{ else } \textsf{mono} \\
+%  C_x = C_0 \cup C_1 \cup \{ ty_0 \xlongequal l ty_1 \} \\
+%  \etyjudge {\Delta\onident[b,\ C_x,\ \varpi]} {lexp_2} {ty_2} {C_2} {u_2} \\
+%  C = {C_x \cup C_2 \cup \{a \xlongequal l ty_2\}} \\
+%  a \fresh \\
+%} {
+%  \etyjudge \Delta {(\code{let}\ pat\ \code =\ lexp_1\ \code{in}\ lexp_2)^l} a C {u_1 \cup u_2}
+%}
+
+\vspace{2em}
+
+\inferrule[Let] {
+\ptyjudge \Delta {pat_i} {ty_{p,i}} {C_{p,i}} {b_i} \\
+\etyjudge \Delta {lexp_i} {ty_{e,i}} {C_{e,i}} {u_i} \\
+\varpi_i := \textsf{poly} \text{ if } value\ lexp_i \text{ else } \textsf{mono} \\
+\text{ for }i=1,\dots,n \\
+\Delta' = \Delta\onident[b_i,\ C_{p,i} \cup C_{e,i} \cup \{ty_{p,i} \xlongequal l ty_{e,i}\},\ \varpi_i\ |\ \text{for } i=1,\dots,n] \\
+\etyjudge {\Delta'} {lexp_{n+1}} {ty_{n+1}} {C_{n+1}} {u_{n+1}} \\
+C_0 = \{ a \xlongequal l ty_{n+1} \} \cup \{ ty_{p,i} \xlongequal l ty_{e,i}\ |\ i=1,\dots,n \} \\
+\dom(b_i) \cap \dom(b_j) = \emptyset \text{ for all } i \neq j \\
+a \fresh \\
+} {
+  \etyjudge \Delta {(\code{let } x_1 \code{ = } lexp_1 \code{ and } \dots \code{ and } x_n \code{ = } lexp_n \code{ in } lexp_{n+1})^l}
+    a {\bigcup_{i=0}^{n+1} C_i} {\bigcup_{i=1}^{n+1} u_i}
+}
+
+%\vspace{2em}
+
+%\inferrule[Let rec]
+%{
+%\etyjudge {\Delta\onident\left[ x \mapsto \langle a_x,\ \textsf{mono},\ \emptyset\rangle^{l}\right]} {lexp_1} {ty_1} {C_1} {u_1} \\
+%\varpi := \textsf{poly} \text{ if } value\ lexp_1 \text{ else } \textsf{mono} \\
+%\etyjudge {\Delta\onident\left[ x \mapsto \langle ty_1,\ \varpi,\ C_1\rangle^l\right]} {lexp_2} {ty_2} {C_2} {u_2} \\
+%C = \{ a \xlongequal l ty_2 \} \cup C_1 \cup C_2  \\
+%a,\ a_x \text{ fresh}
+%}
+%{\etyjudge \Delta  {(\code{let rec}\ x\ \code{=}^l\ lexp_1\ \code{in}\ lexp_2)^{l'}} a C {u_1 \cup u_2}}
+
+\vspace{2em}
+
+\inferrule[Let rec] {
+  \etyjudge {\Delta\onident\left[x_j \mapsto \langle a_{j},\ \mono,\ \emptyset\rangle^l\ |\ j=1,\dots,n\right]} {lexp_i} {ty_i} {C_i} {u_i} \\
+  \varpi_i := \poly \text{ if }value\ lexp_i \text{ else } \mono \\
+  \text{ for }i=1,\dots,n \\
+  \Delta' := \Delta\onident[x_j \mapsto \langle ty_j,\ \varpi_j,\ C_j \cup \{a_j \xlongequal ty_j\}\rangle^l\ |\ j=1,\dots,n] \\
+  \etyjudge {\Delta'} {lexp_{n+1}} {ty_{n+1}} {C_{n+1}} {u_{n+1}} \\
+  C_0 = \{ a \xlongequal l ty_{n+1} \}  \\
+  x_i = x_j \text{ iff } i = j \\
+  a,\ a_{1},\ \dots,\ a_{n} \fresh \\
+} {
+\etyjudge \Delta {(\code{let rec } x_1 \code{ = } lexp_1 \code{ and } \dots \code{ and } x_n \code{ = } lexp_n \code{ in } lexp_{n+1})^l}
+a {\bigcup_{i=0}^{n+1} C_i} {\bigcup_{i=1}^{n+1} u_i}
+}
+
+\vspace{2em}
+
+\inferrule[Tuple]
+{\etyjudge \Delta {lexp_i} {ty_i} {C_i} {u_i}  \text{ for }i = 1,\ \dots,\ n\\
+C_0 = \{ a \xlongequal l (ty_1,\ \dots,\ ty_n) \}\\
+a\text{ fresh}}
+{\etyjudge \Delta {(lexp_1\code ,\ \dots\code ,\ lexp_n )^l} a {\bigcup_{i=0}^n C_i} {\bigcup_{i=1}^n u_i}}
+
+\vspace{2em}
+
+\inferrule[Record construction] {
+    \etyjudge \Delta {lexp_i} {ty_i} {C_i} {u_i} \\
+    \Delta\onrecord(f_i) = \langle ty_r,\ ty_{f,i,\ \cdot} \rangle \\
+    \text{ for }i = 1, \dots, n \\
+    C_0 = \{ a \xlongequal l ty_r \} \cup \{ ty_i \xlongequal l ty_{f,i}\ |\ i=1,\dots,n\} \\
+    a \text{ fresh} \\
+    \{ f_i\ |\ i=1,\dots,n\} \text{ are the fields of record } ty_r
+} {
+  \etyjudge \Delta
+    {\{ f_1\ \code =\ lexp_1 \code ;\ \dots \code ;\ f_n\ \code =\ lexp_n \} ^l}
+    a {\bigcup_{i=0}^n C_i} {\bigcup_{i=1}^n u_i}
+}
+\vspace{2em}
+
+\inferrule {
+    \etyjudge \Delta {lexp_i} {ty_i} {C_i} {u_i} \for i 0 n \\
+    \Delta\onrecord(f_i) = \langle ty_r,\ ty_{f,i},\ \cdot \rangle \for i 1 n \\
+    C_0 = \{ a \xlongequal l ty_r,\ ty_0 \xlongequal l ty_r \} \cup \{ ty_{f,i} \xlongequal l ty_i\ |\ i=1,\dots,n \} \\
+    a \fresh
+} {
+    \etyjudge \Delta
+      {\{ lexp_0 \code{ with } f_1\ \code =\ lexp_1 \code ;\ \dots \code ;\ f_n\ \code =\ lexp_n \}^l}
+      a {\bigcup_{i=0}^n C_i} {\bigcup_{i=1}^n u_i}
+}
+
+\vspace{2em}
+
+\inferrule[Record Access]
+{
+ \etyjudge \Delta {lexp} {ty} C u \\
+ \Delta\onrecord(f) = \langle ty_f,\ ty_,\ \cdot \rangle \\
+ C_0 = \{a \xlongequal {l} ty_f,\ ty \xlongequal l ty_r\} \\
+ a \text{ fresh}}
+ {\etyjudge \Delta {(lexp\code{.}f)^l} a {C_0 \cup C} u}
+
+\vspace{2em}
+
+\inferrule[Record field assignment]
+{
+\etyjudge \Delta {lexp_1} {ty_1} {C_1} {u_1} \\
+\etyjudge \Delta {lexp_2} {ty_2} {C_2} {u_2} \\
+\Delta\onrecord(f) = \langle ty_r,\ ty_f, \mutable\rangle \\
+C_0 = \{ a \xlongequal l \underline{unit},\ ty_r \xlongequal l ty_1,\ ty_f \xlongequal l ty_2 \}
+}
+{\etyjudge \Delta {(lexp_1\code . f\ \code {<-}\ lexp_2)^l} a {C_0 \cup C_1 \cup C_2} {u_1 \cup u_2}}
+
+\vspace{2em}
+
+\inferrule[Variant] {
+  \Delta\onvar(K) = \langle ty_r,\ [ty_{a,1},\ \dots,\ ty_{a,n}]\rangle \\
+  \etyjudge \Delta {lexp_i} {ty_i} {C_i} {u_i} \text{ for } i=1,\dots,n \\
+  C_0 = \{a \xlongequal l ty_r \} \cup \{ ty_i \xlongequal l ty_{a,i}\ |\ i=1,\dots,n \} \\
+  a \fresh
+} {
+  \etyjudge \Delta {(K\  lexp_1\ \dots\ lexp_n)^l} a {\bigcup_{i=0}^n C_i} {\bigcup_{i=1}^n u_i}
+}
+NB The distinction between \texttt{$K\ lexp_1\ \dots\ lexp_n$} ($n$ arguments) and
+\texttt{$K\ (lexp_1,\ \dots,\ lexp_n)$} (an $n$-tuple as the single argument) is
+actually made by an \code{explicit\_arity} flag in the AST.
+
+%\vspace{2em}
+%
+%\inferrule {
+%  \etyjudge \Delta {exp} {ty} {C_0} b \\
+%  \Delta\onvar(K) = \langle ty_r,\ [ty_a] \rangle \\
+%  C_1 = \{ a \xlongequal l ty'_r,\ ty'_a \xlongequal l ty \} \\
+%  ty'_r,\ ty'_a \text{ fresh variants of } ty_r,\ ty'_a
+%} {
+%  \etyjudge \Delta {(K\ exp)^l} a {C_0 \cup C_1} b
+%}
+%{\etyjudge \Delta {lexp_i} {ty_i} {C_i} {u_i} \text{ for }i = 1, \dots, n \\
+%   \langle lid,\ [ty'_1,\ \dots,\ ty'_n]\rangle \in \Delta\onvar(ty_t)  \\
+%  C_0 = \{a \xlongequal {l} ty'_t \} \cup \{ty_i \xlongequal l ty'_i\ |\ i = 0, \dots, n\} \\
+%  ty'_t \text{ fresh variant of } ty_t
+%}
+%{\etyjudge \Delta {ctor\ (lexp_1,\ \dots,\ lexp_n)^l} a {\bigcup_{i=0}^n C_i} {\bigcup_{i=1}^n u_i}}
+
+\vspace{2em}
+
+\inferrule[If-then-else]
+{\etyjudge \Delta {lexp_1} {ty_1} {C_1} {u_1} \\
+ \etyjudge \Delta {lexp_2} {ty_2} {C_2} {u_2} \\
+ \etyjudge \Delta {lexp_3} {ty_3} {C_3} {u_3} \\
+ C = \{ ty_1 \xlongequal l \type{bool},\ a \xlongequal l ty_3,\ a \xlongequal l {ty_2} \} \cup C_1 \cup C_2 \cup C_3 \\
+ a \text{ fresh}}
+ {\etyjudge \Delta {(\code{if}\ lexp_1\ \code{then}\ lexp_2\ \code{else}\ lexp_3)^l} a C {u_1 \cup u_2 \cup u_3}}
+
+\vspace{2em}
+
+\inferrule[If-then]
+{\etyjudge \Delta {lexp_1} {ty_1} {C_1} {u_1} \\
+ \etyjudge \Delta {lexp_2} {ty_2} {C_2} {u_2} \\
+ C_0 = \{ ty_1 \xlongequal l \type{bool},\ ty_2 \xlongequal l \type{unit},\ a \xlongequal l \type{unit} \} \\
+ a \text{ fresh}}
+{\etyjudge \Delta {(\code{if}\ lexp_1\ \code{then}\ lexp_2)^l} a C u}
+
+
+\vspace{2em}
+
+\inferrule[Matching]
+{
+\etyjudge \Delta {lexp} {ty_0} {C_0} {u_0} \\
+\rtyjudge \Delta {rules} {ty_p} {ty_e} {C_1} {u_1} \\
+C = \{ ty_0 \xlongequal l ty_p,\ a \xlongequal l ty_e \} \cup C_1 \cup C_2 \\
+u = u_0 \cup u_1 \\
+a \text{ fresh}}
+{\etyjudge \Delta {(\code{match}\ lexp\ \code{with}\ rules)^l} a C u}
+
+\vspace{2em}
+
+\inferrule[Array construction]
+{
+\etyjudge \Delta {lexp_i} {ty_i} {C_i} {u_i} \\
+C_0 = \{ a \xlongequal l b\ \underline{array}\} \cup \{ ty_i \xlongequal l b\ |\ i=1,\dots,n\} \\
+a,\ b \fresh
+}
+{\etyjudge \Delta {(\code {[|} lexp_1 \code ;\ \dots\code ;\ lexp_n \code {|]})^l} a {\bigcup_{i=0}^n C_i} {\bigcup_{i=1}^n u_i}}
+
+\vspace{2em}
+
+\inferrule[Array access]
+{
+\etyjudge \Delta {lexp_1} {ty_1} {C_1} {u_1} \\
+\etyjudge \Delta {lexp_2} {ty_2} {C_2} {u_2} \\
+C_0 = \{ ty_1 \xlongequal l a\ \underline{array},\ ty_2 \xlongequal l \underline{int} \} \\
+a \fresh
+}
+{\etyjudge \Delta {(lexp_1 \code . \code (lexp_2\code ))^l} a {C_0 \cup C_1 \cup C_2} {u_1 \cup u_2}}
+\vspace{2em}
+
+\inferrule[While]
+{\etyjudge \Delta {lexp_i} {ty_i} {C_i} {u_i} \text{ for } i=1,2 \\
+C_0 = \{ ty_1 \xlongequal l \underline{bool},\ ty_2 \xleftrightarrow l \underline{unit},\ a \xlongequal l \underline{unit}\} \\
+a \fresh
+}
+{\etyjudge \Delta {(\code {while}\ lexp_1\ \code {do}\ lexp_2\ \code {done})^l} a {C_0 \cup C_1 \cup C_2} {u_1 \cup u_2}}
+\vspace{2em}
+
+\inferrule[For]
+{
+\etyjudge \Delta {lexp_i} {ty_i} {C_i} {u_i} \text{ for }i=1,2 \\
+\Delta' = \Delta\onident\left[var \mapsto \langle\underline {a_{var}},\ \mono,\ \{a_{var} \xlongequal l \underline{int}\}\rangle^{l}\right] \\
+\etyjudge {\Delta'} {lexp_3} {ty_3} {C_3} {u_3} \\
+C_0 = \{a \xlongequal l \underline{unit},\ ty_1 \xlongequal l int,\ ty_2 \xlongequal l \underline{int},\ ty_3 \xleftrightarrow l \underline{unit}\} \\
+a, a_{var} \fresh
+}
+{\etyjudge \Delta {(\code {for}\ var\ \code =\ lexp_1\ \code {to}/ \code {downto}\ lexp_2\ \code {do}\ lexp_3\ \code {done})^l} a {C_0 \cup C_1 \cup C_2} {u_1 \cup u_2}}
+\vspace{2em}
+
+\inferrule[Sequence] {
+  \etyjudge \Delta {lexp_i} {ty_i} {C_i} {u_i} \text{ for } i=1, 2 \\
+  C_0 = \{ a \xlongequal l ty_2,\ ty_1 \xleftrightarrow l \underline{unit}\}
+}{
+  \etyjudge \Delta {(lexp_1\code ;\ lexp_2)^l} a {C_0 \cup C_1 \cup C_2} {u_1 \cup u_2}
+}
+\vspace{2em}
+
+\inferrule[Raise]
+{
+\etyjudge \Delta {lexp} {ty} C u \\
+a \fresh
+}
+{\etyjudge \Delta {(\code {raise}\ lexp)^l} a {C \cup \{ty \xlongequal l \underline{exc}\}} u}
+\vspace{2em}
+
+\inferrule[Try]
+{
+\etyjudge \Delta {lexp} {ty} {C_1} {u_1} \\
+\rtyjudge \Delta {rules} {ty_p} {ty_e} {C_2} {u_2} \\
+C_0 = \{ ty_p \xlongequal l \underline{exc},\ a \xlongequal l ty,\ a \xlongequal l ty_e \} \\
+a \fresh
+}
+{\etyjudge \Delta {(\code {try}\ lexp\ \code {with}\ rules)^l} a {C_0 \cup C_1 \cup C_2} {u_1 \cup u_2}}
+\vspace{2em}
+
+\inferrule[Assert]
+{
+\etyjudge \Delta {lexp} {ty} {C_1} u \\
+C_2 = \{ ty \xlongequal l \underline{bool},\ a \xlongequal l \underline{unit}\} \\
+a \fresh
+}
+{\etyjudge \Delta {(\code {assert}\ lexp)^l} a \emptyset \emptyset}
+\vspace{2em}
+
+\inferrule
+{\ }
+{\etyjudge \Delta {(\code {assert false})^l} a \emptyset \emptyset}
+
+\vspace{2em}
+
+\inferrule[Type-Annot]{
+  \etyjudge{\Delta}{lexp}{ty}{C_0}{u} \\
+  C_1 = \{a \xlongequal l b,\ b \xlongequal {l'} ty',\ ty \xlongequal l c,\ c \xlongequal {l'} ty',\ a \succcurlyeq^l ct\} \\
+  a,\ b,\ c \text{ fresh} \\
+  ty' \text{ is a fresh instance of } ct \\
+}{
+  \etyjudge{\Delta}{(lexp : ct^{l'})^l}{a} {C_0 \cup C_1}{u}
+}
+
+\vspace{2em}
+
+\section{Patterns}
+
+\inferrule[Wildcard]
+{a \text{ fresh}}
+{\ptyjudge \Delta {\code \_} {a} \emptyset \emptyset}
+
+\vspace{2em}
+
+\inferrule[Variable]
+{a \text{ fresh}}
+{\ptyjudge \Delta {x^l} a \emptyset {\{x \mapsto \langle a\rangle^l\}}}
+
+\vspace{2em}
+
+\inferrule[Int]
+{C_0 = \{int \xlongequal l a\} \\ a \text{ fresh}}
+{\ptyjudge \Delta {n^l} a {C_0} \emptyset}
+
+\vspace{2em}
+
+\inferrule[Tuple]
+{
+  \ptyjudge \Delta {pat_i} {ty_i} {C_i} {b_i} \text{ for } i = 1,\dots,n \\
+  C_0 = \{ a \xlongequal l (ty_1, \dots, ty_n) \} \\
+  \dom(b_i) \cap \dom(b_j) = \emptyset \text{ for } i \neq j \\
+  a \text{ fresh}
+  }
+{\ptyjudge \Delta {(pat_1\code ,\ \dots\code ,\ pat_n)^l} a {\bigcup_{i=0}^n C_i} {\bigcup_{i=1}^n b_i}}
+
+\vspace{2em}
+
+\inferrule[Variant] {
+  \Delta\onvar(K) = \langle ty_r,\ [ty_{a,1},\ \dots,\ ty_{a,n}] \\
+  \ptyjudge \Delta {pat_i} {ty_i} {C_i} {b_i} \text{ for } i=1,\dots,n \\
+  C_0 = \{ a \xlongequal l ty_r \} \cup \{ ty_i \xlongequal l ty_{a,i}\ |\ i=1,\dots,n \} \\
+  \dom(b_i) \cap \dom(b_j) = \emptyset \text{ for } i \neq j \\
+} {
+  \ptyjudge \Delta {(K\ pat_1\ \dots\ pat_n)^l} a {\bigcup_{i=0}^n C_i} {\bigcup_{i=1}^n b_i}
+}
+
+
+
+
+\vspace{2em}
+
+\inferrule[Record] {
+  \Delta\onrecord(f_i) = \langle ty_{r,i},\ ty_{f,i}\rangle \\
+  \ptyjudge \Delta {pat_i} {ty_i} {C_i} {b_i} \\
+  \for i 1 n \\
+  C_0 = \{ a \xlongequal l ty_{r,i},\ ty_i \xlongequal l ty_{f,i} \ |\ \for i 1 n \} \\
+  \dom(b_i) \cap \dom(b_j) = \emptyset \text{ for } i \neq j \\
+  a \text{ fresh} \\
+} {
+  \ptyjudge \Delta {\{ f_1 \code = pat_1 \code{; }\dots \code{; }f_n \code = pat_n \}^l} a {\bigcup_{i=0}^n C_i} {\bigcup_{i=1}^n b_i}
+}
+%{
+%\ptyjudge \Delta {pat_i} {ty_i} {C_i} {b_i} \text{ for } i=1, \dots, n \\
+%\{\langle f_1, ty'_1\rangle,\ \dots,\ \langle f_n, ty'_n \rangle\} \subset \Delta\onrecord(ty) \\
+%C_0 = \{ a \xlongequal l ty \} \cup \{ ty_i \xlongequal l ty'_i\ |\ i = 1, \dots, n \} \\
+%\dom(b_i) \cap \dom(b_j) = \emptyset \text{ for } i \neq j \\
+%a \text{ fresh}
+%}
+%{\ptyjudge \Delta {\{ f_1 \code : pat_1 \code ; \dots \code ; f_n \code : pat_n \}^l} a {\bigcup_{i=0}^n C_i} {\bigcup_{i=1}^n b_i}}
+
+
+\vspace{2em}
+
+\inferrule[Or]
+{
+\ptyjudge \Delta {pat_i} {ty_i} {C_i} {b_i} \text{ for }i=1, 2 \\
+\dom(b_1) = \dom(b_2) \\
+b = \{ id \mapsto \langle a_{id} \rangle^l\ |\ id \in \dom(b_1) \} \\
+C_0 = \{ a \xlongequal l ty_1,\ a \xlongequal l ty_2 \} \\
+C'_i = \{ a_{id} \xlongequal {l'} ty\ |\ id \mapsto \langle ty \rangle^{l'} \in b_i \} \cup C_i \text{ for } i = 1, 2 \\
+a,\ a_{id} \text{ fresh for } id \in \dom(b_1)}
+{\ptyjudge \Delta {(pat_1\ \code |\  pat_2)^l} a {C_0 \cup C'_1 \cup C'_2}  b}
+
+\vspace{2em}
+\inferrule[Alias] {
+  \ptyjudge \Delta {pat} {ty} {C} b \\
+  a \fresh \\
+} {
+  \ptyjudge \Delta {(pat \code{ as } x)^l} a {\{a \xlongequal l ty\} \cup C} {b[x \mapsto \langle ty\rangle]}
+}
+
+\vspace{2em}
+\inferrule[Type-Annot] {
+  \ptyjudge \Delta {pat} {ty} {C_0} {b} \\
+  C_1 = \{ a \xlongequal l b,\ b \xlongequal {l'} ty',\ ty \xlongequal {l} c,\ c \xlongequal {l'} ty',\ a \succcurlyeq^l ct \} \\
+  a,\ b,\ c \fresh \\
+  ty' \text{ fresh instance of } ct \\
+} {
+  \ptyjudge \Delta {(pat : ct^{l'})^l} a {C_0 \cup C_1} b
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\pagebreak
+\section{Stefan's Section}
+\inferrule[Type-Annot]{
+  ty \text{ is a fresh instance of } tysc\\
+  a \text{ fresh}\\
+  \etyjudge{\Delta}{lexp}{ty'}{C}{u}
+}{
+\etyjudge{\Delta}{(lexp : tysc)^l}{a}
+         {\{a \xlongequal l ty, ty' \succcurlyeq tysc\} \cup C}{u}
+}
+
+Notes:
+\begin{itemize}
+\item $tysc$ stands for a type scheme of the form 
+  $\forall \overline{a} . ty$
+\item We propagate the constraint set $C$ from the premise
+  to the conclusion to ensure that expression $lexp$ has
+  a type.
+\item A fresh instance of a type scheme
+  $\forall \overline{a} . ty$ is the type $ty$ with
+  all quantified type variables $\overline a$ replaced by
+  fresh type variables.
+\item The unification procedures leaves instantiations constraints of the 
+  form $ty \succcurlyeq tysc$ untouched. 
+\item When unification has finished,
+  we apply the resulting substitution $s$ to all
+  instantiation constraints $ty \succcurlyeq tysc$ to obtain
+  $s(ty) \succcurlyeq s(tysc)$. After that, we check
+  that the resulting instantiation constraints are valid.
+\item An instantiation constraint 
+  $ty \succcurlyeq \forall \overline{a} . ty'$ is valid
+  if and only if 
+  $\text{free}(ty) \cap \{\overline{a}\} = \emptyset$\footnote{%
+  We can always fulfill this requirement by $\alpha$-renaming
+  the quantified type variables $\overline a$.}
+  and there exists a substitution $s$ with
+  $\dom(s) \subseteq \text{free}(ty)$ and
+  $s(ty) = ty'$.
+  \\
+  (This notion of validity of an instantiation constraint is 
+  closely connected to value type enrichment as explained in
+  Stefan Wehr's diploma thesis on page 15,16)
+\end{itemize}
+\end{document}
+
+

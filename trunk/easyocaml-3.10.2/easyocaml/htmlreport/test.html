@@ -1,0 +1,29 @@
+<html>
+  <head>
+    <title>test</title>
+    <link rel="stylesheet" type="text/css" href="easyocaml.css"></link>
+    <script type="text/javascript" src="easyocaml.js"></script>
+    <script type="text/javascript">
+      registerErrors([
+          new ConstructorClash('int', 'a -> a', 'code2', 'code3', ['code4']),
+          new ArityClash(2,3,'code5', '3-4', ['code2', 'code3', 'code4']),
+          new CircularType('a', 'a -> b', null, '3-4', ['code2', 'code3', 'code4','code5']),
+      ]);
+    </script>
+  </head>
+  <body onload='javascript:init()'>
+    <noscript>You should enable javascript</noscript>
+    <a href='javascript:reset()'>reset</a>
+    <ul id='errorlist'>
+    </ul>
+    <div class='code'>
+      <span id='code1' name='codeitem'>let rec <span id='code2' name='codeitem'>discard_least</span> = <span id='code5' name='codeitem'>function</span><br />
+        <span class='indention'>&nbsp;&nbsp;</span>| [] -&gt; []<br />
+        <span class='indention'>&nbsp;&nbsp;</span>| xs :: xss -&gt;<br />
+        <span class='indention'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>match xs with<br />
+        <span class='indention'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>| [] -&gt; <span id='code4' name='codeitem'>set_insert</span>xs (discard_least <span id='code3' name='codeitem'>xss</span>)<br />
+        <span class='indention'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>| _ :: rem_xs -&gt;<br />
+        <span class='indention'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>set_insert <span id='3-4' name='codeitem'>rem_xs</span> (discard_least xss)<br /></span>
+    </div>
+  </body>
+</html>

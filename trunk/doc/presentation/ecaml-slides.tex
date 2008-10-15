@@ -1,0 +1,149 @@
+\documentclass{beamer}
+\usetheme{Dresden}
+%\usecolortheme{beaver}
+\usepackage{german}
+
+\newcommand\singleitem[1]{\begin{itemize}\item #1\end{itemize}}
+
+\title[EasyCaml -- More Descriptive Error Messages for OCaml]{EasyCaml -- More Descriptive Error Messages and a Didactical Infrastructure for OCaml}
+\author[Benus Becker]{Benus Becker, Stefan Wehr, Peter Thiemann, Anette Bienusa, Phillip Heidegger}
+\institute[OCaml Summer Project '08]{OCaml Summer Project, 2008. Jane St.\ Capital}
+\date{Sept. 12, 2008}
+
+\begin{document}
+
+\frame{\titlepage}
+
+\begin{frame}[fragile]{Broad overview}
+
+\begin{verbatim}
+let f cond x =
+  let default = 0 in
+  if cond then default
+  else log x
+\end{verbatim}
+
+  Objectives
+  \begin{itemize}
+    \item improve error messages for parsing and typechecking
+    \item provide tools for didactical purposes
+    \item integrate into the OCaml compiler/toplevel system
+  \end{itemize}
+
+  Similar projects
+  \begin{description}
+    \item[Haack \& Wells] descriptive type error messages for MiniML
+    \item[DrScheme] adaptable learning environment for Scheme
+    \item[Helium] kind of a tutoring system for Haskell
+  \end{description}
+\end{frame}
+
+\begin{frame} {Improving type error messages}
+  \framesubtitle{Haack \& Wells, 2004}
+
+  Constraint based type checking
+  \begin{enumerate}
+    \item generate type constraints 
+    \item unify constraints
+  \end{enumerate}
+
+  Type error enumeration and minimization 
+  \begin{itemize}
+    \item report many errors at once
+    \item provide minimal and complete information on the error's location
+  \end{itemize}
+
+\end{frame}
+
+\begin{frame} {Improving type error messages, cont'ed}
+  \begin{itemize}
+    \item extend Haack \& Wells (2004) to Caml without module declarations
+      \singleitem{including type declarations, records, patterns, exceptions}
+    \item error kinds
+      \begin{itemize}
+        \item fatal errors: fail directly (syntax errors, module not found, \ldots)
+        \item other errors: are collected while and reported after constraint generation and error minimization
+          \begin{itemize}
+            \item unknown variants, invalid record constructions, \ldots
+            \item type errors, unbound variables, immutable 
+          \end{itemize}
+      \end{itemize}
+    \item type errors
+      \begin{itemize}
+        \item type constructor clash 
+           \singleitem{tuple arity clash}
+        \item type circularity
+        \item invalid type annotations
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame} {Language levels and teach packs}
+  Language level: specify EasyCaml's environment
+  \begin{itemize}
+    \item restrict syntactical features
+    \item provide, allow or automatically open modules
+    \item extended by teach packs
+    \item distributed as a single file
+    \item enabled by a single CLF
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame} {Improving OCaml's parser}
+
+  Different levels of syntactical richness
+  \begin{itemize}\item make the parser adaptable for didactical purposes\end{itemize}
+
+  good parsers report
+  \begin{itemize}
+    \item what's expected / found instead
+    \item what's missing
+  \end{itemize}
+
+  EasyOcaml (currently) uses an Camlp4 parser, where
+  \begin{itemize}
+    \item supported features can be configured at runtime
+    \item error reporting is adaptable (TBD!)
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame} {Error reporting adaptability}
+
+  Goal: provide different kinds of output
+  \begin{itemize}
+    \item text-only platforms
+      \singleitem{display only relevant code through \emph{type error slicing}}
+    \item computer readable output for integration into an IDE
+    \item output in different languages
+  \end{itemize}
+  
+  Error reporting code can be dynamically linked into the compiler (via CLF)
+
+\end{frame}
+
+\begin{frame} {TBDs and Perspectives}
+  within the Ocaml Summer Project (one month left) \ldots
+  \begin{itemize}
+    \item adaptable error messages for the parser
+    \item full HTML error reporting support
+    \item integration into DrOCaml
+    \item provide enough information for error reporting based on heuristics
+    \item automatically provide documentation for teach packs
+    \item install procedures for language levels and teach packs
+    \item dynamically typed interpreter for OCaml
+  \end{itemize}
+  \ldots\ beyond the OSP.
+\end{frame}
+
+\begin{frame}{Literature and sources}
+  \begin{itemize}
+    \item Haack, Christian \& Wells, J.B. (2004). Type Error Slicing in Implicitly Typed Higher-Order Languages.
+    \item DrScheme: \url{www.drscheme.org}
+    \item Helium: \url{www.cs.uu.nl/helium/}
+  \end{itemize}
+\end{frame}
+
+\end{document}

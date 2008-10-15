@@ -1,0 +1,11 @@
+
+  * EzyGenerate returns either a typed ast or some heavy errors
+  * ezytyping should convert from Parsetree.t to EzyTypedtree.t (then, the flag in P(exp|pat)_construct should be unnecessary 
+  * refactore from core to extlib
+
+===
+Fragen:
+  * Types.commutable
+  * Types.Tarrow (label, _, _, _)
+  * Types.Tlink:
+  * value_description von Typedtree.Texp_ident: val_expr
