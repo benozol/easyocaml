@@ -1,0 +1,1163 @@
+------------------------------------------------------------------------
+r10924 | beckerb | 2008-10-14 17:42:36 +0200 (Tue, 14 Oct 2008) | 1 line
+
+Created tool to create dependency graph for modules in parsing/, typing/, easyocaml/.
+------------------------------------------------------------------------
+r10901 | beckerb | 2008-10-13 18:47:11 +0200 (Mon, 13 Oct 2008) | 1 line
+
+addendum
+------------------------------------------------------------------------
+r10900 | beckerb | 2008-10-13 18:46:23 +0200 (Mon, 13 Oct 2008) | 1 line
+
+ecaml free of thirdpartylibs, for easier compilation
+------------------------------------------------------------------------
+r10893 | beckerb | 2008-10-12 14:06:54 +0200 (Sun, 12 Oct 2008) | 1 line
+
+minor: comments and TyVar.nil to TyVar.none
+------------------------------------------------------------------------
+r10892 | beckerb | 2008-10-12 13:48:02 +0200 (Sun, 12 Oct 2008) | 1 line
+
+workaround for segfault while executing plugin'ed error reporting code: sexp, xml are accepted on command line
+------------------------------------------------------------------------
+r10874 | beckerb | 2008-10-09 15:15:04 +0200 (Thu, 09 Oct 2008) | 3 lines
+
+* dropped dot output of type graph (less prerequisites)
+* updated BUILD guidance and moved to BUILD_EASYOCAML
+
+------------------------------------------------------------------------
+r10872 | beckerb | 2008-10-09 14:28:10 +0200 (Thu, 09 Oct 2008) | 1 line
+
+
+------------------------------------------------------------------------
+r10870 | beckerb | 2008-10-09 14:25:03 +0200 (Thu, 09 Oct 2008) | 1 line
+
+
+------------------------------------------------------------------------
+r10815 | beckerb | 2008-10-07 16:11:18 +0200 (Tue, 07 Oct 2008) | 2 lines
+
+minor fixes to structuredErrorReport.
+
+------------------------------------------------------------------------
+r10812 | beckerb | 2008-10-07 14:47:37 +0200 (Tue, 07 Oct 2008) | 3 lines
+
+* finished structured error reporting plugin
+* minor fixes for easyerrors.dtd
+
+------------------------------------------------------------------------
+r10805 | beckerb | 2008-10-06 18:28:55 +0200 (Mon, 06 Oct 2008) | 4 lines
+
+* added DTD for XML error reporting
+* started structured error reporting plugin (for XML and Sexprs at the same time)
+* started i18n for error reporting by rolling out error descriptions from error formatting (the latter should be implemented in the plugins)
+
+------------------------------------------------------------------------
+r10798 | beckerb | 2008-10-06 14:56:22 +0200 (Mon, 06 Oct 2008) | 3 lines
+
+* more documentation for ezyErrors.mli
+* replaced Letrec_invalid_pattern by Not_supported_pattern
+
+------------------------------------------------------------------------
+r10764 | beckerb | 2008-10-01 17:25:40 +0200 (Wed, 01 Oct 2008) | 1 line
+
+moved thirdpartylibs out of the ocaml-3.10.2 folder
+------------------------------------------------------------------------
+r10763 | beckerb | 2008-10-01 17:22:22 +0200 (Wed, 01 Oct 2008) | 2 lines
+
+definition of parser feature: mandatory type annotation for toplevel definitions (not yet implemented)
+
+------------------------------------------------------------------------
+r10761 | beckerb | 2008-10-01 16:35:10 +0200 (Wed, 01 Oct 2008) | 5 lines
+
+ * A bunch of bugfixes: 
+   - catch Not_found for unknown field names (Unknown_field)
+   - combining of fatal errors and common errors
+ * fixed typos in error reporting
+
+------------------------------------------------------------------------
+r10760 | beckerb | 2008-10-01 16:16:54 +0200 (Wed, 01 Oct 2008) | 2 lines
+
+Last updates for ecaml slides (NY, 2008)
+
+------------------------------------------------------------------------
+r10641 | beckerb | 2008-09-09 16:54:14 +0200 (Tue, 09 Sep 2008) | 1 line
+
+further exams
+------------------------------------------------------------------------
+r10640 | beckerb | 2008-09-09 16:50:35 +0200 (Tue, 09 Sep 2008) | 4 lines
+
+* enhancements in html output and js/css
+* adapted language levels on ocamlbuilds`s _build/.
+* make raising exceptions restrictable
+
+------------------------------------------------------------------------
+r10639 | beckerb | 2008-09-09 15:53:40 +0200 (Tue, 09 Sep 2008) | 1 line
+
+
+------------------------------------------------------------------------
+r10635 | beckerb | 2008-09-09 14:09:34 +0200 (Tue, 09 Sep 2008) | 1 line
+
+
+------------------------------------------------------------------------
+r10616 | beckerb | 2008-09-08 17:25:22 +0200 (Mon, 08 Sep 2008) | 2 lines
+
+minimal
+
+------------------------------------------------------------------------
+r10614 | beckerb | 2008-09-08 16:20:47 +0200 (Mon, 08 Sep 2008) | 1 line
+
+some slides on ecaml
+------------------------------------------------------------------------
+r10608 | beckerb | 2008-09-08 14:32:14 +0200 (Mon, 08 Sep 2008) | 3 lines
+
+* cleanup of error reporter registration
+* cleanup of html error reporter
+
+------------------------------------------------------------------------
+r10606 | beckerb | 2008-09-08 12:14:41 +0200 (Mon, 08 Sep 2008) | 6 lines
+
+* HTML error report:
+  . reporting for unbound variables
+  . bugfix for opening/closing span tags
+* improved pretty printing of lists in ast
+* set location for return and argument types fof variant constructors
+
+------------------------------------------------------------------------
+r10599 | beckerb | 2008-09-08 01:50:31 +0200 (Mon, 08 Sep 2008) | 3 lines
+
+* (largly) fixed html error report
+* simplified EzyGenerate.for_rules
+
+------------------------------------------------------------------------
+r10598 | beckerb | 2008-09-07 20:37:06 +0200 (Sun, 07 Sep 2008) | 2 lines
+
+* started html error reporting plugin
+* simplified error  reporting plugin interface
+------------------------------------------------------------------------
+r10597 | beckerb | 2008-09-06 18:52:03 +0200 (Sat, 06 Sep 2008) | 1 line
+
+adapted dummyErrorReporting
+------------------------------------------------------------------------
+r10596 | beckerb | 2008-09-06 18:36:07 +0200 (Sat, 06 Sep 2008) | 3 lines
+
+Broadly refactored the sprawling EzyErrors (unfortunatly incompatible with existing error reporters)
+Rewrote default error report functions
+
+------------------------------------------------------------------------
+r10595 | beckerb | 2008-09-06 18:30:45 +0200 (Sat, 06 Sep 2008) | 2 lines
+
+minor changes to the html report utilities
+
+------------------------------------------------------------------------
+r10594 | beckerb | 2008-09-06 18:27:37 +0200 (Sat, 06 Sep 2008) | 2 lines
+
+more exams and tests
+
+------------------------------------------------------------------------
+r10592 | beckerb | 2008-09-06 14:44:19 +0200 (Sat, 06 Sep 2008) | 1 line
+
+first attempts (html/js/css) for html error reporting
+------------------------------------------------------------------------
+r10591 | beckerb | 2008-09-06 01:23:21 +0200 (Sat, 06 Sep 2008) | 1 line
+
+correct display of infix operators
+------------------------------------------------------------------------
+r10589 | beckerb | 2008-09-05 16:59:48 +0200 (Fri, 05 Sep 2008) | 1 line
+
+raise error for type name duplications
+------------------------------------------------------------------------
+r10588 | beckerb | 2008-09-05 16:39:37 +0200 (Fri, 05 Sep 2008) | 2 lines
+
+ecaml toploop compiles and runs (but without camlp4 parsing)
+
+------------------------------------------------------------------------
+r10587 | beckerb | 2008-09-05 16:16:27 +0200 (Fri, 05 Sep 2008) | 2 lines
+
+stdlib directory correctly set
+
+------------------------------------------------------------------------
+r10586 | beckerb | 2008-09-05 16:00:44 +0200 (Fri, 05 Sep 2008) | 5 lines
+
+* Bugfix for propagating type informations in record definitions to unused type variables
+  (type 'a t = { x : 'a; y: 'a list} let x = {x=3;y=[]})
+* Raising heavy error if type names are not unique within a declaration
+* Slight modification of the test file annotation format: Now, they have to start with '(*X*', where X is S or f
+
+------------------------------------------------------------------------
+r10584 | beckerb | 2008-09-05 13:31:16 +0200 (Fri, 05 Sep 2008) | 4 lines
+
+* Forbidden modules for EzyEnv (one should not use Format, Printf, Scanf and there off)
+* Make patterns in [try with ...] adaptable
+* Bugfix comparing structures (ignoring Pstr_open as there is no equivalent in Typedtree)
+
+------------------------------------------------------------------------
+r10583 | beckerb | 2008-09-05 12:32:54 +0200 (Fri, 05 Sep 2008) | 4 lines
+
+* Bugfix for constraint generation for alias patterns and while expressions
+* Better error reporting for EzyEnrichedAst.Equality by giving the acccordant location
+* Ezycamlgrammar: disabled "when" expressions; make string access (str.[n]) adaptable
+
+------------------------------------------------------------------------
+r10578 | beckerb | 2008-09-04 18:08:15 +0200 (Thu, 04 Sep 2008) | 1 line
+
+Bugfix for MyCamlp4Ast2OCamlAst regarding Constructor arguments
+------------------------------------------------------------------------
+r10577 | beckerb | 2008-09-04 17:57:14 +0200 (Thu, 04 Sep 2008) | 2 lines
+
+Bugfixed location annotation for function types by refactoring Ty.t (all variants but Ty.Var have a mandatory ExtLocation.t)
+
+------------------------------------------------------------------------
+r10573 | beckerb | 2008-09-04 15:00:08 +0200 (Thu, 04 Sep 2008) | 5 lines
+
+Re-enabled camlp4 for parsing (in the compiler).
+Adapted EzyAst for application with exactly one argument.
+Adapted Camlp4Ast2OCamlAst to keep curried application.
+Correct pretty printing for infix operators.
+
+------------------------------------------------------------------------
+r10571 | bieniusa | 2008-09-04 11:33:51 +0200 (Thu, 04 Sep 2008) | 1 line
+
+sliced of idents fixed
+------------------------------------------------------------------------
+r10570 | bieniusa | 2008-09-04 11:30:54 +0200 (Thu, 04 Sep 2008) | 1 line
+
+
+------------------------------------------------------------------------
+r10569 | bieniusa | 2008-09-04 11:25:43 +0200 (Thu, 04 Sep 2008) | 1 line
+
+
+------------------------------------------------------------------------
+r10562 | beckerb | 2008-09-03 20:06:28 +0200 (Wed, 03 Sep 2008) | 1 line
+
+endpoints for clashes against functions
+------------------------------------------------------------------------
+r10560 | beckerb | 2008-09-03 17:35:34 +0200 (Wed, 03 Sep 2008) | 2 lines
+
+simultaneous raising of heavy errors and errors.
+
+------------------------------------------------------------------------
+r10558 | beckerb | 2008-09-03 17:00:22 +0200 (Wed, 03 Sep 2008) | 1 line
+
+bugfixes for record construction errors
+------------------------------------------------------------------------
+r10553 | beckerb | 2008-09-03 15:23:45 +0200 (Wed, 03 Sep 2008) | 2 lines
+
+Bugfixes for generating constraints for record constructions and for error reporting about missing fields in records
+
+------------------------------------------------------------------------
+r10549 | bieniusa | 2008-09-03 13:39:09 +0200 (Wed, 03 Sep 2008) | 1 line
+
+sliced eingebaut, Todo: debuggin ;)
+------------------------------------------------------------------------
+r10548 | beckerb | 2008-09-03 12:58:05 +0200 (Wed, 03 Sep 2008) | 1 line
+
+configure configures ocamllibs variable
+------------------------------------------------------------------------
+r10546 | beckerb | 2008-09-03 12:01:21 +0200 (Wed, 03 Sep 2008) | 1 line
+
+minimal
+------------------------------------------------------------------------
+r10543 | beckerb | 2008-09-03 02:40:27 +0200 (Wed, 03 Sep 2008) | 1 line
+
+disabled erroneous Ezycamlgrammar parsing in Compile.
+------------------------------------------------------------------------
+r10542 | beckerb | 2008-09-03 02:33:33 +0200 (Wed, 03 Sep 2008) | 1 line
+
+Renamed EzyImport to EzyEnrichedAst
+------------------------------------------------------------------------
+r10541 | beckerb | 2008-09-03 02:32:03 +0200 (Wed, 03 Sep 2008) | 3 lines
+
+compile against installed stdlib + camlp4. start with
+`./_build/ecamlc -I `ocamlc -where` <some-file>'.  toplevel does not work so far
+
+------------------------------------------------------------------------
+r10539 | bieniusa | 2008-09-02 17:48:01 +0200 (Tue, 02 Sep 2008) | 1 line
+
+
+------------------------------------------------------------------------
+r10538 | bieniusa | 2008-09-02 17:46:17 +0200 (Tue, 02 Sep 2008) | 1 line
+
+ast zum slicing hinzugefuegt, ezyImport added
+------------------------------------------------------------------------
+r10536 | bieniusa | 2008-09-02 15:42:54 +0200 (Tue, 02 Sep 2008) | 1 line
+
+kompilierendes, aber noch nicht getestes slicing hinzugefuegt
+------------------------------------------------------------------------
+r10528 | beckerb | 2008-09-01 18:31:11 +0200 (Mon, 01 Sep 2008) | 3 lines
+
+ * configurable patterns in Ezycamlgrammar
+ * attempt to parse toplevel phrases with Ezycamlgrammar (doesn't work yet)
+
+------------------------------------------------------------------------
+r10524 | bieniusa | 2008-09-01 15:19:10 +0200 (Mon, 01 Sep 2008) | 1 line
+
+print function restructured, new type dots added
+------------------------------------------------------------------------
+r10523 | bieniusa | 2008-09-01 13:37:33 +0200 (Mon, 01 Sep 2008) | 1 line
+
+dots im Ast eingebaut
+------------------------------------------------------------------------
+r10522 | bieniusa | 2008-09-01 11:15:28 +0200 (Mon, 01 Sep 2008) | 1 line
+
+mli file for ezyErrors added
+------------------------------------------------------------------------
+r10518 | beckerb | 2008-08-30 13:31:44 +0200 (Sat, 30 Aug 2008) | 1 line
+
+trivial
+------------------------------------------------------------------------
+r10517 | beckerb | 2008-08-30 13:22:06 +0200 (Sat, 30 Aug 2008) | 1 line
+
+now it should compile (read BUILD)
+------------------------------------------------------------------------
+r10516 | beckerb | 2008-08-30 12:33:41 +0200 (Sat, 30 Aug 2008) | 2 lines
+
+yet another attempt
+
+------------------------------------------------------------------------
+r10515 | beckerb | 2008-08-29 21:05:28 +0200 (Fri, 29 Aug 2008) | 1 line
+
+fixed error in Camlp4OCamlRevisedParser (mine)
+------------------------------------------------------------------------
+r10514 | beckerb | 2008-08-29 20:17:57 +0200 (Fri, 29 Aug 2008) | 1 line
+
+addendum
+------------------------------------------------------------------------
+r10513 | beckerb | 2008-08-29 20:17:45 +0200 (Fri, 29 Aug 2008) | 2 lines
+
+project compiles now with ocamlbuild, targets: ecaml and ecamlc
+
+------------------------------------------------------------------------
+r10506 | bieniusa | 2008-08-29 14:45:58 +0200 (Fri, 29 Aug 2008) | 1 line
+
+ExtLocationSet erweitert, LocationMap zu LocationSet umbenannt
+------------------------------------------------------------------------
+r10505 | wehr | 2008-08-29 14:39:29 +0200 (Fri, 29 Aug 2008) | 1 line
+
+added missing file
+------------------------------------------------------------------------
+r10504 | wehr | 2008-08-29 14:39:09 +0200 (Fri, 29 Aug 2008) | 1 line
+
+small tweaks to language level support
+------------------------------------------------------------------------
+r10503 | wehr | 2008-08-29 14:26:21 +0200 (Fri, 29 Aug 2008) | 1 line
+
+support for teachpacks and language levels
+------------------------------------------------------------------------
+r10500 | bieniusa | 2008-08-29 13:00:51 +0200 (Fri, 29 Aug 2008) | 1 line
+
+
+------------------------------------------------------------------------
+r10499 | bieniusa | 2008-08-29 13:00:28 +0200 (Fri, 29 Aug 2008) | 1 line
+
+
+------------------------------------------------------------------------
+r10498 | beckerb | 2008-08-29 12:57:16 +0200 (Fri, 29 Aug 2008) | 1 line
+
+sourced typing and compare from Driver to EzyTyping
+------------------------------------------------------------------------
+r10497 | beckerb | 2008-08-29 12:48:54 +0200 (Fri, 29 Aug 2008) | 1 line
+
+disabled ezycamlgrammar (compiles without camlp4.lib)
+------------------------------------------------------------------------
+r10493 | beckerb | 2008-08-28 19:20:33 +0200 (Thu, 28 Aug 2008) | 2 lines
+
+plugged Educamlgrammar into ocamlc
+
+------------------------------------------------------------------------
+r10490 | beckerb | 2008-08-28 13:58:51 +0200 (Thu, 28 Aug 2008) | 1 line
+
+comments and structure for ezyFeatures
+------------------------------------------------------------------------
+r10489 | beckerb | 2008-08-28 13:53:08 +0200 (Thu, 28 Aug 2008) | 1 line
+
+refactored and extended ezyFeatures
+------------------------------------------------------------------------
+r10488 | bieniusa | 2008-08-28 13:47:50 +0200 (Thu, 28 Aug 2008) | 1 line
+
+dummy error report to new scheme adapted
+------------------------------------------------------------------------
+r10487 | bieniusa | 2008-08-28 13:39:42 +0200 (Thu, 28 Aug 2008) | 1 line
+
+German error output can be enabled 
+------------------------------------------------------------------------
+r10486 | wehr | 2008-08-28 11:42:13 +0200 (Thu, 28 Aug 2008) | 1 line
+
+ocamlpath now set correctly
+------------------------------------------------------------------------
+r10485 | beckerb | 2008-08-28 11:18:25 +0200 (Thu, 28 Aug 2008) | 1 line
+
+
+------------------------------------------------------------------------
+r10484 | beckerb | 2008-08-28 11:14:00 +0200 (Thu, 28 Aug 2008) | 1 line
+
+addendum
+------------------------------------------------------------------------
+r10483 | beckerb | 2008-08-28 11:13:22 +0200 (Thu, 28 Aug 2008) | 2 lines
+
+Small enhancements for syntactic features and their tests
+
+------------------------------------------------------------------------
+r10482 | beckerb | 2008-08-28 10:37:52 +0200 (Thu, 28 Aug 2008) | 1 line
+
+small fixes in configure script
+------------------------------------------------------------------------
+r10480 | beckerb | 2008-08-28 08:49:12 +0200 (Thu, 28 Aug 2008) | 1 line
+
+fixed toploop for EzyAst.import_structure; fixed Makefile
+------------------------------------------------------------------------
+r10479 | wehr | 2008-08-28 08:34:24 +0200 (Thu, 28 Aug 2008) | 1 line
+
+skeleteon for easyocaml configuration and easyinstall
+------------------------------------------------------------------------
+r10475 | beckerb | 2008-08-27 19:20:34 +0200 (Wed, 27 Aug 2008) | 2 lines
+
+make existing ocaml installation configurable by ./configure -ocamlpath ...
+
+------------------------------------------------------------------------
+r10474 | beckerb | 2008-08-27 19:07:58 +0200 (Wed, 27 Aug 2008) | 2 lines
+
+EzyAst.import_* test for syntactic features specified by EzyFeatures.
+
+------------------------------------------------------------------------
+r10472 | bieniusa | 2008-08-27 18:29:31 +0200 (Wed, 27 Aug 2008) | 1 line
+
+German version of error messages added
+------------------------------------------------------------------------
+r10471 | bieniusa | 2008-08-27 18:28:55 +0200 (Wed, 27 Aug 2008) | 1 line
+
+minor language error
+------------------------------------------------------------------------
+r10470 | bieniusa | 2008-08-27 17:49:45 +0200 (Wed, 27 Aug 2008) | 1 line
+
+all comments removed
+------------------------------------------------------------------------
+r10469 | bieniusa | 2008-08-27 17:49:10 +0200 (Wed, 27 Aug 2008) | 1 line
+
+comments removed
+------------------------------------------------------------------------
+r10468 | bieniusa | 2008-08-27 17:47:44 +0200 (Wed, 27 Aug 2008) | 1 line
+
+
+------------------------------------------------------------------------
+r10467 | bieniusa | 2008-08-27 17:47:18 +0200 (Wed, 27 Aug 2008) | 1 line
+
+error module prepared for language support
+------------------------------------------------------------------------
+r10466 | wehr | 2008-08-27 15:54:51 +0200 (Wed, 27 Aug 2008) | 1 line
+
+first try on language levels
+------------------------------------------------------------------------
+r10465 | bieniusa | 2008-08-27 14:41:30 +0200 (Wed, 27 Aug 2008) | 1 line
+
+rechtschreibfehler korrigiert ;)
+------------------------------------------------------------------------
+r10464 | beckerb | 2008-08-27 13:35:35 +0200 (Wed, 27 Aug 2008) | 2 lines
+
+Endpoints for arity clashes
+
+------------------------------------------------------------------------
+r10456 | beckerb | 2008-08-26 21:36:26 +0200 (Tue, 26 Aug 2008) | 1 line
+
+odot installation;  functorization of Educamlgrammar specifications
+------------------------------------------------------------------------
+r10455 | beckerb | 2008-08-26 18:17:42 +0200 (Tue, 26 Aug 2008) | 2 lines
+
+started adaptable ocaml parser (by means of camlp4)
+
+------------------------------------------------------------------------
+r10444 | beckerb | 2008-08-25 16:53:05 +0200 (Mon, 25 Aug 2008) | 4 lines
+
+new constraint generation for variants (as pattern and expression) respecting
+the distinction of variants with multiple arguments and a single n-tuple
+argument
+
+------------------------------------------------------------------------
+r10439 | beckerb | 2008-08-24 22:34:42 +0200 (Sun, 24 Aug 2008) | 1 line
+
+EzyGenerate.for_structure_item for mutual recursive types
+------------------------------------------------------------------------
+r10428 | beckerb | 2008-08-22 12:22:39 +0200 (Fri, 22 Aug 2008) | 1 line
+
+added odot library
+------------------------------------------------------------------------
+r10427 | beckerb | 2008-08-22 12:13:18 +0200 (Fri, 22 Aug 2008) | 1 line
+
+bugfix for constraint generation for type declarations (regarding recursion)
+------------------------------------------------------------------------
+r10426 | beckerb | 2008-08-22 11:42:43 +0200 (Fri, 22 Aug 2008) | 2 lines
+
+Constraint generation rules for value declarations
+
+------------------------------------------------------------------------
+r10425 | beckerb | 2008-08-22 11:35:50 +0200 (Fri, 22 Aug 2008) | 4 lines
+
+ - Bugfix for constraint generation of mutual recursive functions
+ - integrated simple dot output of constraint graph
+
+
+------------------------------------------------------------------------
+r10424 | beckerb | 2008-08-21 19:37:32 +0200 (Thu, 21 Aug 2008) | 4 lines
+
+ - constraint generation for mutual recursive definitions
+ - use annotated types in mutual recursive definitions for typing of heads if possible
+ - More constructor endpoints for EzyGenerate.(for_expr|M_for_pattern) and EzyAst.import_core_typE
+
+------------------------------------------------------------------------
+r10423 | beckerb | 2008-08-21 18:19:40 +0200 (Thu, 21 Aug 2008) | 2 lines
+
+Constraint generation for multiple let bindings (let x = e and ... in ) in structure items and expressions
+
+------------------------------------------------------------------------
+r10421 | beckerb | 2008-08-21 14:15:24 +0200 (Thu, 21 Aug 2008) | 3 lines
+
+ - endpoints of constructor clashes
+ - bugfix for environment in toplevel
+
+------------------------------------------------------------------------
+r10403 | beckerb | 2008-08-19 18:44:18 +0200 (Tue, 19 Aug 2008) | 1 line
+
+dynlinked error reporting for ocamlc with fallback on original reporting
+------------------------------------------------------------------------
+r10401 | beckerb | 2008-08-19 18:12:14 +0200 (Tue, 19 Aug 2008) | 2 lines
+
+dynlinking of error printing (via -easyerrorprinter <objfile>) for toploop
+
+------------------------------------------------------------------------
+r10400 | beckerb | 2008-08-19 16:26:41 +0200 (Tue, 19 Aug 2008) | 7 lines
+
+ - compiling with ocamlfind. now we can use additional libraries
+ - added core library
+ - cleanup of Makefile
+ - added module EzyOcamlmodules for extensions of modules used in the compiler elsewhere
+ - adapted code to Core library
+ - more error recording for invalid record expressions
+
+------------------------------------------------------------------------
+r10393 | beckerb | 2008-08-18 18:00:41 +0200 (Mon, 18 Aug 2008) | 2 lines
+
+First step towards new constraint generation for records (doesn't work)
+
+------------------------------------------------------------------------
+r10391 | beckerb | 2008-08-18 14:48:54 +0200 (Mon, 18 Aug 2008) | 4 lines
+
+ - Decreased runtime of DerEnv.precede_to_tyvarsubst by 99.8 percent!
+ - fixed comparision of type synonyms (EzyAst vs Typedtree)
+ - added environment to patterns (for comparision of types)
+
+------------------------------------------------------------------------
+r10383 | beckerb | 2008-08-16 14:54:26 +0200 (Sat, 16 Aug 2008) | 2 lines
+
+corrected type annotation contraint generation rule description.
+
+------------------------------------------------------------------------
+r10382 | beckerb | 2008-08-16 14:43:53 +0200 (Sat, 16 Aug 2008) | 1 line
+
+corrected type annotation contraint generation
+------------------------------------------------------------------------
+r10381 | beckerb | 2008-08-16 13:48:27 +0200 (Sat, 16 Aug 2008) | 2 lines
+
+new rules for type annotations and for alias pattern
+
+------------------------------------------------------------------------
+r10376 | beckerb | 2008-08-15 16:56:51 +0200 (Fri, 15 Aug 2008) | 4 lines
+
+ added equality constraints to type annotation constraint generation
+ implemented EzyAsttypes.print_core_type
+ new EzyGenerate.PostProcess.TypeAnnotation.valid
+
+------------------------------------------------------------------------
+r10372 | beckerb | 2008-08-14 18:59:40 +0200 (Thu, 14 Aug 2008) | 5 lines
+
+ * runtests runs ocamlc and easy ocamlc on a bunch of files and compares the results
+ * fixed EzyEnv regarding the combination open and absolute paths of type constructors
+ * import of constraint patterns
+
+
+------------------------------------------------------------------------
+r10370 | beckerb | 2008-08-14 15:21:27 +0200 (Thu, 14 Aug 2008) | 5 lines
+
+Fixed anfang.ml
+Fixed EzyEnv.expand_type_synonyms
+Tried to fix EzyEnv.open_module
+Restricted open structure items to opening only non-qualified modules
+
+------------------------------------------------------------------------
+r10369 | beckerb | 2008-08-14 11:19:48 +0200 (Thu, 14 Aug 2008) | 6 lines
+
+ * added exams/
+ * added alias pattern (AST, import, generate)
+ * handling of unbound type constructors in EzyAst.import_core_type
+ * new structure comparision (ignoring opens)
+ * null expression and null structure item as return value when heavy errors occur
+
+------------------------------------------------------------------------
+r10364 | beckerb | 2008-08-13 16:02:04 +0200 (Wed, 13 Aug 2008) | 3 lines
+
+* test for completeness of type parameters in import of core types (raising heavy error Invalid_type_ctor)
+* reworked and enabled comparision of easy ocaml typed tree and ocaml typed tree
+
+------------------------------------------------------------------------
+r10359 | beckerb | 2008-08-12 18:12:48 +0200 (Tue, 12 Aug 2008) | 7 lines
+
+ * HeavyErrors: allow further generation but no unification
+ * new EzyEnv: implemented open and fixed import; construction of shortcut data (ctors, fields)
+ * PostProcess for patterns (collecting wrong variables, ctor and field errors)
+ * type constraints in patterns (like `let x:int = 3')
+ * Fixed small bug regarding the recognition of circular type errors
+ * Check for monomorphic type variables in toplevel expressions of compilation units
+
+------------------------------------------------------------------------
+r10356 | beckerb | 2008-08-11 18:00:04 +0200 (Mon, 11 Aug 2008) | 1 line
+
+another new EzyEnv
+------------------------------------------------------------------------
+r10345 | beckerb | 2008-08-08 17:22:52 +0200 (Fri, 08 Aug 2008) | 1 line
+
+Corrected rules for constraint generation for structure items
+------------------------------------------------------------------------
+r10344 | beckerb | 2008-08-08 17:21:25 +0200 (Fri, 08 Aug 2008) | 2 lines
+
+Definition of exceptions and handling of open (in import / generate). Some fixes in EzyEnv. Fixed bug in type_kind of variants.
+
+------------------------------------------------------------------------
+r10340 | beckerb | 2008-08-08 13:44:29 +0200 (Fri, 08 Aug 2008) | 1 line
+
+Definition and usage of variant types
+------------------------------------------------------------------------
+r10330 | beckerb | 2008-08-07 18:49:03 +0200 (Thu, 07 Aug 2008) | 6 lines
+
+- Type declarations (in AST, import, pretty print, 
+- Timing functions in EzyUtils
+- Removed some usages of Pervasives.compare
+- EzyEnv: adapted shortcuts (fields, ctors), pretty print
+- Ty.fresh_variant: takes parameter deciding creation of new variables
+
+------------------------------------------------------------------------
+r10327 | beckerb | 2008-08-06 14:44:22 +0200 (Wed, 06 Aug 2008) | 4 lines
+
+Added recursive values as structure item: AST, print, import, generate.
+Unified type and identity information of pattern constraint generation
+Pretty print for EzyEnv
+
+------------------------------------------------------------------------
+r10325 | beckerb | 2008-08-06 12:26:17 +0200 (Wed, 06 Aug 2008) | 1 line
+
+Bugfix for constraint generation of variant patterns
+------------------------------------------------------------------------
+r10321 | beckerb | 2008-08-05 17:54:18 +0200 (Tue, 05 Aug 2008) | 4 lines
+
+Errors for invalid variant constructions.
+Continued comparision of EzyAst and Typedtree.
+Prettier error messages.
+
+------------------------------------------------------------------------
+r10318 | beckerb | 2008-08-05 14:37:10 +0200 (Tue, 05 Aug 2008) | 5 lines
+
+Bug fixes: 
+No mono-tuples for constraints of Constructor arguments.
+cs_not_l in minimize_full.
+Constructions of non-idempotent TyVarSubsts is impossible.
+
+------------------------------------------------------------------------
+r10315 | beckerb | 2008-08-05 11:47:18 +0200 (Tue, 05 Aug 2008) | 1 line
+
+Fixed bug in minimization, this time for real!
+------------------------------------------------------------------------
+r10313 | beckerb | 2008-08-04 18:06:39 +0200 (Mon, 04 Aug 2008) | 2 lines
+
+Fixed bug in errorset minimization.
+
+------------------------------------------------------------------------
+r10307 | beckerb | 2008-08-04 15:16:37 +0200 (Mon, 04 Aug 2008) | 3 lines
+
+Simplification of Ty.fresh_var.
+Enabled minimization.
+
+------------------------------------------------------------------------
+r10305 | beckerb | 2008-08-04 11:47:42 +0200 (Mon, 04 Aug 2008) | 2 lines
+
+Constraint generation rules for application with argument list, abstraction by rules, new Variant pattern matching.
+
+------------------------------------------------------------------------
+r10304 | beckerb | 2008-08-04 11:46:20 +0200 (Mon, 04 Aug 2008) | 2 lines
+
+addendum
+
+------------------------------------------------------------------------
+r10303 | beckerb | 2008-08-04 11:44:26 +0200 (Mon, 04 Aug 2008) | 3 lines
+
+- Modification of EzyAst: Function takes rules, Application takes list of arguments.
+- Adapted import, pretty print, constraint generation.
+
+------------------------------------------------------------------------
+r10299 | beckerb | 2008-08-01 12:17:39 +0200 (Fri, 01 Aug 2008) | 4 lines
+
+- limitation of error enumeration
+- variant pattern constraint generation
+- bugfix in fresh variant of list of types
+
+------------------------------------------------------------------------
+r10297 | beckerb | 2008-07-31 19:19:41 +0200 (Thu, 31 Jul 2008) | 1 line
+
+small improvements for pretty print of type annotatino error
+------------------------------------------------------------------------
+r10296 | beckerb | 2008-07-31 19:08:16 +0200 (Thu, 31 Jul 2008) | 2 lines
+
+Implemented test for type annotations.
+
+------------------------------------------------------------------------
+r10294 | beckerb | 2008-07-31 18:00:25 +0200 (Thu, 31 Jul 2008) | 1 line
+
+merged EzyAst.error into EzyErrors.fatal
+------------------------------------------------------------------------
+r10293 | beckerb | 2008-07-31 17:52:29 +0200 (Thu, 31 Jul 2008) | 1 line
+
+let + letrec in EzyEnv.expression_desc
+------------------------------------------------------------------------
+r10292 | beckerb | 2008-07-31 17:30:25 +0200 (Thu, 31 Jul 2008) | 7 lines
+
+ - Better error handling (distinguishing fatal error where no further typing is possible and errors which can be accumulated).
+ - EzyEnv imports exceptions
+ - new manner creating fresh variants: ?tyvarmap:TyVarSubst.t -> Ty.t list -> TyVarSubst.t * Ty.t list
+ - cleanup of EzyEnv's solve and type functions
+ - constraint generation for field access, set field, try and sequence 
+ - some fixes in constraint generation rule documentation
+
+------------------------------------------------------------------------
+r10281 | beckerb | 2008-07-30 18:38:38 +0200 (Wed, 30 Jul 2008) | 2 lines
+
+Fixed constraint generation rule for let by pattern
+
+------------------------------------------------------------------------
+r10280 | beckerb | 2008-07-30 18:37:44 +0200 (Wed, 30 Jul 2008) | 6 lines
+
+Added type annotations to AST.
+Import of core types.
+Constraint generation for let by pattern, type annotations, asserts, for, while.
+More debugging info (pattern/expression generation).
+Bugfixes for value test.
+
+------------------------------------------------------------------------
+r10275 | beckerb | 2008-07-30 13:30:54 +0200 (Wed, 30 Jul 2008) | 2 lines
+
+completed constraint generation rules.
+
+------------------------------------------------------------------------
+r10268 | beckerb | 2008-07-29 13:23:08 +0200 (Tue, 29 Jul 2008) | 2 lines
+
+Recursive functions in EzyAst and constraint generation for it.
+
+------------------------------------------------------------------------
+r10267 | beckerb | 2008-07-29 11:55:22 +0200 (Tue, 29 Jul 2008) | 2 lines
+
+Bugfixes in EzyTyping (unifying tuples), EzyEnv (type import for covariant type, expand_type_synonyms) and EzyGenerate for tuples
+
+------------------------------------------------------------------------
+r10266 | beckerb | 2008-07-28 18:13:44 +0200 (Mon, 28 Jul 2008) | 1 line
+
+constraint generation for constructors.
+------------------------------------------------------------------------
+r10265 | beckerb | 2008-07-28 16:37:51 +0200 (Mon, 28 Jul 2008) | 1 line
+
+unification of type constructors
+------------------------------------------------------------------------
+r10264 | beckerb | 2008-07-28 14:23:22 +0200 (Mon, 28 Jul 2008) | 2 lines
+
+refactoring: moved EzyParsetree to EzyAst
+
+------------------------------------------------------------------------
+r10263 | beckerb | 2008-07-28 14:16:43 +0200 (Mon, 28 Jul 2008) | 4 lines
+
+* attached env to solver
+* started unification of Ty.Constr/Ty.Tuple/etc
+* extended EzyParsetree with annotations for Longident + string
+
+------------------------------------------------------------------------
+r10261 | beckerb | 2008-07-28 10:56:34 +0200 (Mon, 28 Jul 2008) | 1 line
+
+adapted on new EzyEnv
+------------------------------------------------------------------------
+r10256 | beckerb | 2008-07-24 19:50:59 +0200 (Thu, 24 Jul 2008) | 2 lines
+
+Reworking of EzyEnv. Does not work at all.
+
+------------------------------------------------------------------------
+r10253 | beckerb | 2008-07-24 12:49:10 +0200 (Thu, 24 Jul 2008) | 5 lines
+
+ * EzyGenerate.for_expr returns as a third value PostProcess which gathers information and constraints
+   which are applied after constraint generation.
+ * Constraint generation for rule (pat * exp) and rules
+ * Dropped bootstrapping: easyocaml asks for an ocaml installation in environment variable OCAML_PATH.
+
+------------------------------------------------------------------------
+r10252 | beckerb | 2008-07-24 09:37:03 +0200 (Thu, 24 Jul 2008) | 1 line
+
+renaming
+------------------------------------------------------------------------
+r10250 | beckerb | 2008-07-23 23:43:00 +0200 (Wed, 23 Jul 2008) | 1 line
+
+renamed MyString, MySet, MyMap to String, Set, Map
+------------------------------------------------------------------------
+r10248 | beckerb | 2008-07-23 21:51:37 +0200 (Wed, 23 Jul 2008) | 2 lines
+
+import of supported patterns and expressions. Pretty print for patterns and some expressions.
+
+------------------------------------------------------------------------
+r10245 | wehr | 2008-07-23 20:13:00 +0200 (Wed, 23 Jul 2008) | 2 lines
+
+Stefan's rule for type annotations
+
+------------------------------------------------------------------------
+r10244 | beckerb | 2008-07-23 19:52:23 +0200 (Wed, 23 Jul 2008) | 4 lines
+
+- constraint generation for patterns (tuple, or, record, construct)
+- EasyParsetree.Ppat_construct takes an pattern option as argument, just as the original
+- Import of constants, and more patterns
+
+------------------------------------------------------------------------
+r10243 | beckerb | 2008-07-23 18:36:03 +0200 (Wed, 23 Jul 2008) | 2 lines
+
+rule for record-patterns, rewrite of rule for variant.
+
+------------------------------------------------------------------------
+r10177 | beckerb | 2008-07-17 19:13:13 +0200 (Thu, 17 Jul 2008) | 1 line
+
+started constraint generation for patterns
+------------------------------------------------------------------------
+r10172 | beckerb | 2008-07-17 16:01:05 +0200 (Thu, 17 Jul 2008) | 2 lines
+
+Started enhancements in EasyEnv (for variants and records). Added MyString to EasyUtils.
+
+------------------------------------------------------------------------
+r10165 | beckerb | 2008-07-17 14:01:55 +0200 (Thu, 17 Jul 2008) | 1 line
+
+Ported monadic code to Jane street's Core monad
+------------------------------------------------------------------------
+r10158 | beckerb | 2008-07-16 19:16:43 +0200 (Wed, 16 Jul 2008) | 3 lines
+
+Enriched Types.t with Tuples and Constr.  Enriched patterns with Any, Constant,
+Tuple, Construct, Record, Or.  Printers etc for all that.
+
+------------------------------------------------------------------------
+r10154 | beckerb | 2008-07-16 17:27:34 +0200 (Wed, 16 Jul 2008) | 2 lines
+
+still some fixes and improvements to the rules
+
+------------------------------------------------------------------------
+r10130 | beckerb | 2008-07-15 18:09:06 +0200 (Tue, 15 Jul 2008) | 2 lines
+
+small fixes in features. constraint generation rules for let rec.
+
+------------------------------------------------------------------------
+r9860 | beckerb | 2008-07-10 18:10:03 +0200 (Thu, 10 Jul 2008) | 1 line
+
+small fixes in features.tex
+------------------------------------------------------------------------
+r9859 | beckerb | 2008-07-10 18:09:27 +0200 (Thu, 10 Jul 2008) | 1 line
+
+constraint generation rules for patterns, match, structure items, function and pattern based let
+------------------------------------------------------------------------
+r9801 | beckerb | 2008-07-03 20:59:00 +0200 (Thu, 03 Jul 2008) | 1 line
+
+started description of EasyOcaml's features and added some rules for constraint generation
+------------------------------------------------------------------------
+r9800 | beckerb | 2008-07-03 20:56:31 +0200 (Thu, 03 Jul 2008) | 1 line
+
+adaption of anfang.ml to the foregoing refactoring and some trivialities
+------------------------------------------------------------------------
+r9799 | beckerb | 2008-07-03 18:41:14 +0200 (Thu, 03 Jul 2008) | 2 lines
+
+renamed EasyGenerateEnvs to EasyEnv
+
+------------------------------------------------------------------------
+r9797 | beckerb | 2008-07-03 17:57:00 +0200 (Thu, 03 Jul 2008) | 1 line
+
+refactoring: renamed EasyEnv by VariableEnv
+------------------------------------------------------------------------
+r9795 | beckerb | 2008-07-03 17:52:16 +0200 (Thu, 03 Jul 2008) | 1 line
+
+refactoring: splitted EasyTools into EasyTypingCoreTypes, EasyConstraints and EasyGenerateEnvs
+------------------------------------------------------------------------
+r9794 | beckerb | 2008-07-03 16:41:46 +0200 (Thu, 03 Jul 2008) | 3 lines
+
+ * fixed interaction between ocaml and easy-typecheck
+ * implemented EasyGenerate.for_structure
+
+------------------------------------------------------------------------
+r9793 | beckerb | 2008-07-03 13:07:28 +0200 (Thu, 03 Jul 2008) | 3 lines
+
+* more informative messages for errors in comparision of easy and original typed tree
+* bugfix in EasyParsetree.eq_ident regarding exception monad clashing
+
+------------------------------------------------------------------------
+r9787 | beckerb | 2008-07-02 21:21:29 +0200 (Wed, 02 Jul 2008) | 1 line
+
+better monad for expression comparision and adaption for module Compile
+------------------------------------------------------------------------
+r9786 | beckerb | 2008-07-02 21:01:25 +0200 (Wed, 02 Jul 2008) | 1 line
+
+comparision of types and idents in expressions and structures of Easy and original AST (powered by a fancy monad)
+------------------------------------------------------------------------
+r9740 | beckerb | 2008-06-26 21:47:12 +0200 (Thu, 26 Jun 2008) | 1 line
+
+small fix in rule apply^n
+------------------------------------------------------------------------
+r9734 | beckerb | 2008-06-26 20:00:06 +0200 (Thu, 26 Jun 2008) | 5 lines
+
+* rewrote functions regarding `enumerate'
+* fixed DerEnv.precede_to_tyvarsubst
+* more logging for solving and typing
+* newline control for logging
+
+------------------------------------------------------------------------
+r9733 | beckerb | 2008-06-26 19:56:14 +0200 (Thu, 26 Jun 2008) | 2 lines
+
+rule for (exp_1 exp_n ... exp_n)
+
+------------------------------------------------------------------------
+r9728 | beckerb | 2008-06-26 15:39:03 +0200 (Thu, 26 Jun 2008) | 3 lines
+
+* Dummy test for validation of easyTyping.
+* Prettyprint of errors and unknown vars in the toplevel
+
+------------------------------------------------------------------------
+r9726 | beckerb | 2008-06-26 14:21:42 +0200 (Thu, 26 Jun 2008) | 1 line
+
+Merged easySolve into easyTyping. Discard trees which are welltyped by easyocaml and proceed with standard ocaml typechecking.
+------------------------------------------------------------------------
+r9721 | beckerb | 2008-06-25 19:48:08 +0200 (Wed, 25 Jun 2008) | 2 lines
+
+new EasyParsetree.print_expr, Ident.print_tbl 
+
+------------------------------------------------------------------------
+r9710 | beckerb | 2008-06-25 16:27:16 +0200 (Wed, 25 Jun 2008) | 2 lines
+
+added value_kind information to identent annotation of generated easyParsetree
+
+------------------------------------------------------------------------
+r9697 | beckerb | 2008-06-24 12:58:28 +0200 (Tue, 24 Jun 2008) | 1 line
+
+"let _ = ..." admitted to EasyParsetree for testing, new test.ml
+------------------------------------------------------------------------
+r9696 | beckerb | 2008-06-24 11:43:42 +0200 (Tue, 24 Jun 2008) | 3 lines
+
+bugfix in EasyParsetree.export_expression (Pexp_function _)
+implementation von EasyParsetree.export_expression (Pexp_let _)
+
+------------------------------------------------------------------------
+r9685 | beckerb | 2008-06-22 14:49:13 +0200 (Sun, 22 Jun 2008) | 2 lines
+
+constraint generation for apply + let
+export of apply
+------------------------------------------------------------------------
+r9682 | beckerb | 2008-06-20 19:36:40 +0200 (Fri, 20 Jun 2008) | 8 lines
+
+continued constraint generation by incoming type environment
+ - adapted EasySolve to ExtLocation*
+ - Types.print (rough)
+ - Generation, export for patterns, constants, functions, idents
+ - EasyParsetree abstracts over expr_data, ident_data, pat_data which annotate these nodes
+ - adapted EasyTyping to new EasyGenerate
+
+
+------------------------------------------------------------------------
+r9652 | beckerb | 2008-06-20 16:05:35 +0200 (Fri, 20 Jun 2008) | 2 lines
+
+fixed typos in documentatino of the type constraint generation 
+
+------------------------------------------------------------------------
+r9651 | beckerb | 2008-06-20 16:03:31 +0200 (Fri, 20 Jun 2008) | 3 lines
+
+* Mono- and Polymorphic bindings for EasyEnv
+* EasyTools use ExtLocation (locations either in Source or in a module's interface)
+
+------------------------------------------------------------------------
+r9608 | beckerb | 2008-06-19 12:08:37 +0200 (Thu, 19 Jun 2008) | 2 lines
+
+Latex version of modified constraint generation rules
+
+------------------------------------------------------------------------
+r9600 | beckerb | 2008-06-18 20:55:45 +0200 (Wed, 18 Jun 2008) | 1 line
+
+started typeconstraintgeneration with incoming type environments
+------------------------------------------------------------------------
+r9595 | beckerb | 2008-06-18 16:05:13 +0200 (Wed, 18 Jun 2008) | 1 line
+
+using patterns in let-binding and functions
+------------------------------------------------------------------------
+r9563 | beckerb | 2008-06-16 12:42:42 +0200 (Mon, 16 Jun 2008) | 1 line
+
+export for ident + constant
+------------------------------------------------------------------------
+r9523 | beckerb | 2008-06-12 19:59:58 +0200 (Thu, 12 Jun 2008) | 2 lines
+
+further steps towards export from easyocaml into the ocaml pipeline: Generate builds a EasyParsetree labeled with type variables
+
+------------------------------------------------------------------------
+r9522 | beckerb | 2008-06-12 18:56:42 +0200 (Thu, 12 Jun 2008) | 1 line
+
+started export of EasyParstree
+------------------------------------------------------------------------
+r9519 | beckerb | 2008-06-12 14:39:31 +0200 (Thu, 12 Jun 2008) | 2 lines
+
+Type parameter for EasyParsetree (to record TyVar.t's and Environments on generate)
+
+------------------------------------------------------------------------
+r9508 | beckerb | 2008-06-11 18:55:25 +0200 (Wed, 11 Jun 2008) | 1 line
+
+trivial
+------------------------------------------------------------------------
+r9505 | beckerb | 2008-06-11 16:17:11 +0200 (Wed, 11 Jun 2008) | 3 lines
+
+trivial: Enabled easyocaml in toploop, get log level from environment
+
+
+------------------------------------------------------------------------
+r9466 | beckerb | 2008-06-06 17:40:54 +0200 (Fri, 06 Jun 2008) | 1 line
+
+bugfix in EasyTools.Ty.tyvars regarding handling of arrows
+------------------------------------------------------------------------
+r9458 | beckerb | 2008-06-05 21:05:21 +0200 (Thu, 05 Jun 2008) | 5 lines
+
+ * fixed a stupid bug (wrong import from Parsetree to EasyParseTree)
+ * fixed realy nasty bug (forgot to type_substitude arrows)
+ * rewrote constraint generation for let-bindings
+ * wrote printer for EasyParseTree and moved ParseTree import from EasyError to EasyParseTree
+
+------------------------------------------------------------------------
+r9444 | beckerb | 2008-06-04 22:22:12 +0200 (Wed, 04 Jun 2008) | 2 lines
+
+EasyGenerate considers now ocaml's environment (i.e. Pervasives)
+
+------------------------------------------------------------------------
+r9416 | beckerb | 2008-05-30 21:18:41 +0200 (Fri, 30 May 2008) | 2 lines
+
+* published Printast.fmt_location
+* eased for simpler tests
+------------------------------------------------------------------------
+r9415 | beckerb | 2008-05-30 17:59:44 +0200 (Fri, 30 May 2008) | 1 line
+
+Env.value_domain
+------------------------------------------------------------------------
+r9406 | beckerb | 2008-05-29 16:07:27 +0200 (Thu, 29 May 2008) | 2 lines
+
+started todo list
+
+------------------------------------------------------------------------
+r9405 | beckerb | 2008-05-29 16:00:13 +0200 (Thu, 29 May 2008) | 4 lines
+
+* bugfixes in EasySolve.insert_error, insert_todos, enum_steps, enum
+* bugfixes in EasyTools regarding output of Locations, Sets and Ty
+* shortcuts for levels in EasyUtils.Logging
+
+------------------------------------------------------------------------
+r9402 | beckerb | 2008-05-29 12:01:09 +0200 (Thu, 29 May 2008) | 2 lines
+
+ * moved EasySolve.E to EasyTools.E
+ * more anfang.ml
+------------------------------------------------------------------------
+r9398 | beckerb | 2008-05-28 19:03:48 +0200 (Wed, 28 May 2008) | 1 line
+
+trivial
+------------------------------------------------------------------------
+r9397 | beckerb | 2008-05-28 18:40:26 +0200 (Wed, 28 May 2008) | 1 line
+
+renamed easyUnify to easySolve
+------------------------------------------------------------------------
+r9396 | beckerb | 2008-05-28 18:38:05 +0200 (Wed, 28 May 2008) | 1 line
+
+implementation of minimize, enum
+------------------------------------------------------------------------
+r9376 | beckerb | 2008-05-27 17:11:40 +0200 (Tue, 27 May 2008) | 2 lines
+
+* cleanup of EasyUtils.Logging
+* fixed infinite regress in EasyUnify.unify_full on equal types
+------------------------------------------------------------------------
+r9365 | beckerb | 2008-05-26 12:13:17 +0200 (Mon, 26 May 2008) | 3 lines
+
+ * sperated TyVarSubst from Ty module into recursive module declaration
+ * fixed EasyUnify.occurs
+ * rewrote decisions for EasyUnify.unify_full
+------------------------------------------------------------------------
+r9359 | beckerb | 2008-05-26 09:46:15 +0200 (Mon, 26 May 2008) | 1 line
+
+splitted general utility functionality from easyTools to easyUtils, added Loggin capabilities
+------------------------------------------------------------------------
+r9339 | beckerb | 2008-05-22 18:33:32 +0200 (Thu, 22 May 2008) | 2 lines
+
+ * started constraint unification
+ * added TyVarSubst.t
+------------------------------------------------------------------------
+r9338 | beckerb | 2008-05-22 17:16:27 +0200 (Thu, 22 May 2008) | 1 line
+
+fixed basically easyTools to constraint generation
+------------------------------------------------------------------------
+r9337 | beckerb | 2008-05-21 21:20:45 +0200 (Wed, 21 May 2008) | 1 line
+
+started constraint generation for type checker
+------------------------------------------------------------------------
+r9296 | beckerb | 2008-05-15 16:37:47 +0200 (Thu, 15 May 2008) | 1 line
+
+strings for easy ocaml identifiers 
+------------------------------------------------------------------------
+r9295 | beckerb | 2008-05-15 16:04:19 +0200 (Thu, 15 May 2008) | 1 line
+
+extended easyParsetree to needs of haack&wells (+ conversion from ocaml parse tree)
+------------------------------------------------------------------------
+r9294 | beckerb | 2008-05-15 13:28:02 +0200 (Thu, 15 May 2008) | 1 line
+
+integrated easy type check for integers into ocaml/c (command arguemtn "-easy")
+------------------------------------------------------------------------
+r9293 | beckerb | 2008-05-15 11:45:27 +0200 (Thu, 15 May 2008) | 1 line
+
+trivial
+------------------------------------------------------------------------
+r9287 | beckerb | 2008-05-14 18:17:48 +0200 (Wed, 14 May 2008) | 3 lines
+
+ * added source of ocaml-3.10.2
+ * started ast trees (parsed and typed) for easyocaml
+
+------------------------------------------------------------------------
+r8588 | thiemann | 2008-03-07 16:37:26 +0100 (Fri, 07 Mar 2008) | 1 line
+
+programs with errors
+------------------------------------------------------------------------
+r8586 | wehr | 2008-03-07 14:33:00 +0100 (Fri, 07 Mar 2008) | 1 line
+
+minor fix
+------------------------------------------------------------------------
+r8585 | wehr | 2008-03-07 14:32:18 +0100 (Fri, 07 Mar 2008) | 1 line
+
+missing sentence
+------------------------------------------------------------------------
+r8583 | wehr | 2008-03-07 14:09:38 +0100 (Fri, 07 Mar 2008) | 1 line
+
+finished application
+------------------------------------------------------------------------
+r8581 | thiemann | 2008-03-06 22:46:40 +0100 (Thu, 06 Mar 2008) | 1 line
+
+application finished
+------------------------------------------------------------------------
+r8580 | thiemann | 2008-03-06 22:27:45 +0100 (Thu, 06 Mar 2008) | 1 line
+
+recommendation finished
+------------------------------------------------------------------------
+r8579 | thiemann | 2008-03-06 16:01:55 +0100 (Thu, 06 Mar 2008) | 1 line
+
+edited proposal
+------------------------------------------------------------------------
+r8578 | wehr | 2008-03-06 15:47:48 +0100 (Thu, 06 Mar 2008) | 1 line
+
+ocalIDE -> ocaIDE
+------------------------------------------------------------------------
+r8577 | thiemann | 2008-03-06 14:00:45 +0100 (Thu, 06 Mar 2008) | 1 line
+
+edited proposal
+------------------------------------------------------------------------
+r8570 | wehr | 2008-03-05 17:10:44 +0100 (Wed, 05 Mar 2008) | 1 line
+
+renaming
+------------------------------------------------------------------------
+r8569 | wehr | 2008-03-05 17:10:24 +0100 (Wed, 05 Mar 2008) | 1 line
+
+first draft of osp proposal
+------------------------------------------------------------------------

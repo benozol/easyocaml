@@ -1,0 +1,98 @@
+\documentclass{article}
+
+\usepackage{amsmath, amsfonts, amssymb}
+\usepackage{multicol}
+
+\newcommand\otem{\item[\checkmark]}
+
+\title{Language features of EasyCaml}
+\author{}
+
+\begin{document}
+
+\maketitle
+
+\section{Types}
+
+\begin{multicols}{2}
+\begin{itemize}
+  \item Primitive types
+	\begin{itemize}
+	  \otem \texttt{int}
+	  \item \texttt{string}
+	  \item \texttt{bool}
+	  \item \texttt{character}
+	  \item \texttt{float}
+	  \item \texttt{unit}
+	\end{itemize}
+  \otem Type variables
+  \otem Functions 
+  \item Tuples
+  \item Arrays
+  \item Variant types
+  \item Record types
+\end{itemize}
+\end{multicols}
+
+\section{Syntax}
+
+\subsection{Structure items}
+
+\begin{multicols}{2}
+\begin{itemize}
+  \otem Evaluations (\texttt{expr;;})
+  \otem Values (\texttt{let pat = expr;;})
+  \item Type declarations
+  \item Exception declarations
+  \item Opening of modules
+\end{itemize}
+\end{multicols}
+
+\subsection{Expressions}
+
+\begin{multicols}{2}
+\begin{itemize}
+  \otem Variables
+  \otem Infix operators
+  \otem Functions
+  \otem Binding of variables
+  \item recursive bindings
+  \item Tupel construction
+  \item Record construction and access
+  \item Arrays construction and access
+  \item Conditionals (if-then-else, if-then)
+  \item While loops
+  \item For loops
+  \item Sequences
+  \item Type annotations
+  \item Pattern matching
+  \item Raise and construction of exceptions
+\end{itemize}
+\end{multicols}
+
+\subsection{Patterns}
+
+\begin{multicols}{2}
+\begin{itemize}
+  \item Bound unrejectable (\texttt{x}) 
+  \item Unbound unrejectable (\texttt{\_})
+  \item Constants
+  \item Tuples
+  \item Arrays
+  \item Variants
+  \item Records
+\end{itemize}
+\end{multicols}
+
+\subsection{Type declaration}
+
+\begin{multicols}{2}
+\begin{itemize}
+  \item Abbreviation
+  \item Variant types
+  \item Record types
+  \item Type parameters
+\end{itemize}
+\end{multicols}
+
+\end{document}
