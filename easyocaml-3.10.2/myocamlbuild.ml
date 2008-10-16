@@ -230,7 +230,7 @@ flag ["ocaml"; "link"; "use_unix"] (S[A"-I"; P unix_dir]);;
 flag ["ocaml"; "link"; "use_dynlink"] (S[A"-I"; P dynlink_dir]);;
 flag ["ocaml"; "link"; "use_str"] (S[A"-I"; P str_dir]);;
 flag ["ocaml"; "link"; "use_toplevel"] (S[A"-I"; P toplevel_dir]);;
-flag ["ocaml"; "link"; "byte"; "file:driver/main.byte"] (S[A"-I"; A"camlp4"; A"camlp4lib.cma"]);;
+flag ["ocaml"; "link"; "byte"; "file:driver/main.byte"] (S[A"-I"; A"camlp4"; A"camlp4lib.cma"]);; (* TODO maybe [use_lib "driver/main.byte" "camlp4/camlp4lib"] ? *)
 
 
 let setup_arch arch =
