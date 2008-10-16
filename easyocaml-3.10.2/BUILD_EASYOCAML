@@ -4,17 +4,11 @@ PREREQUISITES
  * ocamlfind
  * prerequisites for OCaml as given in the file INSTALL
 
-1/ $ ./configure \
+Steps:
+
+ - $ ./configure \
       [-prefix <path/to/install/dir>] \
 	  [-ocamlpath <dir/ocamlc/and/so/lives/in>] # defaults to the directory of `ocamlrun'
 
-2/ Tell ocamlfind to ignore ocaml's original objects in doubt:
-   $ export OCAMLFIND_IGNORE_DUPS_IN=`ocamlc -where`
+ - $ ./build/smallworld.sh
 
-3/ ./build/mkmyocamlbuild_config.sh
-
-4/ Build _build/ecaml and _build/ecamlc:
-   $ make ecamlc; make ecaml
-
-5/ build an error reporting plugin:
-   $ ocamlbuild easyadd/htmlErrorReport.cmo

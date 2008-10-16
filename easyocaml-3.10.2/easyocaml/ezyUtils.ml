@@ -3,7 +3,7 @@
 let curry f = fun x y -> f (x, y)
 let uncurry f = fun (x, y) -> f x y
 let id x = x
-let const x _ = x
+let const x = fun _ -> x
 
 module Result = struct
   type ('a, 'b) t = Ok of 'a | Error of 'b

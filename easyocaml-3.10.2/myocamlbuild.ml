@@ -109,12 +109,9 @@ let unix_dir =
 let threads_dir    = if_partial_dir "otherlibs/threads";;
 let systhreads_dir = if_partial_dir "otherlibs/systhreads";;
 let dynlink_dir    = if_partial_dir "otherlibs/dynlink";;
-let str_dir    = if_partial_dir "otherlibs/str";;
-let camlp4_dir     = if_partial_dir "camlp4";;
-let camlp4_boot_dir     = if_partial_dir "camlp4/boot";;
-let camlp4_parsers_dir     = if_partial_dir "camlp4/Camlp4Parsers";;
 let str_dir        = if_partial_dir "otherlibs/str";;
 let toplevel_dir   = if_partial_dir "toplevel";;
+let camlp4_dir     = if_partial_dir "camlp4";;
 
 let ocamlc_solver =
   let native_deps = ["ocamlc.opt"; "stdlib/stdlib.cmxa";
@@ -185,10 +182,10 @@ dispatch begin function
 let hot_camlp4boot = "camlp4"/"boot"/"camlp4boot.byte";;
 let cold_camlp4boot = "camlp4boot" (* The installed version *);;
 
-flag ["ecaml"; "ocamlyacc"] (A"-v");;
+flag ["ocaml"; "ocamlyacc"] (A"-v");;
 
-flag ["ecaml"; "compile"; "warn_Ale"] (S[A"-w";A"Ale"; A"-warn-error";A"Ale"]);;
-flag ["ecaml"; "compile"; "warn_Alezv"] (S[A"-w";A"Alezv"; A"-warn-error";A"Alezv"]);;
+flag ["ocaml"; "compile"; "warn_Ale"] (S[A"-w";A"Ale"; A"-warn-error";A"Ale"]);;
+flag ["ocaml"; "compile"; "warn_Alezv"] (S[A"-w";A"Alezv"; A"-warn-error";A"Alezv"]);;
 
 non_dependency "otherlibs/threads/pervasives.ml" "Unix";;
 non_dependency "otherlibs/threads/pervasives.ml" "String";;
@@ -200,45 +197,41 @@ let add_extensions extensions modules =
     end extensions
   end modules [];;
 
-flag ["ecaml"; "pp"; "camlp4boot"] (convert_command_for_windows_shell (S[ocamlrun; P hot_camlp4boot]));;
-flag ["ecaml"; "pp"; "camlp4boot"; "native"] (S[A"-D"; A"OPT"]);;
-flag ["ecaml"; "pp"; "camlp4boot"; "pp:dep"] (S[A"-D"; A"OPT"]);;
-flag ["ecaml"; "pp"; "camlp4boot"; "pp:doc"] (S[A"-printer"; A"o"]);;
+flag ["ocaml"; "pp"; "camlp4boot"] (convert_command_for_windows_shell (S[ocamlrun; P hot_camlp4boot]));;
+flag ["ocaml"; "pp"; "camlp4boot"; "native"] (S[A"-D"; A"OPT"]);;
+flag ["ocaml"; "pp"; "camlp4boot"; "pp:dep"] (S[A"-D"; A"OPT"]);;
+flag ["ocaml"; "pp"; "camlp4boot"; "pp:doc"] (S[A"-printer"; A"o"]);;
 let exn_tracer = Pathname.pwd/"camlp4"/"boot"/"Camlp4ExceptionTracer.cmo" in
 if Pathname.exists exn_tracer then
-  flag ["ecaml"; "pp"; "camlp4boot"; "exntracer"] (P exn_tracer);
+  flag ["ocaml"; "pp"; "camlp4boot"; "exntracer"] (P exn_tracer);
 
 use_lib "camlp4/mkcamlp4" "camlp4/camlp4lib";;
-(* use_lib "toplevel/topstart" "toplevel/toplevellib";; *)
+use_lib "toplevel/topstart" "toplevel/toplevellib";;
 use_lib "otherlibs/dynlink/extract_crc" "otherlibs/dynlink/dynlink";;
 
 hide_package_contents "otherlibs/dynlink/dynlinkaux";;
 
-flag ["ecaml"; "link"; "file:driver/main.native"; "native"] begin
+flag ["ocaml"; "link"; "file:driver/main.native"; "native"] begin
   S[A"-ccopt"; A C.bytecclinkopts; A"-cclib"; A C.bytecclibs]
 end;;
 
-dep ["ecaml"; "link"; "file:driver/main.native"; "native"]
+dep ["ocaml"; "link"; "file:driver/main.native"; "native"]
     ["asmrun/meta"-.-C.o; "asmrun/dynlink"-.-C.o];;
 
-dep ["ecaml"; "compile"; "native"] ["stdlib/libasmrun"-.-C.a];;
+dep ["ocaml"; "compile"; "native"] ["stdlib/libasmrun"-.-C.a];;
 
-let camlp4_flags = [A"-I"; P camlp4_dir; A"-I"; P camlp4_boot_dir; A"-I"; P camlp4_parsers_dir];;
-flag ["compile"; "include_unix"] (S[A"-I"; P unix_dir]);;
-flag ["compile"; "include_dynlink"] (S[A"-I"; P dynlink_dir]);;
-flag ["compile"; "include_str"] (S[A"-I"; P str_dir]);;
-flag ["compile"; "include_camlp4"] (S camlp4_flags);;
-flag ["linkall"] (S (List.concat (List.map (fun dir -> [A"-I"; A dir]) [unix_dir; dynlink_dir; str_dir]) @
-                     camlp4_flags @
-                     [A"unix.cma"; A"str.cma"; A"dynlink.cma"; A"Camlp4.cmo"]));;
-flag ["ecaml"; "link"] (S[A"-I"; P "stdlib"]);;
-flag ["ecaml"; "compile"; "include_str"] (S[A"-I"; P str_dir]);;
-flag ["ecaml"; "compile"; "include_toplevel"] (S[A"-I"; P toplevel_dir]);;
-flag ["ecaml"; "link"; "use_unix"] (S[A"-I"; P unix_dir]);;
-flag ["ecaml"; "link"; "use_dynlink"] (S[A"-I"; P dynlink_dir]);;
-flag ["ecaml"; "link"; "use_str"] (S[A"-I"; P str_dir]);;
-flag ["ecaml"; "link"; "use_camlp4"] (S camlp4_flags);;
-flag ["ecaml"; "link"; "use_toplevel"] (S[A"-I"; P toplevel_dir]);;
+flag ["ocaml"; "link"] (S[A"-I"; P "stdlib"]);;
+flag ["ocaml"; "compile"; "include_unix"] (S[A"-I"; P unix_dir]);;
+flag ["ocaml"; "compile"; "include_str"] (S[A"-I"; P str_dir]);;
+flag ["ocaml"; "compile"; "include_dynlink"] (S[A"-I"; P dynlink_dir]);;
+flag ["ocaml"; "compile"; "include_toplevel"] (S[A"-I"; P toplevel_dir]);;
+flag ["ocaml"; "compile"; "include_camlp4"] (S[A"-I"; P camlp4_dir]);;
+flag ["ocaml"; "link"; "use_unix"] (S[A"-I"; P unix_dir]);;
+flag ["ocaml"; "link"; "use_dynlink"] (S[A"-I"; P dynlink_dir]);;
+flag ["ocaml"; "link"; "use_str"] (S[A"-I"; P str_dir]);;
+flag ["ocaml"; "link"; "use_toplevel"] (S[A"-I"; P toplevel_dir]);;
+flag ["ocaml"; "link"; "byte"; "file:driver/main.byte"] (S[A"-I"; A"camlp4"; A"camlp4lib.cma"]);;
+
 
 let setup_arch arch =
   let annotated_arch = annotate arch in
@@ -269,10 +262,10 @@ Pathname.define_context "" ["stdlib"];;
 Pathname.define_context "utils" [Pathname.current_dir_name; "stdlib"];;
 Pathname.define_context "camlp4" ["camlp4"; "stdlib"];;
 Pathname.define_context "camlp4/boot" ["camlp4"; "stdlib"];;
-Pathname.define_context "camlp4/Camlp4Parsers" ["camlp4/boot"; "stdlib"];;
-Pathname.define_context "camlp4/Camlp4Printers" ["camlp4/boot"; "stdlib"];;
-Pathname.define_context "camlp4/Camlp4Filters" ["camlp4/boot"; "stdlib"];;
-Pathname.define_context "camlp4/Camlp4Top" ["camlp4/boot"; "stdlib"];;
+Pathname.define_context "camlp4/Camlp4Parsers" ["camlp4"; "stdlib"];;
+Pathname.define_context "camlp4/Camlp4Printers" ["camlp4"; "stdlib"];;
+Pathname.define_context "camlp4/Camlp4Filters" ["camlp4"; "stdlib"];;
+Pathname.define_context "camlp4/Camlp4Top" ["camlp4"; "stdlib"];;
 Pathname.define_context "parsing" ["parsing"; "utils"; "stdlib"];;
 Pathname.define_context "typing" ["typing"; "parsing"; "utils"; "stdlib"];;
 Pathname.define_context "easyocaml" ["easyocaml"; "typing"; "parsing"; "utils"; (*"stdlib"*)];;
@@ -320,18 +313,30 @@ else
 copy_rule "graph/graphics.ml -> win32graph/graphics.ml" "otherlibs/graph/graphics.ml" "otherlibs/win32graph/graphics.ml";;
 copy_rule "graph/graphics.mli -> win32graph/graphics.mli" "otherlibs/graph/graphics.mli" "otherlibs/win32graph/graphics.mli";;
 
-rule "the ecaml toplevel"
-  ~prod:"ecaml"
+rule "the ocaml toplevel"
+  ~prod:"ocaml"
   ~deps:["stdlib/stdlib.mllib"; "toplevel/topstart.byte"; "toplevel/expunge.byte"]
   begin fun _ _ ->
     let modules = string_list_of_file "stdlib/stdlib.mllib" in
-    Cmd(S[ocamlrun; A"toplevel/expunge.byte"; A"toplevel/topstart.byte"; Px"ecaml";
+    Cmd(S[ocamlrun; A"toplevel/expunge.byte"; A"toplevel/topstart.byte"; Px"ocaml";
           A"outcometree"; A"topdirs"; A"toploop"; atomize modules])
   end;;
 
+rule "The EasyOCaml toplevel"
+  ~prod:"ecaml"
+  ~deps:["ocaml"]
+  begin fun _ _ ->
+    Echo ([
+      "#!/bin/sh" ;
+      C.bindir / "ocaml -easy" ;
+    ], "ecaml")
+  end
+
 let copy_rule' ?insert src dst = copy_rule (sprintf "%s -> %s" src dst) ?insert src dst;;
 
-copy_rule' "driver/main.byte" "ecamlc";;
+(* ocaml_lib "camlp4/camlp4lib";; *)
+ 
+copy_rule' "driver/main.byte" "ocamlc";;
 copy_rule' "driver/main.native" "ocamlc.opt";;
 copy_rule' "driver/optmain.byte" "ocamlopt";;
 copy_rule' "driver/optmain.native" "ocamlopt.opt";;
@@ -394,7 +399,7 @@ rule "native stdlib in partial mode"
 rule "C files"
   ~prod:("%"-.-C.o)
   ~dep:"%.c"
-  ~insert:(`before "ecaml C stubs: c -> o")
+  ~insert:(`before "ocaml C stubs: c -> o")
   begin fun env _ ->
     let c = env "%.c" in
     mkobj (env "%") c (T(tags_of_pathname c++"c"++"compile"++ccomptype))
@@ -411,19 +416,19 @@ rule "C files for windows dynamic libraries"
 
 (* ../ is because .h files are not dependencies so they are not imported in build dir *)
 flag ["c"; "compile"; "otherlibs_bigarray"] (S[A"-I"; P"../otherlibs/bigarray"]);;
-flag [(* "ecaml" or "c"; *) "ocamlmklib"; "otherlibs_graph"] (S[Sh C.x11_link]);;
+flag [(* "ocaml" or "c"; *) "ocamlmklib"; "otherlibs_graph"] (S[Sh C.x11_link]);;
 flag ["c"; "compile"; "otherlibs_graph"] (S[Sh C.x11_includes; A"-I../otherlibs/graph"]);;
 flag ["c"; "compile"; "otherlibs_win32graph"] (A"-I../otherlibs/win32graph");;
 flag ["c"; "compile"; "otherlibs_dbm"] (Sh C.dbm_includes);;
-flag [(* "ecaml" oc "c"; *) "ocamlmklib"; "otherlibs_dbm"] (S[A"-oc"; A"otherlibs/dbm/mldbm"; Sh C.dbm_link]);;
-flag ["ecaml"; "ocamlmklib"; "otherlibs_threads"] (S[A"-oc"; A"otherlibs/threads/vmthreads"]);;
+flag [(* "ocaml" oc "c"; *) "ocamlmklib"; "otherlibs_dbm"] (S[A"-oc"; A"otherlibs/dbm/mldbm"; Sh C.dbm_link]);;
+flag ["ocaml"; "ocamlmklib"; "otherlibs_threads"] (S[A"-oc"; A"otherlibs/threads/vmthreads"]);;
 flag ["c"; "compile"; "otherlibs_num"] begin
   S[A("-DBNG_ARCH_"^C.bng_arch);
     A("-DBNG_ASM_LEVEL="^C.bng_asm_level);
     A"-I"; P"../otherlibs/num"]
 end;;
 flag ["c"; "compile"; "otherlibs_win32unix"] (A"-I../otherlibs/win32unix");;
-flag [(* "ecaml" or "c"; *) "ocamlmklib"; "otherlibs_win32unix"] (S[A"-cclib"; Quote (syslib "wsock32")]);;
+flag [(* "ocaml" or "c"; *) "ocamlmklib"; "otherlibs_win32unix"] (S[A"-cclib"; Quote (syslib "wsock32")]);;
 flag ["c"; "link"; "dll"; "otherlibs_win32unix"] (syslib "wsock32");;
 let flags = S[syslib "kernel32"; syslib "gdi32"; syslib "user32"] in
 flag ["c"; "ocamlmklib"; "otherlibs_win32graph"] (S[A"-cclib"; Quote flags]);
@@ -433,7 +438,7 @@ if windows then flag ["c"; "compile"; "otherlibs_bigarray"] (A"-DIN_OCAML_BIGARR
 
 if windows then flag ["ocamlmklib"] (A"-custom");;
 
-flag ["ecaml"; "pp"; "ocamldoc_sources"] begin
+flag ["ocaml"; "pp"; "ocamldoc_sources"] begin
   if windows then
     S[A"grep"; A"-v"; A"DEBUG"]
   else
@@ -458,13 +463,13 @@ rule "Standard library manual"
               A"-t"; A"Ocaml library"; A"-man-mini"; atomize stdlib_mlis])]
   end;;
 
-flag ["ecaml"; "compile"; "bootstrap_thread"]
+flag ["ocaml"; "compile"; "bootstrap_thread"]
      (S[A"-I"; P systhreads_dir; A"-I"; P threads_dir]);;
 
-flag ["ecaml"; "link"; "bootstrap_thread"]
+flag ["ocaml"; "link"; "bootstrap_thread"]
      (S[A"-I"; P systhreads_dir; A"-I"; P threads_dir]);;
 
-flag ["ecaml"; "compile"; "otherlibs_labltk"] (S[A"-I"; P unix_dir]);;
+flag ["ocaml"; "compile"; "otherlibs_labltk"] (S[A"-I"; P unix_dir]);;
 
 flag ["c"; "compile"; "otherlibs_labltk"] (S[A"-Ibyterun"; Sh C.tk_defs; Sh C.sharedcccompopts]);;
 
@@ -539,7 +544,7 @@ rule "libthreadsnat.a"
   end;
 
 (* See remark above: force static linking of libthreadsnat.a *)
-flag ["ecaml"; "link"; "library"; "otherlibs_systhreads"; "native"] begin
+flag ["ocaml"; "link"; "library"; "otherlibs_systhreads"; "native"] begin
   S[A"-cclib"; syscamllib "threadsnat"; (* A"-cclib"; syscamllib "unix"; seems to be useless and can be dangerous during bootstrap *) Sh C.pthread_link]
 end;
 end;;
@@ -550,7 +555,7 @@ copy_rule "systhreads/libthreads.clib is diffrent on windows"
   ("otherlibs/systhreads/libthreadswin32"-.-C.a)
   ("otherlibs/systhreads/libthreads"-.-C.a);;
 
-flag ["ecaml"; "ocamlmklib"; "otherlibs_systhreads"] (S[(* A"-cclib"; syscamllib "unix";; seems to be useless and can be dangerous during bootstrap *) Sh C.pthread_link]);;
+flag ["ocaml"; "ocamlmklib"; "otherlibs_systhreads"] (S[(* A"-cclib"; syscamllib "unix";; seems to be useless and can be dangerous during bootstrap *) Sh C.pthread_link]);;
 
 
 flag ["c"; "compile"; "otherlibs"] begin
@@ -627,7 +632,7 @@ rule "camlheader"
             A"cp"; A"stdlib/camlheader"; A"stdlib/camlheader_ur"])
   end;;
 
-rule "ecaml C stubs on windows: dlib & d.o* -> dll"
+rule "ocaml C stubs on windows: dlib & d.o* -> dll"
   ~prod:"%.dll"
   ~deps:["%.dlib"(*; "byterun/ocamlrun"-.-C.a*)]
   ~insert:`top
@@ -762,9 +767,9 @@ let mk_camlp4_top_lib name modules =
   rule cma
     ~deps:(camlp4lib_cma::cmos)
     ~prods:[cma]
-    ~insert:(`before "ecaml: mllib & cmo* -> cma")
+    ~insert:(`before "ocaml: mllib & cmo* -> cma")
     begin fun _ _ ->
-      Cmd(S[ocamlc; A"-a"; T(tags_of_pathname cma++"ecaml"++"link"++"byte");
+      Cmd(S[ocamlc; A"-a"; T(tags_of_pathname cma++"ocaml"++"link"++"byte");
             P camlp4lib_cma; A"-linkall"; atomize cmos; A"-o"; Px cma])
     end;;
 
@@ -788,17 +793,17 @@ let mk_camlp4_bin name ?unix:(link_unix=true) modules =
   rule byte
     ~deps:(camlp4lib_cma::cmos @ dep_unix_byte)
     ~prod:(add_exe byte)
-    ~insert:(`before "ecaml: cmo* -> byte")
+    ~insert:(`before "ocaml: cmo* -> byte")
     begin fun _ _ ->
-      Cmd(S[ocamlc; include_unix; unix_cma; T(tags_of_pathname byte++"ecaml"++"link"++"byte");
+      Cmd(S[ocamlc; include_unix; unix_cma; T(tags_of_pathname byte++"ocaml"++"link"++"byte");
             P camlp4lib_cma; A"-linkall"; atomize cmos; A"-o"; Px (add_exe byte)])
     end;
   rule native
     ~deps:(camlp4lib_cmxa :: camlp4lib_lib :: (cmxs @ objs @ dep_unix_native))
     ~prod:(add_exe native)
-    ~insert:(`before "ecaml: cmx* & o* -> native")
+    ~insert:(`before "ocaml: cmx* & o* -> native")
     begin fun _ _ ->
-      Cmd(S[ocamlopt; include_unix; unix_cmxa; T(tags_of_pathname native++"ecaml"++"link"++"native");
+      Cmd(S[ocamlopt; include_unix; unix_cmxa; T(tags_of_pathname native++"ocaml"++"link"++"native");
             P camlp4lib_cmxa; A"-linkall"; atomize cmxs; A"-o"; Px (add_exe native)])
     end;;
 
@@ -846,7 +851,7 @@ module Camlp4deps = struct
     List.iter Outcome.ignore_good (build (List.map (fun i -> [i]) includes));
 end;;
 
-dep ["ecaml"; "file:camlp4/Camlp4/Sig.ml"]
+dep ["ocaml"; "file:camlp4/Camlp4/Sig.ml"]
     ["camlp4/Camlp4/Camlp4Ast.partial.ml"];;
 
 rule "camlp4: ml4 -> ml"
@@ -875,7 +880,7 @@ rule "camlp4: mlast -> ml"
           A"-o"; Px ml])
   end;;
 
-dep ["ecaml"; "compile"; "file:camlp4/Camlp4/Sig.ml"]
+dep ["ocaml"; "compile"; "file:camlp4/Camlp4/Sig.ml"]
     ["camlp4/Camlp4/Camlp4Ast.partial.ml"];;
 
 mk_camlp4_bin "camlp4" [];;
@@ -1102,24 +1107,24 @@ use_lib "otherlibs/labltk/browser/main" "otherlibs/labltk/lib/labltk";;
 
 if windows then begin
 
-  dep ["ecaml"; "link"; "program"; "ocamlbrowser"] ["otherlibs/labltk/browser/winmain"-.-C.o];
-  flag ["ecaml"; "link"; "program"; "ocamlbrowser"] (S[A"-custom"; A"threads.cma"]);
+  dep ["ocaml"; "link"; "program"; "ocamlbrowser"] ["otherlibs/labltk/browser/winmain"-.-C.o];
+  flag ["ocaml"; "link"; "program"; "ocamlbrowser"] (S[A"-custom"; A"threads.cma"]);
 
   match ccomptype with
-  | "cc" -> flag ["ecaml"; "link"; "program"; "ocamlbrowser"] (S[A"-ccopt"; A"-Wl,--subsystem,windows"])
-  | "msvc" -> flag ["ecaml"; "link"; "program"; "ocamlbrowser"] (S[A"-ccopt"; A"/link /subsystem:windows"])
+  | "cc" -> flag ["ocaml"; "link"; "program"; "ocamlbrowser"] (S[A"-ccopt"; A"-Wl,--subsystem,windows"])
+  | "msvc" -> flag ["ocaml"; "link"; "program"; "ocamlbrowser"] (S[A"-ccopt"; A"/link /subsystem:windows"])
   | _ -> assert false
 
 end;;
 
 let space_sep_strings s = Ocamlbuild_pack.Lexers.space_sep_strings (Lexing.from_string s);;
 
-flag [(* "ecaml" or "c"; *) "ocamlmklib"; "otherlibs_labltk"]
+flag [(* "ocaml" or "c"; *) "ocamlmklib"; "otherlibs_labltk"]
   (if windows then begin
     S(List.fold_right (fun s acc -> A"-cclib" :: A s :: acc) (space_sep_strings C.tk_link) [])
    end else Sh C.tk_link);;
 
-flag ["ecaml"; "link"; "program"; "otherlibs_labltk"] (S[A"-I"; A"otherlibs/labltk/support"]);;
+flag ["ocaml"; "link"; "program"; "otherlibs_labltk"] (S[A"-I"; A"otherlibs/labltk/support"]);;
 
 flag ["c"; "compile"; "otherlibs_labltk"] (A"-Iotherlibs/labltk/support");;
 

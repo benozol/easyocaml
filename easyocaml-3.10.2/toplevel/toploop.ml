@@ -408,6 +408,7 @@ let load_ezyocaml ppf =
   begin match (EzySetup.setup ()).EzySetup.features with
     | None -> ()
     | Some fs ->
+        parse_toplevel_phrase := EzyParser.phrase
         (* FIXME The Ezycamlgrammar parser should get registered here. But it does not work: all
          * the other parser modules are loaded, but not Ezycamlgrammar ... why? *)
         if not (execute_phrase false ppf (Ptop_dir ("load", Pdir_string "camlp4o.cma"))) then
