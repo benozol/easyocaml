@@ -33,7 +33,10 @@ module type PARSER = sig
 end
 
 module Register (Parser: PARSER) = struct
-  let () = log#info "Registering parser %s" Parser.id
-  let () = file_ref := Parser.file 
-  let () = phrase_ref := Parser.phrase
+  let _ =
+    log#info "Registering parser %s" Parser.id ;
+    file_ref := Parser.file ;
+    phrase_ref := Parser.phrase
 end
+
+let () = let module M = Register (EzyCamlgrammar.M) in ()

@@ -289,31 +289,34 @@ end
 let import_convert_str : Camlp4_import.Parsetree.structure -> Parsetree.structure =
   fun ast -> Obj.magic ast
 
-module P = struct
+module M = struct
+  let id = "EzyCamlgrammar"
+
   let file fs =
     (* let module Syntax = Camlp4.PreCast.Syntax in *)
     let module Syntax = MakeFromSpec (struct let spec = fs end) in
     (* let module AstConversion = Camlp4.Struct.Camlp4Ast2OCamlAst.Make (Syntax.Ast) in *)
     let module AstConversion = MyCamlp4Ast2OCamlAst.Make (Syntax.Ast) in 
-    let module Printer = Camlp4.Printers.OCamlr.Make(Syntax) in
+    let module Printer = Camlp4.Printers.OCamlr.Make (Syntax) in
     let import_loc : Syntax.Loc.t -> Location.t =
       fun loc -> Obj.magic (Syntax.Loc.to_ocaml_location loc) in
     fun inputfile ast_impl_magic_number ->
       let loc = Syntax.Loc.mk inputfile in
       let ic = open_in inputfile in
       try Misc.try_finally
-        (fun () ->
+        begin fun () -> 
            let ast, rest = Syntax.Gram.parse Syntax.implem loc (Stream.of_channel ic) in
            logger#info "Parsed tree: %a" (fun ppf -> List.iter (Printer.print_implem ~input_file:inputfile)) ast ;
            match rest with
              | Some loc ->
                  EzyErrors.raise_fatal ~loc:(import_loc loc) (EzyErrors.Syntax_error None)
              | None ->
-                 (*import_convert_str*) (List.flatten (List.map AstConversion.str_item ast)))
+                 (*import_convert_str*) (List.flatten (List.map AstConversion.str_item ast))
+        end
         (fun () -> close_in ic)
       with Syntax.Loc.Exc_located (loc, exn) ->
         EzyErrors.raise_fatal ~loc:(import_loc loc) (EzyErrors.Syntax_error (Some exn))
-  let phrase fs sb = assert false
-end
-let () = let module M = EzyParser.Register (P) in ()
 
+  let phrase : EzyFeatures.program_feats -> Lexing.lexbuf -> Parsetree.toplevel_phrase =
+    fun _ _ -> not_implemented "EzyCamlgrammar.phrase"
+end

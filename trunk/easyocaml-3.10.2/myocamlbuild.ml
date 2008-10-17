@@ -112,6 +112,7 @@ let dynlink_dir    = if_partial_dir "otherlibs/dynlink";;
 let str_dir        = if_partial_dir "otherlibs/str";;
 let toplevel_dir   = if_partial_dir "toplevel";;
 let camlp4_dir     = if_partial_dir "camlp4";;
+let camlp4_parsers_dir     = if_partial_dir "camlp4/Camlp4Parsers";;
 
 let ocamlc_solver =
   let native_deps = ["ocamlc.opt"; "stdlib/stdlib.cmxa";
@@ -209,6 +210,7 @@ use_lib "camlp4/mkcamlp4" "camlp4/camlp4lib";;
 use_lib "toplevel/topstart" "toplevel/toplevellib";;
 use_lib "toplevel/topstart" "camlp4/camlp4lib";;
 use_lib "otherlibs/dynlink/extract_crc" "otherlibs/dynlink/dynlink";;
+use_lib "driver/main" "camlp4/camlp4lib";;
 
 hide_package_contents "otherlibs/dynlink/dynlinkaux";;
 
@@ -227,11 +229,15 @@ flag ["ocaml"; "compile"; "include_str"] (S[A"-I"; P str_dir]);;
 flag ["ocaml"; "compile"; "include_dynlink"] (S[A"-I"; P dynlink_dir]);;
 flag ["ocaml"; "compile"; "include_toplevel"] (S[A"-I"; P toplevel_dir]);;
 flag ["ocaml"; "compile"; "include_camlp4"] (S[A"-I"; P camlp4_dir]);;
+flag ["ocaml"; "compile"; "include_camlp4_parsers"] (S[A"-I"; P camlp4_parsers_dir]);;
 flag ["ocaml"; "link"; "use_unix"] (S[A"-I"; P unix_dir]);;
 flag ["ocaml"; "link"; "use_dynlink"] (S[A"-I"; P dynlink_dir]);;
 flag ["ocaml"; "link"; "use_str"] (S[A"-I"; P str_dir]);;
 flag ["ocaml"; "link"; "use_toplevel"] (S[A"-I"; P toplevel_dir]);;
-flag ["ocaml"; "link"; "byte"; "file:driver/main.byte"] (S[A"-I"; A"camlp4"; A"camlp4lib.cma"]);; (* TODO maybe [use_lib "driver/main.byte" "camlp4/camlp4lib"] ? *)
+(*
+flag ["ocaml"; "link"; "byte"; "file:driver/main.byte"] (
+  S [A"-I"; A"camlp4"; A"camlp4lib.cma"; ]);; (* TODO maybe [use_lib "driver/main.byte" "camlp4/camlp4lib"] ? *)
+ *)
 
 
 let setup_arch arch =
@@ -269,7 +275,7 @@ Pathname.define_context "camlp4/Camlp4Filters" ["camlp4"; "stdlib"];;
 Pathname.define_context "camlp4/Camlp4Top" ["camlp4"; "stdlib"];;
 Pathname.define_context "parsing" ["parsing"; "utils"; "stdlib"];;
 Pathname.define_context "typing" ["typing"; "parsing"; "utils"; "stdlib"];;
-Pathname.define_context "easyocaml" ["easyocaml"; "typing"; "parsing"; "utils"; (*"stdlib"*)];;
+Pathname.define_context "easyocaml" ["easyocaml"; "typing"; "parsing"; "utils"; "camlp4"; "camlp4/Camlp4Parsers" (*"stdlib"*)];;
 Pathname.define_context "easyadd" ["easyocaml"; "typing"; "parsing"; "utils"; (*"stdlib"*)];;
 Pathname.define_context "ocamldoc" ["typing"; "parsing"; "utils"; "tools"; "bytecomp"; (*"stdlib"*)];;
 Pathname.define_context "bytecomp" ["bytecomp"; "parsing"; "typing"; "easyocaml"; "utils"; (*"stdlib"*)];;
