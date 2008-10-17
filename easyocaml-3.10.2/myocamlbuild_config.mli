@@ -1,5 +1,3 @@
-val ocamlpath : string
-val ocamllibs : string
 val prefix : string
 val bindir : string
 val libdir : string
