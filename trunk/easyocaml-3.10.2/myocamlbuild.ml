@@ -207,6 +207,7 @@ if Pathname.exists exn_tracer then
 
 use_lib "camlp4/mkcamlp4" "camlp4/camlp4lib";;
 use_lib "toplevel/topstart" "toplevel/toplevellib";;
+use_lib "toplevel/topstart" "camlp4/camlp4lib";;
 use_lib "otherlibs/dynlink/extract_crc" "otherlibs/dynlink/dynlink";;
 
 hide_package_contents "otherlibs/dynlink/dynlinkaux";;
@@ -327,10 +328,20 @@ rule "The EasyOCaml toplevel"
   ~deps:["ocaml"]
   begin fun _ _ ->
     Echo ([
-      "#!/bin/sh" ;
-      C.bindir / "ocaml -easy" ;
+      "#!/bin/sh\n" ;
+      C.bindir / "ocaml -easy\n" ;
     ], "ecaml")
-  end
+  end ;;
+
+rule "The EasyOCaml compiler"
+  ~prod:"ecamlc"
+  ~deps:["ocamlc"]
+  begin fun _ _ ->
+    Echo ([
+      "#!/bin/sh\n" ;
+      C.bindir / "ocamlc -easy\n" ;
+    ], "ecamlc")
+  end ;;
 
 let copy_rule' ?insert src dst = copy_rule (sprintf "%s -> %s" src dst) ?insert src dst;;
 
