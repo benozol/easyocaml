@@ -1,14 +1,15 @@
 
-PREREQUISITES
-
- * ocamlfind
- * prerequisites for OCaml as given in the file INSTALL
+Prerequisites for EasyOCaml are the same like for OCaml (see INSTALL)
 
 Steps:
 
- - $ ./configure \
-      [-prefix <path/to/install/dir>] \
-	  [-ocamlpath <dir/ocamlc/and/so/lives/in>] # defaults to the directory of `ocamlrun'
+ $ ./configure [-prefix <path/to/install/dir>]
+ $ ./build/smallworld.sh
+ $ ./build/install.sh
 
- - $ ./build/smallworld.sh
+Optional:
+ Build the HTML error reporter:
+   $ boot/ocamlrun boot/myocamlbuild -tag-line 'true: -use_stdlib' easyadd/htmlErrorReport.cmo
+ Use not with ecaml but with ecamlc
+   $ ecamlc -easyerrorprinter _build/easyadd/htmlErrorReport.cmo
 

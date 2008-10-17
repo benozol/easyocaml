@@ -316,11 +316,12 @@ copy_rule "graph/graphics.mli -> win32graph/graphics.mli" "otherlibs/graph/graph
 
 rule "the ocaml toplevel"
   ~prod:"ocaml"
-  ~deps:["stdlib/stdlib.mllib"; "toplevel/topstart.byte"; "toplevel/expunge.byte"]
+  ~deps:["stdlib/stdlib.mllib"; "easyocaml/dontexpunge.mllib"; "toplevel/topstart.byte"; "toplevel/expunge.byte"]
   begin fun _ _ ->
     let modules = string_list_of_file "stdlib/stdlib.mllib" in
+    let ezy_modules = string_list_of_file "easyocaml/dontexpunge.mllib" in
     Cmd(S[ocamlrun; A"toplevel/expunge.byte"; A"toplevel/topstart.byte"; Px"ocaml";
-          A"outcometree"; A"topdirs"; A"toploop"; atomize modules])
+          A"outcometree"; A"topdirs"; A"toploop"; atomize ezy_modules; atomize modules])
   end;;
 
 rule "The EasyOCaml toplevel"
@@ -329,7 +330,7 @@ rule "The EasyOCaml toplevel"
   begin fun _ _ ->
     Echo ([
       "#!/bin/sh\n" ;
-      C.bindir / "ocaml -easy\n" ;
+      C.bindir / "ocaml -easy $@\n" ;
     ], "ecaml")
   end ;;
 
@@ -339,7 +340,7 @@ rule "The EasyOCaml compiler"
   begin fun _ _ ->
     Echo ([
       "#!/bin/sh\n" ;
-      C.bindir / "ocamlc -easy\n" ;
+      C.bindir / "ocamlc -easy $@\n" ;
     ], "ecamlc")
   end ;;
 

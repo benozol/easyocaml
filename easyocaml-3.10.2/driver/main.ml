@@ -68,7 +68,10 @@ let print_version_and_library () =
   exit 0
 
 let print_version_string () =
-  print_string Config.version; print_newline(); exit 0
+  print_string Config.version;
+  if !Clflags.easytyping then
+    print_string " - eased";
+  print_newline(); exit 0
 
 let print_standard_library () =
   print_string Config.standard_library; print_newline(); exit 0
@@ -130,7 +133,7 @@ module Options = Main_args.Make_options (struct
   let _where = print_standard_library
 
   let _easytyping = set easytyping
-  let _easyerrorprinter = EzyMisc.register_error_printer
+  let _easyerrorprinter s = easyerrorprinter := Some s
   let _easy_dot_type_graph = set easy_dot_type_graph
   let _easylevel s = easylevel := Some s
   let _easyteachpack s = easyteachpacks := !easyteachpacks @ [s]

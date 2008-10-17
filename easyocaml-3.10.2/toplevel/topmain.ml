@@ -51,7 +51,8 @@ let file_argument name =
     end
 
 let print_version () =
-  Printf.printf "The Objective Caml toplevel, version %s\n" Sys.ocaml_version;
+  let easy ppf = if !Clflags.easytyping then Printf.fprintf ppf " - eased" in
+  Printf.printf "The Objective Caml toplevel, version %s%t\n" Sys.ocaml_version easy;
   exit 0;
 ;;
 
