@@ -19,6 +19,7 @@ true: use_stdlib
 <easyocaml/*.ml>: include_unix, include_dynlink, include_str
 <easyocaml/ezyErrors.ml> or <easyocaml/ezycamlgrammar.ml> or <driver/errors.ml> or <driver/myCamlp4Ast2OCamlAst.ml>: include_camlp4
 <driver/main.byte> or <toplevel/topstart.byte>: use_str, use_dynlink, use_unix
+<easyadd/htmlErrorReport.ml>: include_str, include_dynlink
 
 # The stdlib neither requires the stdlib nor debug information
 <stdlib/**>: -use_stdlib, -debug

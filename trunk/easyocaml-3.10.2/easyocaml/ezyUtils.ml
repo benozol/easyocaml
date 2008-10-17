@@ -114,6 +114,9 @@ module Option = struct
   type 'a t = 'a option
   let is_none = function None -> true | _ -> false
   let is_some = function Some _ -> true | _ -> false
+  let value ~default = function
+    | None -> default
+    | Some x -> x
   let map ~f = function
     | None -> None
     | Some x -> f x
@@ -190,6 +193,24 @@ module List = struct
       let sofar, y = f sofar x in
       sofar, y :: ls in
     List.fold_right f ls (init, [])
+
+
+  (** [rev_filter_map ~f l] applies [f] to [l], filtering out elements
+      for which [f] returns [None], and unwrapping those that return [Some].
+      Returns reversed list. *)
+  let rev_filter_map l ~f = (* From core0.5 *)
+    let rec loop l accum = match l with
+      | [] -> accum
+      | hd :: tl ->
+          match f hd with
+          | Some x -> loop tl (x :: accum)
+          | None -> loop tl accum
+    in
+    loop l []
+
+  (** [filter_map ~f l] applies [f] to [l], filtering out elements for which
+      [f] returns [None], and unwrapping those that return [Some] *)
+  let filter_map l ~f = List.rev (rev_filter_map ~f l) (* From core0.5 *)
 
   let rec map_option f = function
     | [] -> []

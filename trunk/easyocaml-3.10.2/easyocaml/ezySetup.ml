@@ -15,8 +15,12 @@ type t = { features : program_feats option;       (** allowed features; if None 
 let default = { features = None; inc_dirs = []; modules = None; obj_files = [] }
    
 let do_setup () =
-  if !Clflags.easytyping then
-    match !Clflags.easylevel with
+  if !Clflags.easytyping then begin
+    begin match !Clflags.easyerrorprinter with
+      | None -> ()
+      | Some str -> EzyMisc.register_error_printer str
+    end ;
+    begin match !Clflags.easylevel with
       | None -> { default with features = Some (all_program_features true) }
       | Some name -> 
           let init_lang = EzyLang.load name in
@@ -25,7 +29,8 @@ let do_setup () =
               inc_dirs = lang.EzyLang.inc_dirs; 
               modules = Some lang.EzyLang.modules; 
               obj_files = lang.EzyLang.obj_files }
-  else
+    end
+  end else
     if !Clflags.easyerrorprinter <> None ||
        !Clflags.easy_dot_type_graph <> false ||
        !Clflags.easylevel <> None ||

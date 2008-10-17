@@ -80,11 +80,17 @@ $OCAMLBUILD -tag-line "$TAG_LINE"  $@ -log _boot_log2 $SOME_CAMLP4
 #
 $OCAMLBUILD -tag-line "$TAG_LINE" \
   $@ -log _boot_log2 boot/camlheader 
-echo "---------------------- BUILDING OCAMLC  -----------------------"
+echo "---------------------- BUILDING ECAMLC  -----------------------"
 $OCAMLBUILD -tag-line "$TAG_LINE" \
   $@ -log _boot_log2 ecamlc
 
-echo "----------------------  BUILDING OCAML  -----------------------"
+echo "----------------------  BUILDING ECAML  -----------------------"
 $OCAMLBUILD -tag-line "$TAG_LINE" \
   $@ -log _boot_log2 ecaml
+
+$OCAMLBUILD -tag-line "$TAG_LINE" \
+  $@ -log _boot_log2 camlp4/camlp4o.cma
+
+$OCAMLBUILD -tag-line "$TAG_LINE" \
+  $@ -log _boot_log2 ocamlbuild/ocamlbuild.byte
 ################################################################################

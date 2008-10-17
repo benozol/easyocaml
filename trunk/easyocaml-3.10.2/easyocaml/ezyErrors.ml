@@ -6,8 +6,6 @@ open EzyAst
 
 let logger = new Logger.logger "ezyErrors"
 
-let _ = Str.regexp (* HACK, HACK ... make Str available in the program *)
-
 type type_error =
   | ConstructorClash of Ty.t * Ty.t
   | ArityClash of Ty.t * Ty.t * int * int

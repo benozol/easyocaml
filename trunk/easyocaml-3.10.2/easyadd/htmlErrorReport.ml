@@ -1,4 +1,3 @@
-open Core
 open EzyUtils
 open EzyUtils.Infix
 open EzyOcamlmodules
@@ -42,8 +41,7 @@ let type_to_str ty =
 
 let loc_string loc = 
   format_str "'%a'" Location.print loc
-(*   format_str "'%d-%d'" start.Lexing.pos_cnum ende.Lexing.pos_cnum  *)
-let loc_string = Memo.general loc_string
+(* let loc_string = Memo.general loc_string *)
 
 let for_type_error =
   let force_source = function ExtLocation.Source loc -> loc | _ -> invalid_arg "force_source" in
@@ -157,5 +155,4 @@ module ErrorReporter = struct
   let print_noerror ppf = Format.pp_print_string ppf "Successfully compiled."
 end
 
-let _ =
-  let module M = EzyErrors.Register (ErrorReporter) in ()
+let () = let module M = EzyErrors.Register (ErrorReporter) in () 
