@@ -12,8 +12,8 @@ Typedecl Typeclass Typemod
 
 EzyAst          EzyEnv               EzyLang                   EzyTypingCoreTypes
 EzyAsttypes     EzyErrorReportUtils  EzyMisc                   EzyTyping
-                EzyErrors            EzyOcamlmodules           EzyUtils
-EzyConfig       EzyFeatures          EzyParser                 
+EzyCamlgrammar  EzyErrors            EzyOcamlmodules           EzyUtils
+EzyConfig       EzyFeatures          EzyParser                 MyCamlp4Ast2OCamlAst
 EzyConstraints  EzyGenerate          EzySetup
 EzyDynload      EzyInstall           EzyStructuredErrorReport
 EzyEnrichedAst  EzyLangLevel         EzyTeachpack

@@ -79,18 +79,19 @@ $OCAMLBUILD -tag-line "$TAG_LINE"  $@ -log _boot_log2 $SOME_CAMLP4
 # Building ocaml/c
 #
 $OCAMLBUILD -tag-line "$TAG_LINE" \
-  $@ -log _boot_log2 boot/camlheader 
+  $@ -log _boot_log3 boot/camlheader 
+
 echo "---------------------- BUILDING ECAMLC  -----------------------"
 $OCAMLBUILD -tag-line "$TAG_LINE" \
-  $@ -log _boot_log2 ecamlc
+  $@ -log _boot_log3 ecamlc
 
 echo "----------------------  BUILDING ECAML  -----------------------"
 $OCAMLBUILD -tag-line "$TAG_LINE" \
-  $@ -log _boot_log2 ecaml
+  $@ -log _boot_log3 ecaml
 
 $OCAMLBUILD -tag-line "$TAG_LINE" \
-  $@ -log _boot_log2 camlp4/camlp4o.cma
+  $@ -log _boot_log3 camlp4/camlp4o.cma
 
 $OCAMLBUILD -tag-line "$TAG_LINE" \
-  $@ -log _boot_log2 ocamlbuild/ocamlbuild.byte
+  $@ -log _boot_log3 ocamlbuild/ocamlbuild.byte
 ################################################################################
