@@ -10,6 +10,14 @@ Typedtree Ctype Printtyp Includeclass Mtype Includecore
 Includemod Parmatch Typetexp Stypes Typecore
 Typedecl Typeclass Typemod
 
+EzyAst          EzyEnv               EzyLang                   EzyTypingCoreTypes
+EzyAsttypes     EzyErrorReportUtils  EzyMisc                   EzyTyping
+                EzyErrors            EzyOcamlmodules           EzyUtils
+EzyConfig       EzyFeatures          EzyParser                 
+EzyConstraints  EzyGenerate          EzySetup
+EzyDynload      EzyInstall           EzyStructuredErrorReport
+EzyEnrichedAst  EzyLangLevel         EzyTeachpack
+
 Lambda Printlambda Typeopt Switch Matching Translobj Translcore
 Translclass Translmod Simplif Runtimedef
 

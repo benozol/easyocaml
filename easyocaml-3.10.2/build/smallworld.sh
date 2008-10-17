@@ -82,9 +82,9 @@ $OCAMLBUILD -tag-line "$TAG_LINE" \
   $@ -log _boot_log2 boot/camlheader 
 echo "---------------------- BUILDING OCAMLC  -----------------------"
 $OCAMLBUILD -tag-line "$TAG_LINE" \
-  $@ -log _boot_log2 ocamlc
+  $@ -log _boot_log2 ecamlc
 
 echo "----------------------  BUILDING OCAML  -----------------------"
 $OCAMLBUILD -tag-line "$TAG_LINE" \
-  $@ -log _boot_log2 ocaml
+  $@ -log _boot_log2 ecaml
 ################################################################################

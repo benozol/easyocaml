@@ -135,6 +135,8 @@ cd _build
 echo "Installing the toplevel and compilers..."
 installbin ocaml$EXE $BINDIR/ocaml$EXE
 installbin ocamlc$EXE $BINDIR/ocamlc$EXE
+installbin ecaml$EXE $BINDIR/ecaml$EXE
+installbin ecamlc$EXE $BINDIR/ecamlc$EXE
 installbin ocamlopt$EXE $BINDIR/ocamlopt$EXE
 installbin ocamlc.opt$EXE $BINDIR/ocamlc.opt$EXE
 installbin ocamlopt.opt$EXE $BINDIR/ocamlopt.opt$EXE
