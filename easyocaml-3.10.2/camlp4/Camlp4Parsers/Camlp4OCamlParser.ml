@@ -163,9 +163,16 @@ module Make (Syntax : Sig.Camlp4Syntax) = struct
     | <:expr@_loc< $e$ $_$ >> ->
         let res = is_expr_constr_call e in
         if (not Camlp4_config.constructors_arity.val) && res then
-          Loc.raise _loc (Stream.Error "currified constructor")
+          let err = Gram.ParseError.Language_specific Syntax.SpecificError.Currified_constructor in
+          let code = Gram.ParseError.to_string err in
+          Loc.raise _loc (Stream.Error code)
         else res
     | _ -> False ];
+
+  value error_for_not_an_id pos =
+    Gram.ParseError.to_string 
+      (Gram.ParseError.SpecificError
+         Syntax.SpecificError.Not_an_identifier pos)
 
   DELETE_RULE Gram expr: SELF; "where"; opt_rec; let_binding END;
   DELETE_RULE Gram value_let: "value" END;
@@ -483,13 +490,11 @@ module Make (Syntax : Sig.Camlp4Syntax) = struct
       | "ctyp1"
         [ t1 = SELF; t2 = SELF -> <:ctyp< $t2$ $t1$ >> ]
       | "ctyp2"
-        [ t1 = SELF; "."; t2 = SELF ->
-            try <:ctyp< $id:Ast.ident_of_ctyp t1$.$id:Ast.ident_of_ctyp t2$ >>
-            with [ Invalid_argument s -> raise (Stream.Error s) ]
+            with [ Ast.Not_an_identifier pos -> raise (Stream.Error (error_for_not_an_id pos)) ]
         | t1 = SELF; "("; t2 = SELF; ")" ->
             let t = <:ctyp< $t1$ $t2$ >> in
             try <:ctyp< $id:Ast.ident_of_ctyp t$ >>
-            with [ Invalid_argument s -> raise (Stream.Error s) ] ]
+            with [ Invalid_argument s -> raise (Stream.Error (error_for_not_an_id pos)) ] ]
       | "simple"
         [ "'"; i = a_ident -> <:ctyp< '$i$ >>
         | "_" -> <:ctyp< _ >>

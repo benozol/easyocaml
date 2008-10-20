@@ -26,6 +26,10 @@
 module type Type = sig
   type t;
 end;
+module type TypeWithToString = sig
+  include Type;
+  value to_string : t -> string;
+end;
 
 (** Signature for errors modules, an Error modules can be registred with
     the {!ErrorHandler.Register} functor in order to be well printed. *)
@@ -354,6 +358,7 @@ module type Camlp4Ast = sig
 
   (** The inner module for locations *)
   module Loc : Loc;
+  module NoIdentifier : TypeWithToString;
 
   INCLUDE "camlp4/Camlp4/Camlp4Ast.partial.ml";
 
@@ -933,6 +938,15 @@ module Grammar = struct
       internal_entry -> list symbol ->
         (Stream.t 'a -> 'b) -> (Stream.t 'a -> unit) -> Stream.t 'a -> 'c;
 
+    module ParseError : sig
+      module SpecificError : TypeWithToString;
+      type t =
+          [ Illegal_begin of internal_entry
+          | Tree_failed of internal_entry and symbol and symbol and tree
+          | Symbol_failed of internal_entry and symbol and symbol and symbol
+          | Language_specific of SpecificError.t ];
+      value to_string : t -> string;
+    end;
   end;
 
   (** Signature for Camlp4 grammars. Here the dynamic means that you can produce as
@@ -1017,7 +1031,6 @@ module Grammar = struct
     (** Parse a token stream that is already filtered. *)
     value parse_tokens_after_filter :
       Entry.t 'a -> Stream.t (Token.t * Loc.t) -> 'a;
-
   end;
 
   (** Signature for Camlp4 grammars. Here the static means that there is only
@@ -1166,7 +1179,11 @@ module type Syntax = sig
   module Loc            : Loc;
   module Ast            : Ast with type loc = Loc.t;
   module Token          : Token with module Loc = Loc;
-  module Gram           : Grammar.Static with module Loc = Loc and module Token = Token;
+  module SpecificError  : TypeWithToString;
+  module Gram           : Grammar.Static
+    with module Loc = Loc
+     and module Token = Token
+     and module ParseError.SpecificError = SpecificError;
   module Quotation      : Quotation with module Ast = Ast;
 
   module AntiquotSyntax : (Parser Ast).SIMPLE;
@@ -1186,7 +1203,12 @@ module type Camlp4Syntax = sig
   module Ast            : Camlp4Ast with module Loc = Loc;
   module Token          : Camlp4Token with module Loc = Loc;
 
-  module Gram           : Grammar.Static with module Loc = Loc and module Token = Token;
+  module SpecificError  : TypeWithToString;
+
+  module Gram           : Grammar.Static
+    with module Loc = Loc
+     and module Token = Token
+     and module ParseError.SpecificError = SpecificError;
   module Quotation      : Quotation with module Ast = Camlp4AstToAst Ast;
 
   module AntiquotSyntax : (Parser Ast).SIMPLE;
@@ -1351,6 +1373,7 @@ end;
 module type SyntaxExtension = functor (Syn : Syntax)
                     -> (Syntax with module Loc            = Syn.Loc
                                 and module Ast            = Syn.Ast
+                                and module SpecificError  = Syn.SpecificError
                                 and module Token          = Syn.Token
                                 and module Gram           = Syn.Gram
                                 and module Quotation      = Syn.Quotation);

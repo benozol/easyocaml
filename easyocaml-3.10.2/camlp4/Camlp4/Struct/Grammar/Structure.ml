@@ -97,9 +97,19 @@ module type S = sig
   (* Useful functions *)
   value using : gram -> string -> unit;
   value removing : gram -> string -> unit;
+
+  module ParseError : sig
+    module SpecificError : Sig.TypeWithToString;
+    type t =
+        [ Illegal_begin of internal_entry
+        | Tree_failed of internal_entry and symbol and symbol and tree
+        | Symbol_failed of internal_entry and symbol and symbol and symbol
+        | Language_specific of SpecificError.t ];
+    value to_string : t -> string;
+  end;
 end;
 
-module Make (Lexer  : Sig.Lexer) = struct
+module Make (Lexer  : Sig.Lexer) (SpecificError : Sig.TypeWithToString) = struct
   module Loc = Lexer.Loc;
   module Token = Lexer.Token;
   module Action : Sig.Grammar.Action = struct
@@ -193,6 +203,21 @@ module Make (Lexer  : Sig.Lexer) = struct
       Token.Filter.keyword_removed filter kwd;
       Hashtbl.remove table kwd
     } else ();
+
+  module ParseError = struct
+    module SpecificError = SpecificError;
+    type t =
+        [ Illegal_begin of internal_entry
+        | Tree_failed of internal_entry and symbol and symbol and tree
+        | Symbol_failed of internal_entry and symbol and symbol and symbol
+        | Language_specific of SpecificError.t ];
+    exception E of t;
+    value to_string = fun
+        [ Language_specific err -> SpecificError.to_string err
+        | _ -> "" ];
+(*     value encode : t -> string = failwith "Structure.ParseError.encode" *)
+(*     value decode : string -> (string * t) = failwith "Structure.ParseError.decode" *)
+  end;
 end;
 
 (*

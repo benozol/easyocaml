@@ -58,6 +58,7 @@ module AstFilters : Sig.AstFilters with module Ast = Ast;
 module Syntax     : Sig.Camlp4Syntax
                       with module Loc     = Loc
                        and module Token   = Token
+                       and module SpecificError = Gram.ParseError.SpecificError
                        and module Ast     = Ast
                        and module Gram    = Gram
                        and module Quotation = Quotation;

@@ -16,11 +16,11 @@
  * - Daniel de Rauglaudre: initial version
  * - Nicolas Pouillard: refactoring
 *)
-module Make (Lexer : Sig.Lexer)
+module Make (Lexer : Sig.Lexer) (SpecificError : Sig.TypeWithToString)
 : Sig.Grammar.Static with module Loc = Lexer.Loc
                         and module Token = Lexer.Token
 = struct
-  module Structure = Structure.Make Lexer;
+  module Structure = Structure.Make Lexer SpecificError;
   module Delete = Delete.Make Structure;
   module Insert = Insert.Make Structure;
   module Fold = Fold.Make Structure;
