@@ -9,7 +9,6 @@
          | Var   of string;;
   
   let expression = ArithGram.Entry.mk "expression";;
-  expression.ArithGram.egram.error_verbose := true ;;
   
   EXTEND ArithGram
     GLOBAL: expression;
@@ -26,16 +25,10 @@
     | "simple"
       [ `INT(i, _)  -> Int(i)
       | `LIDENT s -> Var(s)
-      | "X" -> Int(100)
       | "("; e = expression; ")" -> e ]
     ];
   
   END;;
-
-  if Sys.argv.(1) = "nox" then begin
-    DELETE_RULE ArithGram expression: "X" END
-  end
-
   
   let parse_arith s =
     ArithGram.parse_string expression (Loc.mk "<string>") s;;
@@ -53,8 +46,4 @@
   let calc s =
     Format.printf "%s ==> %d@." s (eval [] (parse_arith s));;
   
-  try
-    calc Sys.argv.(2) (* "42 * let x = 21 in x + x";; *)
-  with exn ->
-    Format.printf "@[%a@]@\n" Camlp4.ErrorHandler.print exn
-;;
+  calc "42 * let x = 21 in x + x";;

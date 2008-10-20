@@ -18,7 +18,8 @@
  *)
 module Make (Lexer : Sig.Lexer) (SpecificError : Sig.TypeWithToString)
 : Sig.Grammar.Dynamic with module Loc = Lexer.Loc
-                         and module Token = Lexer.Token
+                       and module Token = Lexer.Token
+                       and module ParseError.SpecificError = SpecificError
 = struct
   module Structure = Structure.Make Lexer SpecificError;
   module Delete    = Delete.Make    Structure;

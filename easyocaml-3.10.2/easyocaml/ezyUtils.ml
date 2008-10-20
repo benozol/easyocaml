@@ -28,8 +28,8 @@ end
 let format_str fmt =
   Format.kfprintf (fun _ -> Format.flush_str_formatter ()) Format.str_formatter fmt
 
-let not_implemented func_name =
-  failwith ("Not yet implemented: " ^ func_name)
+let not_implemented func_name = (* : 'a -> 'b =
+  fun _ -> *) failwith (func_name ^ ": not yet implemented")
 
 (** Comparisions *)
 

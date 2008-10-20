@@ -54,7 +54,10 @@ module Make (Loc : Sig.Loc) : Sig.Camlp4Ast with module Loc = Loc =
       | _ -> False ];
     value ident_of_expr =
       let error () =
-        invalid_arg "ident_of_expr: this expression is not an identifier" in
+        let _ =
+          Sig.Camlp4SpecificError.Not_an_identifier Sig.Camlp4SpecificError.
+            NotAnIdentifier.Expr
+        in invalid_arg "ident_of_expr: this expression is not an identifier" in
       let rec self =
         fun
         [ Ast.ExApp _loc e1 e2 -> Ast.IdApp _loc (self e1) (self e2)

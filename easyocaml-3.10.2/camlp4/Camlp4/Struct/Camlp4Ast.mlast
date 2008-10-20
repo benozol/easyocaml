@@ -30,15 +30,6 @@ module Make (Loc : Sig.Loc)
       else String.escaped s;
   end;
 
-  module NoIdentifier = struct
-    type t = [ Expr | Ctyp | Patt ];
-    exception E of t;
-    value to_string = fun
-      [ Expr -> "ident_of_expr"
-      | Ctyp -> "ident_of_ctyp"
-      | Patt -> "ident_of_patt" ];
-  end;
-
   include Ast;
 
   external loc_of_ctyp : ctyp -> Loc.t = "%field0";
@@ -71,7 +62,8 @@ module Make (Loc : Sig.Loc)
 
   value ident_of_expr =
     let error () =
-      raise (NoIdentifier.E NoIdentifier.Expr) in
+      let _ = Sig.Camlp4SpecificError.Not_an_identifier Sig.Camlp4SpecificError.NotAnIdentifier.Expr in
+      invalid_arg "ident_of_expr: this expression is not an identifier" in
     let rec self =
       fun
       [ <:expr@_loc< $e1$ $e2$ >> -> <:ident< $self e1$ $self e2$ >>
@@ -86,7 +78,7 @@ module Make (Loc : Sig.Loc)
 
   value ident_of_ctyp =
     let error () =
-      raise (NoIdentifier.E NoIdentifier.Ctyp) in
+      invalid_arg "ident_of_ctyp: this type is not an identifier" in
     let rec self =
       fun
       [ <:ctyp@_loc< $t1$ $t2$ >> -> <:ident< $self t1$ $self t2$ >>
@@ -99,7 +91,7 @@ module Make (Loc : Sig.Loc)
 
   value ident_of_patt =
     let error () =
-      raise (NoIdentifier.E NoIdentifier.Patt) in
+      invalid_arg "ident_of_patt: this pattern is not an identifier" in
     let rec self =
       fun
       [ <:patt@_loc< $p1$ $p2$ >> -> <:ident< $self p1$ $self p2$ >>
