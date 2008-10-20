@@ -7,9 +7,8 @@ Steps:
  $ ./build/smallworld.sh
  $ ./build/install.sh
 
-Optional:
- Build the HTML error reporter:
-   $ boot/ocamlrun boot/myocamlbuild -tag-line 'true: -use_stdlib' easyadd/htmlErrorReport.cmo
- Use not with ecaml but with ecamlc
-   $ ecamlc -easyerrorprinter _build/easyadd/htmlErrorReport.cmo
-
+#Optional:
+# Build the HTML error reporter:
+#   $ boot/ocamlrun boot/myocamlbuild -tag-line 'true: -use_stdlib' easyadd/htmlErrorReport.cmo
+# Use not with ecaml but with ecamlc
+#   $ ecamlc -easyerrorprinter _build/easyadd/htmlErrorReport.cmo something.ml > easyadd/htmlreport/something.html
