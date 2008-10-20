@@ -378,6 +378,11 @@ module Sig =
     module type Type = sig type t
                             end
       
+    module type TypeWithToString =
+      sig include Type
+             val to_string : t -> string
+                end
+      
     (** Signature for errors modules, an Error modules can be registred with
     the {!ErrorHandler.Register} functor in order to be well printed. *)
     module type Error =
@@ -398,7 +403,7 @@ module Sig =
         (** The name of the extension, typically the module name. *)
         val name : string
           
-        (** The version of the extension, typically $Id$ with a versionning system. *)
+        (** The version of the extension, typically $Id: Sig.ml,v 1.2.2.13 2007/06/23 16:00:09 ertai Exp $ with a versionning system. *)
         val version : string
           
       end
@@ -2204,6 +2209,18 @@ module Sig =
                   ('a Stream.t -> 'b) ->
                     ('a Stream.t -> unit) -> 'a Stream.t -> 'c
             
+            module ParseError :
+              sig
+                module SpecificError : TypeWithToString
+                  
+                type t =
+                  | Illegal_begin of internal_entry
+                  | Specific_error of SpecificError.t
+                
+                val to_string : t -> string
+                  
+              end
+              
           end
           
         module type Dynamic =
@@ -2425,6 +2442,25 @@ module Sig =
           
       end
       
+    module Camlp4SpecificError =
+      struct
+        module NotAnIdentifier =
+          struct
+            type t = | Expr | Ctyp | Patt
+            
+            exception E of t
+              
+            let to_string (_ : t) = ""
+              
+          end
+          
+        type t =
+          | Currified_constructor | Not_an_identifier of NotAnIdentifier.t
+        
+        let to_string (_ : t) = ""
+          
+      end
+      
     module type Camlp4Syntax =
       sig
         module Loc : Loc
@@ -2435,6 +2471,7 @@ module Sig =
           
         module Gram : Grammar.Static with module Loc = Loc
           and module Token = Token
+          and type ParseError.SpecificError.t = Camlp4SpecificError.t
           
         module Quotation : Quotation with module Ast = Camlp4AstToAst(Ast)
           
@@ -6725,8 +6762,12 @@ module Struct =
               
             let ident_of_expr =
               let error () =
-                invalid_arg
-                  "ident_of_expr: this expression is not an identifier" in
+                let _ =
+                  Sig.Camlp4SpecificError.Not_an_identifier Sig.
+                    Camlp4SpecificError.NotAnIdentifier.Expr
+                in
+                  invalid_arg
+                    "ident_of_expr: this expression is not an identifier" in
               let rec self =
                 function
                 | Ast.ExApp (_loc, e1, e2) ->
@@ -15157,9 +15198,22 @@ module Struct =
                   
                 val removing : gram -> string -> unit
                   
+                module ParseError :
+                  sig
+                    module SpecificError : Sig.TypeWithToString
+                      
+                    type t =
+                      | Illegal_begin of internal_entry
+                      | Specific_error of SpecificError.t
+                    
+                    val to_string : t -> string
+                      
+                  end
+                  
               end
               
-            module Make (Lexer : Sig.Lexer) =
+            module Make
+              (Lexer : Sig.Lexer) (SpecificError : Sig.TypeWithToString) =
               struct
                 module Loc = Lexer.Loc
                   
@@ -15272,6 +15326,18 @@ module Struct =
                       (Token.Filter.keyword_removed filter kwd;
                        Hashtbl.remove table kwd)
                     else ()
+                  
+                module ParseError =
+                  struct
+                    module SpecificError = SpecificError
+                      
+                    type t =
+                      | Illegal_begin of internal_entry
+                      | Specific_error of SpecificError.t
+                    
+                    let to_string (_ : t) = ""
+                      
+                  end
                   
               end
               
@@ -17189,11 +17255,13 @@ module Struct =
           
         module Static =
           struct
-            module Make (Lexer : Sig.Lexer) :
+            module Make
+              (Lexer : Sig.Lexer) (SpecificError : Sig.TypeWithToString) :
               Sig.Grammar.Static with module Loc = Lexer.Loc
-              and module Token = Lexer.Token =
+              and module Token = Lexer.Token
+              and module ParseError.SpecificError = SpecificError =
               struct
-                module Structure = Structure.Make(Lexer)
+                module Structure = Structure.Make(Lexer)(SpecificError)
                   
                 module Delete = Delete.Make(Structure)
                   
@@ -17282,11 +17350,13 @@ module Struct =
           
         module Dynamic =
           struct
-            module Make (Lexer : Sig.Lexer) :
+            module Make
+              (Lexer : Sig.Lexer) (SpecificError : Sig.TypeWithToString) :
               Sig.Grammar.Dynamic with module Loc = Lexer.Loc
-              and module Token = Lexer.Token =
+              and module Token = Lexer.Token
+              and module ParseError.SpecificError = SpecificError =
               struct
-                module Structure = Structure.Make(Lexer)
+                module Structure = Structure.Make(Lexer)(SpecificError)
                   
                 module Delete = Delete.Make(Structure)
                   
@@ -17370,7 +17440,8 @@ module Printers =
           struct
             let name = "Camlp4Printers.DumpCamlp4Ast"
               
-            let version = "$Id$"
+            let version =
+              "$Id: DumpCamlp4Ast.ml,v 1.5.4.2 2007/05/22 09:05:39 pouillar Exp $"
               
           end
           
@@ -17413,7 +17484,8 @@ module Printers =
           struct
             let name = "Camlp4Printers.DumpOCamlAst"
               
-            let version = "$Id$"
+            let version =
+              "$Id: DumpOCamlAst.ml,v 1.5.4.2 2007/05/22 09:05:39 pouillar Exp $"
               
           end
           
@@ -17463,9 +17535,13 @@ module Printers =
       end =
       struct
         module Id =
-          struct let name = "Camlp4.Printers.Null"
-                    let version = "$Id$"
-                       end
+          struct
+            let name = "Camlp4.Printers.Null"
+              
+            let version =
+              "$Id: Null.ml,v 1.2 2007/02/07 10:09:21 ertai Exp $"
+              
+          end
           
         module Make (Syntax : Sig.Syntax) =
           struct
@@ -17725,9 +17801,13 @@ module Printers =
         open Format
           
         module Id =
-          struct let name = "Camlp4.Printers.OCaml"
-                    let version = "$Id$"
-                       end
+          struct
+            let name = "Camlp4.Printers.OCaml"
+              
+            let version =
+              "$Id: OCaml.ml,v 1.21.2.24 2007/11/27 14:35:12 ertai Exp $"
+              
+          end
           
         module Make (Syntax : Sig.Camlp4Syntax) =
           struct
@@ -19147,9 +19227,13 @@ module Printers =
         open Format
           
         module Id =
-          struct let name = "Camlp4.Printers.OCamlr"
-                    let version = "$Id$"
-                       end
+          struct
+            let name = "Camlp4.Printers.OCamlr"
+              
+            let version =
+              "$Id: OCamlr.ml,v 1.17.4.6 2007/11/27 14:35:13 ertai Exp $"
+              
+          end
           
         module Make (Syntax : Sig.Camlp4Syntax) =
           struct
@@ -19545,8 +19629,9 @@ module OCamlInitSyntax =
     module Make
       (Ast : Sig.Camlp4Ast)
       (Gram :
-        Sig.Grammar.Static with module Loc = Ast.Loc with
-          type Token.t = Sig.camlp4_token)
+        Sig.Grammar.Static with module Loc = Ast.Loc
+          and type ParseError.SpecificError.t = Sig.Camlp4SpecificError.t
+          with type Token.t = Sig.camlp4_token)
       (Quotation : Sig.Quotation with module Ast = Sig.Camlp4AstToAst(Ast)) :
       Sig.Camlp4Syntax with module Loc = Ast.Loc and module Ast = Ast
       and module Token = Gram.Token and module Gram = Gram
@@ -20043,6 +20128,7 @@ module PreCast :
       
     module Gram : Sig.Grammar.Static with module Loc = Loc
       and module Token = Token
+      and type ParseError.SpecificError.t = Sig.Camlp4SpecificError.t
       
     module Quotation :
       Sig.Quotation with module Ast = Sig.Camlp4AstToAst(Ast)
@@ -20076,9 +20162,14 @@ module PreCast :
       
   end =
   struct
-    module Id = struct let name = "Camlp4.PreCast"
-                          let version = "$Id$"
-                             end
+    module Id =
+      struct
+        let name = "Camlp4.PreCast"
+          
+        let version =
+          "$Id: PreCast.ml,v 1.4.4.1 2007/03/30 15:50:12 pouillar Exp $"
+          
+      end
       
     type camlp4_token =
       Sig.camlp4_token =
@@ -20112,7 +20203,7 @@ module PreCast :
       
     module Lexer = Struct.Lexer.Make(Token)
       
-    module Gram = Struct.Grammar.Static.Make(Lexer)
+    module Gram = Struct.Grammar.Static.Make(Lexer)(Sig.Camlp4SpecificError)
       
     module DynLoader = Struct.DynLoader
       
@@ -20125,7 +20216,8 @@ module PreCast :
       
     module AstFilters = Struct.AstFilters.Make(Ast)
       
-    module MakeGram = Struct.Grammar.Static.Make
+    module MakeGram (Lexer : Sig.Lexer) =
+      Struct.Grammar.Static.Make(Lexer)(Sig.Camlp4SpecificError)
       
     module Printers =
       struct

@@ -3,7 +3,7 @@
 type ocaml_parse_error =
   | Currified_constructor
     (* Camlp4Parsers/Camlp4OCamlParser.Make(_).is_expr_constr_call *)
-  | Expr_not_an_identifier | Ctyp_not_an_identifier | Patt_not_an_identifier
+  | Not_an_identifier of Camlp4Ast.NotAnIdentifier.t
     (* Camlp4/Struct/Camlp4Ast.mlast.ident_of_(expr|ctyp|patt) *)
   | Bad_directive of string
     (* Caml4pBin.ml.parse_file *)

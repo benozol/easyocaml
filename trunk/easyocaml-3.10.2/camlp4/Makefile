@@ -16,11 +16,9 @@
 #   Do not forget to call make genclean to update Makefile.clean before a
 #   release.
 
-OCAMLC=$(OCAMLPATH)/ocamlfind ocamlc -g
-#OCAMLC=../boot/ocamlrun ../ocamlc -nostdlib \
-#  -I ../stdlib -I ../otherlibs/unix -I ../otherlibs/win32unix -I build -g
-OCAMLRUN=$(OCAMLPATH)/ocamlrun
-#OCAMLRUN=../boot/ocamlrun -I ../otherlibs/unix -I ../otherlibs/win32unix
+OCAMLC=../boot/ocamlrun ../ocamlc -nostdlib \
+  -I ../stdlib -I ../otherlibs/unix -I ../otherlibs/win32unix -I build -g
+OCAMLRUN=../boot/ocamlrun -I ../otherlibs/unix -I ../otherlibs/win32unix
 YAM=$(OCAMLRUN) ./yam
 YAM_OPTIONS=-verbosity '$(VERBOSE)'
 

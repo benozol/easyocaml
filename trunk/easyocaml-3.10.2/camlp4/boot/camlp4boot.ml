@@ -21,9 +21,13 @@ module R =
  * - Nicolas Pouillard: refactoring
  *)
     module Id =
-      struct let name = "Camlp4OCamlRevisedParser"
-                let version = "$Id$"
-                   end
+      struct
+        let name = "Camlp4OCamlRevisedParser"
+          
+        let version =
+          "$Id: Camlp4OCamlRevisedParser.ml,v 1.2.2.31 2007/12/18 09:02:19 ertai Exp $"
+          
+      end
       
     module Make (Syntax : Sig.Camlp4Syntax) =
       struct
@@ -8348,9 +8352,13 @@ module Camlp4QuotationCommon =
  * - Nicolas Pouillard: initial version
  *)
     module Id =
-      struct let name = "Camlp4QuotationCommon"
-                let version = "$Id$"
-                   end
+      struct
+        let name = "Camlp4QuotationCommon"
+          
+        let version =
+          "$Id: Camlp4QuotationCommon.ml,v 1.1.4.7 2007/12/18 09:02:19 ertai Exp $"
+          
+      end
       
     module Make
       (Syntax : Sig.Camlp4Syntax)
@@ -9047,9 +9055,13 @@ module Q =
  * - Nicolas Pouillard: refactoring
  *)
     module Id =
-      struct let name = "Camlp4QuotationExpander"
-                let version = "$Id$"
-                   end
+      struct
+        let name = "Camlp4QuotationExpander"
+          
+        let version =
+          "$Id: Camlp4QuotationExpander.ml,v 1.1 2007/02/07 10:09:22 ertai Exp $"
+          
+      end
       
     module Make (Syntax : Sig.Camlp4Syntax) =
       struct
@@ -9086,9 +9098,12 @@ module Rp =
  * - Nicolas Pouillard: refactoring
  *)
     module Id : Sig.Id =
-      struct let name = "Camlp4OCamlRevisedParserParser"
-                let version = "$Id$"
-                  
+      struct
+        let name = "Camlp4OCamlRevisedParserParser"
+          
+        let version =
+          "$Id: Camlp4OCamlRevisedParserParser.ml,v 1.1.4.3 2007/05/16 12:48:13 pouillar Exp $"
+          
       end
       
     module Make (Syntax : Sig.Camlp4Syntax) =
@@ -10017,9 +10032,13 @@ module G =
  * - Nicolas Pouillard: refactoring
  *)
     module Id =
-      struct let name = "Camlp4GrammarParser"
-                let version = "$Id$"
-                   end
+      struct
+        let name = "Camlp4GrammarParser"
+          
+        let version =
+          "$Id: Camlp4GrammarParser.ml,v 1.1.4.6 2007/12/18 08:59:35 ertai Exp $"
+          
+      end
       
     module Make (Syntax : Sig.Camlp4Syntax) =
       struct
@@ -12414,9 +12433,13 @@ module M =
  * - Christopher Conway: extra feature (-D<uident>=)
  *)
     module Id =
-      struct let name = "Camlp4MacroParser"
-                let version = "$Id$"
-                   end
+      struct
+        let name = "Camlp4MacroParser"
+          
+        let version =
+          "$Id: Camlp4MacroParser.ml,v 1.1.4.6 2007/06/23 16:00:09 ertai Exp $"
+          
+      end
       
     (*
 Added statements:
@@ -13313,9 +13336,13 @@ module D =
  * - Nicolas Pouillard: initial version
  *)
     module Id =
-      struct let name = "Camlp4DebugParser"
-                let version = "$Id$"
-                   end
+      struct
+        let name = "Camlp4DebugParser"
+          
+        let version =
+          "$Id: Camlp4DebugParser.ml,v 1.1 2007/02/07 10:09:22 ertai Exp $"
+          
+      end
       
     module Make (Syntax : Sig.Camlp4Syntax) =
       struct
@@ -13506,9 +13533,13 @@ module L =
  * - Nicolas Pouillard: revised syntax version
  *)
     module Id =
-      struct let name = "Camlp4ListComprenhsion"
-                let version = "$Id$"
-                   end
+      struct
+        let name = "Camlp4ListComprenhsion"
+          
+        let version =
+          "$Id: Camlp4ListComprehension.ml,v 1.1.2.1 2007/05/27 16:23:35 pouillar Exp $"
+          
+      end
       
     module Make (Syntax : Sig.Camlp4Syntax) =
       struct
@@ -13882,7 +13913,7 @@ module B =
  * - Daniel de Rauglaudre: initial version
  * - Nicolas Pouillard: refactoring
  *)
-    (* $Id$ *)
+    (* $Id: Camlp4Bin.ml,v 1.14.2.6 2007/06/23 16:00:09 ertai Exp $ *)
     open Camlp4
       
     open PreCast.Syntax
