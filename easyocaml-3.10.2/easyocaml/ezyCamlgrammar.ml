@@ -16,6 +16,8 @@ module OCamlRevised = Camlp4OCamlRevisedParser.Make
                  (Camlp4.OCamlInitSyntax.Make
                     (Ast)(Gram)(Quotation))
 module OCaml = Camlp4OCamlParser.Make (OCamlRevised)
+module ParseError = OCaml.Gram.ParseError
+exception E of Location.t * string lazy_t * ParseError.t
 
 module Make (Spec : sig val spec: EzyFeatures.program_feats end) (Syntax : Camlp4.Sig.Camlp4Syntax) = struct
   open Syntax
@@ -301,21 +303,21 @@ module M = struct
     let import_loc : Syntax.Loc.t -> Location.t =
       fun loc -> Obj.magic (Syntax.Loc.to_ocaml_location loc) in
     fun inputfile ast_impl_magic_number ->
+      let program = lazy begin
+        let ic = open_in inputfile in
+        between input_all ic (fun _ -> close_in ic)
+      end in
       let loc = Syntax.Loc.mk inputfile in
       let ic = open_in inputfile in
       try Misc.try_finally
         begin fun () -> 
            let ast, rest = Syntax.Gram.parse Syntax.implem loc (Stream.of_channel ic) in
            logger#info "Parsed tree: %a" (fun ppf -> List.iter (Printer.print_implem ~input_file:inputfile)) ast ;
-           match rest with
-             | Some loc ->
-                 EzyErrors.raise_fatal ~loc:(import_loc loc) (EzyErrors.Syntax_error None)
-             | None ->
-                 (*import_convert_str*) (List.flatten (List.map AstConversion.str_item ast))
+           (List.flatten (List.map AstConversion.str_item ast))
         end
         (fun () -> close_in ic)
-      with Syntax.Loc.Exc_located (loc, exn) ->
-        EzyErrors.raise_fatal ~loc:(import_loc loc) (EzyErrors.Syntax_error (Some exn))
+      with Syntax.Loc.Exc_located (loc, Stream.Error (code:string)) ->
+        raise (E (import_loc loc, program, (ParseError.decode code)))
 
   let phrase : EzyFeatures.program_feats -> Lexing.lexbuf -> Parsetree.toplevel_phrase =
     fun _ _ -> not_implemented "EzyCamlgrammar.phrase"
