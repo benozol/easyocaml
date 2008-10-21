@@ -941,7 +941,9 @@ module Grammar = struct
     module ParseError : sig
       module SpecificError : TypeWithToString;
       type t = [ Illegal_begin of internal_entry | Specific_error of SpecificError.t ];
+      exception E of t;
       value to_string : t -> string;
+      value decode: string -> t;
     end;
   end;
 

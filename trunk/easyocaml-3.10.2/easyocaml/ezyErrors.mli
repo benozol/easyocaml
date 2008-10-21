@@ -99,11 +99,10 @@ type import_error =
   | Not_supported_pattern of Parsetree.pattern_desc
   | Not_supported_type_declaration of Parsetree.type_declaration
 
-
 (** Fatal errors terminate compilation directly and are reported single.
   *)
 type fatal =
-  | Syntax_error of exn option (* FIXME should be something like [Syntax_error of Camlp4.Syntax.parsing_error] or similar *)
+  | Parse_error of EzyCamlgrammar.ParseError.t
     (** Syntax error, sometimes including the parsers original exception. *)
   | Import_error of import_error
     (** [Import_error (b, ie)]: Actually valid OCaml code, but either not allowed by
