@@ -27,6 +27,7 @@ module type S = sig
                          and module Token = Token;
   module Context      : Context.S with module Token = Token;
   module Action       : Sig.Grammar.Action;
+  module ParseError   : Sig.Grammar.ParseError;
 
   type gram =
     { gfilter         : Token.Filter.t;
@@ -97,14 +98,6 @@ module type S = sig
   (* Useful functions *)
   value using : gram -> string -> unit;
   value removing : gram -> string -> unit;
-  module ParseError : sig
-    module SpecificError : Sig.TypeWithToString;
-    type t = [ Illegal_begin of string | Specific_error of SpecificError.t ];
-    exception E of t;
-    value to_string : t -> string;
-    value decode : string -> t;
-    value as_stream_error: t -> exn;
-  end;
 end;
 
 module Make (Lexer  : Sig.Lexer) (SpecificError : Sig.TypeWithToString) = struct
@@ -118,6 +111,7 @@ module Make (Lexer  : Sig.Lexer) (SpecificError : Sig.TypeWithToString) = struct
     value getf2 = Obj.obj ;
   end;
   module Lexer = Lexer;
+  module ParseError = ParseError.Make (SpecificError);
 
   type gram =
     { gfilter         : Token.Filter.t;
@@ -201,23 +195,6 @@ module Make (Lexer  : Sig.Lexer) (SpecificError : Sig.TypeWithToString) = struct
       Token.Filter.keyword_removed filter kwd;
       Hashtbl.remove table kwd
     } else ();
-
-  module ParseError = struct
-    module SpecificError = SpecificError;
-    type t = [ Illegal_begin of string | Specific_error of SpecificError.t ];
-    exception E of t;
-    value to_string (_ : t) = "";
-    value encode err =
-      to_string err ^ "\000" ^ Marshal.to_string err [];
-    value decode code =
-      let i = String.index code '\000' in
-      Marshal.from_string code (succ i);
-    value as_stream_error err =
-      Stream.Error (encode err);
-    value cutcode code =
-      try String.sub code 0 (String.index code '\000')
-      with [ Not_found -> code ];
-  end;
 end;
 
 (*

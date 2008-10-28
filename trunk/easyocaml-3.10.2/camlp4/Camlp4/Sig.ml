@@ -873,6 +873,21 @@ end;
 (** A signature for grammars. *)
 module Grammar = struct
 
+  module type ParseError =  sig
+    module SpecificError : TypeWithToString;
+    type t =
+      [ Illegal_begin of string
+      | Fold1sep_fail
+      | Tree_failed of string and string and string and string
+      | Symb_failed of string and string and string and string
+      | Specific_error of SpecificError.t ];
+    exception E of t;
+    value to_string: t -> string;
+    value as_stream_error: t -> exn;
+    value decode: string -> t;
+  end;
+
+
   (** Internal signature for sematantic actions of grammars,
       not for the casual user. These functions are unsafe. *)
   module type Action = sig
@@ -901,6 +916,7 @@ module Grammar = struct
     module Loc    : Loc;
     module Action : Action;
     module Token  : Token with module Loc = Loc;
+    module ParseError : ParseError;
 
     type gram;
     type internal_entry;
@@ -937,15 +953,6 @@ module Grammar = struct
     type foldsep 'a 'b 'c =
       internal_entry -> list symbol ->
         (Stream.t 'a -> 'b) -> (Stream.t 'a -> unit) -> Stream.t 'a -> 'c;
-
-    module ParseError : sig
-      module SpecificError : TypeWithToString;
-      type t = [ Illegal_begin of string | Specific_error of SpecificError.t ];
-      exception E of t;
-      value to_string: t -> string;
-      value as_stream_error: t -> exn;
-      value decode: string -> t;
-    end;
   end;
 
   (** Signature for Camlp4 grammars. Here the dynamic means that you can produce as
@@ -1195,7 +1202,10 @@ module Camlp4SpecificError = struct
     exception E of t;
     value to_string (_ : t) = "";
   end;
-  type t = [ Currified_constructor | Not_an_identifier of NotAnIdentifier.t ];
+  type t =
+      [ Currified_constructor
+      | Not_an_identifier of NotAnIdentifier.t
+      | Bad_directive of string ];
   value to_string (_ : t) = "";
 end;
 
