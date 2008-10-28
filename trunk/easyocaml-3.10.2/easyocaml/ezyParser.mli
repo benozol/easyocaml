@@ -14,9 +14,4 @@ type phrase_parser = EzyFeatures.program_feats -> Lexing.lexbuf -> Parsetree.top
 val file : unit -> file_parser
 val phrase : unit -> phrase_parser
 
-module type PARSER = sig
-  val id: string
-  val file: file_parser
-  val phrase: phrase_parser
-end
-module Register (Parser: PARSER) : sig end
+val register : (string * file_parser * phrase_parser) -> unit

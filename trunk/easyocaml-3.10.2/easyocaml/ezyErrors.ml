@@ -350,13 +350,13 @@ let print_parse_error_desc =
   match lang with
     | `En | `Fr -> begin fun ppf -> function
         | EzyCamlgrammar.ParseError.Illegal_begin entry ->
-            fprintf ppf "Illegal begin of %s" entry.EzyCamlgrammar.OCaml.Gram.name
+            fprintf ppf "Illegal begin of %s" entry
         | EzyCamlgrammar.ParseError.Specific_error err ->
             print_specific_parse_error_desc ppf err
       end
     | `De -> begin fun ppf -> function
         | EzyCamlgrammar.ParseError.Illegal_begin entry ->
-            fprintf ppf "Ungueltiger Anfang des Konstrukts %s" entry.EzyCamlgrammar.OCaml.Gram.name
+            fprintf ppf "Ungueltiger Anfang des syntaktischen Konstrukts %s" entry
         | EzyCamlgrammar.ParseError.Specific_error err ->
             print_specific_parse_error_desc ppf err
       end
@@ -397,17 +397,17 @@ let long_print_loc ppf loc =
     print_details ppf 
   else
     (match lang with
-       | `En | `Fr -> fprintf ppf "file: %s: %t"
-       | `De -> fprintf ppf "Datei: %s: %t"
+       | `En | `Fr -> fprintf ppf "file %s: %t"
+       | `De -> fprintf ppf "Datei %s: %t"
     ) loc.Location.loc_start.Lexing.pos_fname print_details 
 
 let print_fatal_default ?program loc ppf fatal =
   fprintf ppf "@[<3> * " ;
   if loc <> Location.none then
-    (match lang with
+    begin match lang with
        | `En | `Fr -> fprintf ppf "@[At %a@]@ "
-       | `De -> fprintf ppf "@[An %a@]@ "
-    ) long_print_loc loc ;
+       | `De -> fprintf ppf "@[In %a@]@ "
+    end long_print_loc loc ;
   fprintf ppf "%a@]" print_fatal_error_desc fatal
 
 

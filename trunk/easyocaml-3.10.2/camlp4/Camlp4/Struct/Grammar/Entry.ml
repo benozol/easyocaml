@@ -46,7 +46,7 @@ module Make (Structure : Structure.S) = struct
          try entry.estart 0 c (Context.stream c) with
          [ Stream.Failure ->
              Loc.raise (Context.loc_ep c)
-               (Stream.Error ("illegal begin of " ^ entry.ename))
+               (ParseError.as_stream_error (ParseError.Illegal_begin entry.ename))
          | Loc.Exc_located _ _ as exc -> raise exc
          | exc -> Loc.raise (Context.loc_ep c) exc ]);
 

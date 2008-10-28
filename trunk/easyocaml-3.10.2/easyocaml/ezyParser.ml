@@ -25,18 +25,7 @@ let file () = !file_ref
 
 let phrase () = !phrase_ref
 
-
-module type PARSER = sig
-  val id: string
-  val file: file_parser
-  val phrase: phrase_parser
-end
-
-module Register (Parser: PARSER) = struct
-  let _ =
-    log#info "Registering parser %s" Parser.id ;
-    file_ref := Parser.file ;
-    phrase_ref := Parser.phrase
-end
-
-let () = let module M = Register (EzyCamlgrammar.M) in ()
+let register (id, file_parser, phrase_parser) =
+  log#info "Registering parser %s" id ;
+  file_ref := file_parser ;
+  phrase_ref := phrase_parser

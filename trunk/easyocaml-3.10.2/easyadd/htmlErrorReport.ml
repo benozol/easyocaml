@@ -148,9 +148,9 @@ module ErrorReporter = struct
              print_program (EzyAst.CollectLocs.structure ast) ppf (Lazy.force p)
          | _ -> Format.pp_print_string ppf "n/a") program
 
-  let print_heavies ?program ast ppf heavies = not_implemented "HtmlErrorReport.print_heavies"
+  let print_heavies ?program ast ppf = not_implemented "HtmlErrorReport.print_heavies"
 
-  let print_fatal ?program loc ppf fatal = not_implemented "HtmlErrorReport.print_fatal"
+  let print_fatal ?program loc ppf = not_implemented "HtmlErrorReport.print_fatal"
 
   let print_noerror ppf = Format.pp_print_string ppf "Successfully compiled."
 end
