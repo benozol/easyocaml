@@ -210,7 +210,6 @@ use_lib "camlp4/mkcamlp4" "camlp4/camlp4lib";;
 use_lib "toplevel/topstart" "toplevel/toplevellib";;
 use_lib "toplevel/topstart" "camlp4/camlp4lib";;
 use_lib "otherlibs/dynlink/extract_crc" "otherlibs/dynlink/dynlink";;
-use_lib "driver/main" "camlp4/camlp4lib";;
 
 hide_package_contents "otherlibs/dynlink/dynlinkaux";;
 
@@ -900,6 +899,7 @@ rule "camlp4: mlast -> ml"
 
 dep ["ocaml"; "compile"; "file:camlp4/Camlp4/Sig.ml"]
     ["camlp4/Camlp4/Camlp4Ast.partial.ml"];;
+use_lib "driver/main" "camlp4/camlp4lib";;
 
 mk_camlp4_bin "camlp4" [];;
 mk_camlp4 "camlp4boot" ~unix:false
