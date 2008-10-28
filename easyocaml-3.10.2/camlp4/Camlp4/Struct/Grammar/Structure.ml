@@ -99,10 +99,11 @@ module type S = sig
   value removing : gram -> string -> unit;
   module ParseError : sig
     module SpecificError : Sig.TypeWithToString;
-    type t = [ Illegal_begin of internal_entry | Specific_error of SpecificError.t ];
+    type t = [ Illegal_begin of string | Specific_error of SpecificError.t ];
     exception E of t;
     value to_string : t -> string;
     value decode : string -> t;
+    value as_stream_error: t -> exn;
   end;
 end;
 
@@ -203,20 +204,19 @@ module Make (Lexer  : Sig.Lexer) (SpecificError : Sig.TypeWithToString) = struct
 
   module ParseError = struct
     module SpecificError = SpecificError;
-    type t = [ Illegal_begin of internal_entry | Specific_error of SpecificError.t ];
+    type t = [ Illegal_begin of string | Specific_error of SpecificError.t ];
     exception E of t;
     value to_string (_ : t) = "";
-    value encode : t -> string =
-      fun err ->
-        to_string err ^ "\000" ^ Marshal.to_string err [];
-    value decode : string -> t =
-      fun code ->
-        let i = String.index code '\000' in
-        Marshal.from_string code (succ i);
-    value cutcode : string -> string =
-      fun code ->
-        try String.sub code 0 (String.index code '\000')
-        with [ Not_found -> code ];
+    value encode err =
+      to_string err ^ "\000" ^ Marshal.to_string err [];
+    value decode code =
+      let i = String.index code '\000' in
+      Marshal.from_string code (succ i);
+    value as_stream_error err =
+      Stream.Error (encode err);
+    value cutcode code =
+      try String.sub code 0 (String.index code '\000')
+      with [ Not_found -> code ];
   end;
 end;
 

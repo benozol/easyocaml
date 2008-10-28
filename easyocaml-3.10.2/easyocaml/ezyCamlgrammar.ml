@@ -16,10 +16,16 @@ module OCamlRevised = Camlp4OCamlRevisedParser.Make
                  (Camlp4.OCamlInitSyntax.Make
                     (Ast)(Gram)(Quotation))
 module OCaml = Camlp4OCamlParser.Make (OCamlRevised)
+
 module ParseError = OCaml.Gram.ParseError
+
+(** On parse errors, this module's parse functions raise an exception [E (loc, program, error)],
+  * for an [error] at location [loc] in program [program]
+  *)
 exception E of Location.t * string lazy_t * ParseError.t
 
 module Make (Spec : sig val spec: EzyFeatures.program_feats end) (Syntax : Camlp4.Sig.Camlp4Syntax) = struct
+
   open Syntax
 
   let _ = logger#info "This is the Ezycamlsyntax" ;;
@@ -280,21 +286,12 @@ module Make (Spec : sig val spec: EzyFeatures.program_feats end) (Syntax : Camlp
 end
 
 
-module MakeFromSpec (Spec : sig val spec : EzyFeatures.program_feats end) = struct
-  include Make (Spec)
-    (Camlp4OCamlParser.Make
-       (Camlp4OCamlRevisedParser.Make
-          (Camlp4.OCamlInitSyntax.Make
-             (Ast)(Gram)(Quotation))))
-end
+module MakeFromSpec (Spec : sig val spec : EzyFeatures.program_feats end) = Make (Spec) (OCaml)
 
-let import_convert_str : Camlp4_import.Parsetree.structure -> Parsetree.structure =
-  fun ast -> Obj.magic ast
+(* let import_convert_str : Camlp4_import.Parsetree.structure -> Parsetree.structure = Obj.magic *)
 
-module M = struct
-  let id = "EzyCamlgrammar"
-
-  let file fs =
+let file_parser : EzyParser.file_parser =
+  fun fs ->
     (* let module Syntax = Camlp4.PreCast.Syntax in *)
     let module Syntax = MakeFromSpec (struct let spec = fs end) in
     (* let module AstConversion = Camlp4.Struct.Camlp4Ast2OCamlAst.Make (Syntax.Ast) in *)
@@ -319,6 +316,7 @@ module M = struct
       with Syntax.Loc.Exc_located (loc, Stream.Error (code:string)) ->
         raise (E (import_loc loc, program, (ParseError.decode code)))
 
-  let phrase : EzyFeatures.program_feats -> Lexing.lexbuf -> Parsetree.toplevel_phrase =
-    fun _ _ -> not_implemented "EzyCamlgrammar.phrase"
-end
+let phrase_parser : EzyParser.phrase_parser =
+  fun _ _ -> not_implemented "EzyCamlgrammar.phrase"
+
+let pack = ("EzyCamlgrammar", file_parser, phrase_parser)

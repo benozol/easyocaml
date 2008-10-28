@@ -940,9 +940,10 @@ module Grammar = struct
 
     module ParseError : sig
       module SpecificError : TypeWithToString;
-      type t = [ Illegal_begin of internal_entry | Specific_error of SpecificError.t ];
+      type t = [ Illegal_begin of string | Specific_error of SpecificError.t ];
       exception E of t;
-      value to_string : t -> string;
+      value to_string: t -> string;
+      value as_stream_error: t -> exn;
       value decode: string -> t;
     end;
   end;

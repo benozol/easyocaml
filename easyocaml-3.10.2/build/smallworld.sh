@@ -1,5 +1,9 @@
 #!/bin/sh
+#
 # Copy and pasted from fastworld.sh, boot.sh and world.byte.sh .
+#
+# build small parts faster with 
+# $ ocamlbuild.native -ocamlc 'boot/ocamlrun boot/ocamlc' -ocamldep 'boot/ocamlrun boot/ocamldep' -ocamllex 'boot/ocamlrun boot/ocamllex' ...
 
 TAG_LINE='true: -use_stdlib'
 
