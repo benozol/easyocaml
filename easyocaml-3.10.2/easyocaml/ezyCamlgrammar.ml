@@ -314,7 +314,11 @@ let file_parser : EzyParser.file_parser =
         end
         (fun () -> close_in ic)
       with Syntax.Loc.Exc_located (loc, Stream.Error (code:string)) ->
-        raise (E (import_loc loc, program, (ParseError.decode code)))
+        match ParseError.decode code with
+            (_, Some err) ->
+            raise (E (import_loc loc, program, err))
+          | (msg, None) ->
+              failwith "Just a stream error at %s: %s" (Syntax.Loc.to_string loc) msg
 
 let phrase_parser : EzyParser.phrase_parser =
   fun _ _ -> not_implemented "EzyCamlgrammar.phrase"

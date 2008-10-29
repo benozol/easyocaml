@@ -4,6 +4,8 @@ open EzyUtils.Infix
 open EzyUtils
 open EzyAst
 
+module EzyParseError = EzyCamlgrammar.OCaml.Gram.ParseError
+
 let logger = new Logger.logger "ezyErrors"
 
 type type_error =
@@ -343,37 +345,57 @@ let print_specific_parse_error_desc =
         | Camlp4.Sig.Camlp4SpecificError.Currified_constructor ->
             pp_print_string ppf "Currified constructor"
         | Camlp4.Sig.Camlp4SpecificError.Not_an_identifier _ ->
-            pp_print_string ppf "Something is not an identifier (rare)"
+            pp_print_string ppf "Something is not an identifier" (* TODO be more specific *)
+        | Camlp4.Sig.Camlp4SpecificError.Bad_directive str ->
+            fprintf ppf "Unknown directive %s" str
       end
 
 let print_parse_error_desc =
   match lang with
     | `En | `Fr -> begin fun ppf -> function
-        | EzyCamlgrammar.ParseError.Illegal_begin entry ->
-            fprintf ppf "Illegal begin of %s" entry
-        | EzyCamlgrammar.ParseError.Specific_error err ->
+        | EzyParseError.Illegal_begin sd ->
+            fprintf ppf "Illegal begin of %s" (EzyParseError.SymbolDesc.to_string sd)
+(*
+        | EzyParseError.Tree_failed (_, _, _, _)
+        | EzyParseError.Symb_failed (_, _, _, _) ->
+            not_implemented "EzyErrors.print_parse_error_desc (Symb_failed _ | Tree_failed)"
+ *)
+        | EzyParseError.Specific_error err ->
             print_specific_parse_error_desc ppf err
       end
     | `De -> begin fun ppf -> function
-        | EzyCamlgrammar.ParseError.Illegal_begin entry ->
-            fprintf ppf "Ungueltiger Anfang des syntaktischen Konstrukts %s" entry
-        | EzyCamlgrammar.ParseError.Specific_error err ->
+        | EzyParseError.Illegal_begin entry ->
+            fprintf ppf "Ungueltiger Anfang des syntaktischen Konstrukts %s" (EzyParseError.SymbolDesc.to_string entry)
+        | EzyParseError.Specific_error err ->
             print_specific_parse_error_desc ppf err
+        | _ ->
+            not_implemented "EzyErrors.print_parse_error_desc"
       end
 
 
 let print_fatal_error_desc =
   match lang with
-    | `En | `Fr | `De -> begin fun ppf -> function
+    | `En | `Fr -> begin fun ppf -> function
         | Import_error err ->
             fprintf ppf "This feature is not supported by EasyOcaml (in this language level)" 
         | Module_not_found lid ->
-            fprintf ppf "Module %a not found." Longident.print lid
+            fprintf ppf "Module %a not found" Longident.print lid
         | Parse_error err ->
             fprintf ppf "Parse error: %a" print_parse_error_desc err
         | Other_fatal msg ->
             pp_print_string ppf msg
         end
+    | `De -> begin fun ppf -> function
+        | Import_error err ->
+            fprintf ppf "Das syntaktische Konstrukt ist (in diesem Sprachlevel) nicht unterstuetzt"
+        | Module_not_found lid ->
+            fprintf ppf "Das Modul %a konnte nicht gefunden werden" Longident.print lid
+        | Parse_error err ->
+            fprintf ppf "Fehler beim parsen: %a" print_parse_error_desc err
+        | Other_fatal msg ->
+            pp_print_string ppf msg
+        end
+
 
 let long_print_loc ppf loc =
   let print_details ppf =

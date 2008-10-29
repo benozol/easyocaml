@@ -21,6 +21,7 @@ module Make (Structure : Structure.S) = struct
   module Dump  = Print.MakeDump Structure;
   module Print = Print.Make Structure;
   module Tools = Tools.Make Structure;
+  module Failed = Failed.Make Structure;
   open Format;
   open Structure;
 
@@ -46,7 +47,7 @@ module Make (Structure : Structure.S) = struct
          try entry.estart 0 c (Context.stream c) with
          [ Stream.Failure ->
              Loc.raise (Context.loc_ep c)
-               (ParseError.as_stream_error (ParseError.Illegal_begin entry.ename))
+               (Failed.ParseError.as_stream_error (Failed.ParseError.illegal_begin entry))
          | Loc.Exc_located _ _ as exc -> raise exc
          | exc -> Loc.raise (Context.loc_ep c) exc ]);
 
