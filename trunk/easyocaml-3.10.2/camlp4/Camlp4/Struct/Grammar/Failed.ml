@@ -17,78 +17,73 @@
  * - Nicolas Pouillard: refactoring
  *)
 
+
 module Make (Structure : Structure.S) = struct
   module Tools  = Tools.Make Structure;
   module Search = Search.Make Structure;
   module Print  = Print.Make Structure;
+  module C = Sig.Grammar.ParseErrorTs;
   open Structure;
   open Format;
 
-  module SymbolDescCreator = struct
-    include Structure.ParseError.SymbolDesc;
-    open Sig.Grammar.ParseErrorTypes;
-    value of_symbol entry = fun
-      [ Snterm e -> Entry (e.ename, None)
-      | Snterml e l -> Entry (e.ename, Some l)
-      | Sself | Snext -> Entry (entry.ename, None)
-      | Stoken (_, descr) -> Token descr
-      | Skeyword kwd -> Keyword kwd
-      | _ -> Unknown ];
-  end;
+module SymbolDescCreator = struct
+  include Structure.ParseError.SymbolDesc;
+  value of_symbol entry = fun
+    [ Snterm e -> C.Entry (e.ename, None)
+    | Snterml e l -> C.Entry (e.ename, Some l)
+    | Sself | Snext -> C.Entry (entry.ename, None)
+    | Stoken (_, descr) -> C.Token descr
+    | Skeyword kwd -> C.Keyword kwd
+    | _ -> C.Unknown ];
+end;
 
-  module ExpectedCreator = struct
-    include Structure.ParseError.Expected;
-    open Sig.Grammar.ParseErrorTypes;
-    value or_append exp1 exp2 =
-      match (exp1, exp2) with
-        [ (Or_list exps1, Or_list exps2) -> Or_list (List.append exps1 exps2)
-        | _ -> Or_list [exp1; exp2] ];
-    value rec of_symbol entry =
-      fun
-      [ Slist0 s -> of_symbol entry s
-      | Slist0sep s _ -> of_symbol entry s
-      | Slist1 s -> of_symbol entry s
-      | Slist1sep s _ -> of_symbol entry s
-      | Sopt s -> of_symbol entry s
-      | Stree t -> of_tree entry t
-      | s -> Symbol (SymbolDescCreator.of_symbol entry s) ]
-    and of_tree entry =
-      fun
-      [ Node {node = s; brother = bro; son = son} ->
-          let tokl =
-            match s with
-            [ Stoken _ | Skeyword _ -> Tools.get_token_list entry [] s son
-            | _ -> None ]
-          in
-          match tokl with
-          [ None ->
-              let txt = of_symbol entry s in
-              let txt =
-                match (s, son) with
-                [ (Sopt _, Node _) -> or_append txt (of_tree entry son)
-                | _ -> txt ]
-              in
-              let txt =
-                match bro with
-                [ DeadEnd | LocAct _ _ -> txt
-                | Node _ -> or_append txt (of_tree entry bro) ]
-              in
-              txt
-          | Some (tokl, _, _) ->
-              let f = fun [ Stoken (_, str) | Skeyword str -> str | _ -> assert False ] in
-              Then_list (List.map f tokl) ]
-      | DeadEnd | LocAct _ _ -> Symbol Unknown ]
-    ;
-  end;
+module ExpectedCreator = struct
+  include Structure.ParseError.Expected;
+  value or_append exp1 exp2 =
+    match (exp1, exp2) with
+      [ (C.Or_list exps1, C.Or_list exps2) -> C.Or_list (List.append exps1 exps2)
+      | _ -> C.Or_list [exp1; exp2] ];
+  value rec of_symbol entry =
+    fun
+    [ Slist0 s -> of_symbol entry s
+    | Slist0sep s _ -> of_symbol entry s
+    | Slist1 s -> of_symbol entry s
+    | Slist1sep s _ -> of_symbol entry s
+    | Sopt s -> of_symbol entry s
+    | Stree t -> of_tree entry t
+    | s -> C.Symbol (SymbolDescCreator.of_symbol entry s) ]
+  and of_tree entry =
+    fun
+    [ Node {node = s; brother = bro; son = son} ->
+        let tokl =
+          match s with
+          [ Stoken _ | Skeyword _ -> Tools.get_token_list entry [] s son
+          | _ -> None ]
+        in
+        match tokl with
+        [ None ->
+            let txt = of_symbol entry s in
+            let txt =
+              match (s, son) with
+              [ (Sopt _, Node _) -> or_append txt (of_tree entry son)
+              | _ -> txt ]
+            in
+            let txt =
+              match bro with
+              [ DeadEnd | LocAct _ _ -> txt
+              | Node _ -> or_append txt (of_tree entry bro) ]
+            in
+            txt
+        | Some (tokl, _, _) ->
+            let f = fun [ Stoken (_, str) | Skeyword str -> str | _ -> assert False ] in
+            C.Then_list (List.map f tokl) ]
+    | DeadEnd | LocAct _ _ -> C.Symbol C.Unknown ]
+  ;
+end;
 
 module ParseError = struct
 
   include Structure.ParseError;
-  open Sig.Grammar.ParseErrorTypes;
-
-  value encode: t -> string =
-    fun err ->
-      to_string err ^ "\000" ^ Marshal.to_string err [];
 
   value as_stream_error: t -> exn =
     fun err ->
@@ -96,7 +91,7 @@ module ParseError = struct
 
   value illegal_begin: internal_entry -> t =
     fun entry ->
-      Illegal_begin (Entry (entry.ename, None));
+      Illegal_begin (C.Entry (entry.ename, None));
 
   value magic _s x = debug magic "Obj.magic: %s@." _s in Obj.magic x;
   value of_failed_tree entry prev_symb_result prev_symb tree =
@@ -145,8 +140,14 @@ module ParseError = struct
       Expected (exp, after, entry.ename)
     }
   ;
+  value of_failed_symbol entry prev_symb_result prev_symb symb =
+    let tree = Node {node = symb; brother = DeadEnd; son = DeadEnd} in
+    of_failed_tree entry prev_symb_result prev_symb tree;
+  value of_failed_symbol_txt e s1 s2 =
+    of_failed_symbol e 0 s1 s2;
 end;
 
+(*
 value rec name_of_symbol entry symbol = SymbolDescCreator.to_string (SymbolDescCreator.of_symbol entry symbol);
 
 value name_of_tree_failed entry symbol = ExpectedCreator.to_string (ExpectedCreator.of_symbol entry symbol);
@@ -158,5 +159,6 @@ value symb_failed entry prev_symb_result prev_symb symb =
 ;
 
 value symb_failed_txt e s1 s2 = symb_failed e 0 s1 s2;
+ *)
 
 end;

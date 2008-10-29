@@ -310,7 +310,7 @@ let file_parser : EzyParser.file_parser =
         begin fun () -> 
            let ast, rest = Syntax.Gram.parse Syntax.implem loc (Stream.of_channel ic) in
            logger#info "Parsed tree: %a" (fun ppf -> List.iter (Printer.print_implem ~input_file:inputfile)) ast ;
-           (List.flatten (List.map AstConversion.str_item ast))
+           (List.flatten (List.map AstConversion.str_item ast)) (* TODO catch Camlp4.Sig.Camlp4SpecificError.NotAnIdentifier.E _ *)
         end
         (fun () -> close_in ic)
       with Syntax.Loc.Exc_located (loc, Stream.Error (code:string)) ->

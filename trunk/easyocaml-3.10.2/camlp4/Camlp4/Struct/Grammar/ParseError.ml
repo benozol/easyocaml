@@ -1,29 +1,27 @@
+(* More code regarding construction of parsing errors is in module Failed. *)
+
+(* Easily access constructors for ParseError.t's constituents *)
+module C = Sig.Grammar.ParseErrorTs;
 
 module Make (SpecificError: Sig.TypeWithToString) = struct
 
   module SymbolDesc = struct
-    type t = Sig.Grammar.ParseErrorTypes.symbol_desc ==
-      [ Entry of string and option string
-      | Token of string
-      | Keyword of string
-      | Unknown ];
-    value to_string = fun
-      [ Entry (name, None) -> "[" ^ name ^ "]"
-      | Entry (name, Some level) -> "[" ^ name ^ " level " ^ level ^ "]"
-      | Token descr -> descr
-      | Keyword kwd -> "\"" ^ kwd ^ "\""
-      | Unknown -> "???" ];
+    type t = Sig.Grammar.ParseErrorTs.symbol_desc;
+    value to_string = 
+      fun
+      [ C.Entry (name, None) -> "[" ^ name ^ "]"
+      | C.Entry (name, Some level) -> "[" ^ name ^ " level " ^ level ^ "]"
+      | C.Token descr -> descr
+      | C.Keyword kwd -> "\"" ^ kwd ^ "\""
+      | C.Unknown -> "???" ];
   end;
 
   module Expected = struct
-    type t = Sig.Grammar.ParseErrorTypes.expected ==
-      [ Symbol of SymbolDesc.t
-      | Or_list of list t
-      | Then_list of list string ];
+    type t = Sig.Grammar.ParseErrorTs.expected;
     value rec to_string = fun
-      [ Symbol s -> SymbolDesc.to_string s
-      | Or_list exps -> String.concat " or " (List.map to_string exps)
-      | Then_list strs -> String.concat " then " strs ];
+      [ C.Symbol s -> SymbolDesc.to_string s
+      | C.Or_list exps -> String.concat " or " (List.map to_string exps)
+      | C.Then_list strs -> String.concat " then " strs ];
   end;
 
   module SpecificError = SpecificError;
@@ -31,6 +29,7 @@ module Make (SpecificError: Sig.TypeWithToString) = struct
   type t = 
     [ Expected of Expected.t and option SymbolDesc.t and string
     | Illegal_begin of SymbolDesc.t
+    | Failed
     | Specific_error of SpecificError.t ];
 
   exception E of t;
@@ -42,8 +41,21 @@ module Make (SpecificError: Sig.TypeWithToString) = struct
         Expected.to_string exp ^ " expected after " ^ SymbolDesc.to_string sd ^ " (in [" ^ context ^ "])"
     | Illegal_begin sd ->
         "illegal begin of " ^ SymbolDesc.to_string sd
+    | Failed ->
+        "failed"
     | Specific_error err ->
         SpecificError.to_string err ];
+
+  value encode: t -> string =
+    fun err ->
+      to_string err ^ "\000" ^ Marshal.to_string err [];
+
+  value encode_specific : SpecificError.t -> string =
+    fun specific ->
+      encode (Specific_error specific);
+
+  value raise_stream_error err =
+    raise (Stream.Error (encode err));
 
   value decode code =
     try

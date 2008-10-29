@@ -76,7 +76,7 @@ module Make (Structure : Structure.S) = struct
   value continue entry loc a s c son p1 =
     parser
       [: a = (entry_of_symb entry s).econtinue 0 loc a c;
-        act = p1 ?? Failed.tree_failed entry a s son :] ->
+        act = p1 ?? ParseError.encode (Failed.ParseError.of_failed_tree entry a s son) :] ->
         Action.mk (fun _ -> Action.getf act a)
   ;
 
@@ -98,12 +98,14 @@ module Make (Structure : Structure.S) = struct
 
 
   value recover parser_of_tree entry nlevn alevn loc a s c son strm =
-    if strict_parsing.val then raise (Stream.Error (Failed.tree_failed entry a s son))
+    if strict_parsing.val then
+      Structure.ParseError.raise_stream_error
+        (Failed.ParseError.of_failed_tree entry a s son)
     else
       let _ =
         if strict_parsing_warning.val then
           do {
-            let msg = Failed.tree_failed entry a s son;
+            let msg = ParseError.to_string (Failed.ParseError.of_failed_tree entry a s son);
             Format.eprintf "Warning: trying to recover from syntax error";
             if entry.ename <> "" then Format.eprintf " in [%s]" entry.ename else ();
             Format.eprintf "\n%s%a@." msg Loc.print loc;
@@ -170,7 +172,9 @@ module Make (Structure : Structure.S) = struct
     parser
     [ [: a = p1 c :] -> a
     | [: a = recover parser_of_tree entry nlevn alevn loc a s c son :] -> a
-    | [: :] -> raise (Stream.Error (Failed.tree_failed entry a s son)) ]
+    | [: :] -> 
+      Structure.ParseError.raise_stream_error
+        (Failed.ParseError.of_failed_tree entry a s son) ]
   and parser_of_token_list p1 tokl =
     loop 1 tokl where rec loop n =
       fun
@@ -236,7 +240,7 @@ module Make (Structure : Structure.S) = struct
         let pt = parser_of_symbol entry nlevn sep in
         let rec kont c al =
           parser
-          [ [: v = pt c; a = ps c ?? Failed.symb_failed entry v sep symb;
+          [ [: v = pt c; a = ps c ?? ParseError.encode (Failed.ParseError.of_failed_symbol entry v sep symb);
                s :] ->
               kont c [a :: al] s
           | [: :] -> al ]
@@ -265,7 +269,8 @@ module Make (Structure : Structure.S) = struct
                 [ [: a = ps c :] -> a
                 | [: a = parse_top_symb' entry symb c :] -> a
                 | [: :] ->
-                    raise (Stream.Error (Failed.symb_failed entry v sep symb)) ];
+                    Structure.ParseError.raise_stream_error
+                      (Failed.ParseError.of_failed_symbol entry v sep symb) ];
               s :] ->
               kont c [a :: al] s
           | [: :] -> al ]
