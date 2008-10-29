@@ -51,14 +51,13 @@ module Make (Structure : Structure.S) = struct
   ;
 
   value sfold0sep f e entry symbl psymb psep =
-    let failed =
-      fun
-      [ [symb; sep] -> Fail.symb_failed_txt entry sep symb
-      | _ -> "failed" ]
+    let failed = fun
+      [ [symb; sep] -> Fail.ParseError.of_failed_symbol_txt entry sep symb
+      | _ -> Fail.ParseError.Failed ]
     in
     let rec kont accu =
       parser
-      [ [: () = psep; a = psymb ?? failed symbl; s :] -> kont (f a accu) s
+      [ [: () = psep; a = psymb ?? Fail.ParseError.encode (failed symbl); s :] -> kont (f a accu) s
       | [: :] -> accu ]
     in
     parser
@@ -67,10 +66,9 @@ module Make (Structure : Structure.S) = struct
   ;
 
   value sfold1sep f e entry symbl psymb psep =
-    let failed =
-      fun
-      [ [symb; sep] -> Fail.symb_failed_txt entry sep symb
-      | _ -> "failed" ]
+    let failed = fun
+      [ [symb; sep] -> Fail.ParseError.of_failed_symbol_txt entry sep symb
+      | _ -> ParseError.Failed ]
     in
     let parse_top =
       fun
@@ -84,7 +82,7 @@ module Make (Structure : Structure.S) = struct
             parser
             [ [: a = psymb :] -> a
             | [: a = parse_top symbl :] -> Obj.magic a
-            | [: :] -> raise (Stream.Error (failed symbl)) ];
+            | [: :] -> ParseError.raise_stream_error (failed symbl) ];
           s :] ->
             kont (f a accu) s
       | [: :] -> accu ]

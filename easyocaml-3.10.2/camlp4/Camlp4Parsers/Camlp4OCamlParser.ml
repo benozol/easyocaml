@@ -163,8 +163,9 @@ module Make (Syntax : Sig.Camlp4Syntax) = struct
     | <:expr@_loc< $e$ $_$ >> ->
         let res = is_expr_constr_call e in
         if (not Camlp4_config.constructors_arity.val) && res then
-          let _ = Sig.Camlp4SpecificError.Not_an_identifier Sig.Camlp4SpecificError.NotAnIdentifier.Expr in
-          Loc.raise _loc (Stream.Error "currified constructor")
+          let module E = Gram.ParseError in
+          let specific = Sig.Camlp4SpecificError.Currified_constructor in
+          Loc.raise _loc (E.raise_stream_error (E.Specific_error specific))
         else res
     | _ -> False ];
 

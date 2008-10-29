@@ -352,24 +352,8 @@ let print_specific_parse_error_desc =
 
 let print_parse_error_desc =
   match lang with
-    | `En | `Fr -> begin fun ppf -> function
-        | EzyParseError.Illegal_begin sd ->
-            fprintf ppf "Illegal begin of %s" (EzyParseError.SymbolDesc.to_string sd)
-(*
-        | EzyParseError.Tree_failed (_, _, _, _)
-        | EzyParseError.Symb_failed (_, _, _, _) ->
-            not_implemented "EzyErrors.print_parse_error_desc (Symb_failed _ | Tree_failed)"
- *)
-        | EzyParseError.Specific_error err ->
-            print_specific_parse_error_desc ppf err
-      end
-    | `De -> begin fun ppf -> function
-        | EzyParseError.Illegal_begin entry ->
-            fprintf ppf "Ungueltiger Anfang des syntaktischen Konstrukts %s" (EzyParseError.SymbolDesc.to_string entry)
-        | EzyParseError.Specific_error err ->
-            print_specific_parse_error_desc ppf err
-        | _ ->
-            not_implemented "EzyErrors.print_parse_error_desc"
+    | `En | `Fr | `De -> begin fun ppf err -> 
+        pp_print_string ppf (EzyParseError.to_string err)
       end
 
 

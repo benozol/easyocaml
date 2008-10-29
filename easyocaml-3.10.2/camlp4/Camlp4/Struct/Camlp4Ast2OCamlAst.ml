@@ -1034,7 +1034,8 @@ module Make (Ast : Sig.Camlp4Ast) = struct
     | ExInt _ i -> Pdir_int (int_of_string i)
     | <:expr< True >> -> Pdir_bool True
     | <:expr< False >> -> Pdir_bool False
-    | e -> Pdir_ident (ident (ident_of_expr e)) ]
+    | e ->
+        Pdir_ident (ident (ident_of_expr e)) ]
   ;
 
   value phrase =

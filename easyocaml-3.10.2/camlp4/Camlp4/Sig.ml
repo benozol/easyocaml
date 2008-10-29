@@ -873,7 +873,8 @@ end;
 (** A signature for grammars. *)
 module Grammar = struct
 
-  module ParseErrorTypes = struct
+  (* I wrap these types because I want to be able to open the constructors speratly. *)
+  module ParseErrorTs = struct
     type symbol_desc =
       [ Entry of string and option string
       | Token of string
@@ -886,14 +887,18 @@ module Grammar = struct
   end;
 
   module type ParseError =  sig
-    module SymbolDesc : TypeWithToString with type t = ParseErrorTypes.symbol_desc;
-    module Expected : TypeWithToString with type t = ParseErrorTypes.expected;
+    module SymbolDesc : TypeWithToString with type t = ParseErrorTs.symbol_desc;
+    module Expected : TypeWithToString with type t = ParseErrorTs.expected;
     module SpecificError : TypeWithToString;
     type t = 
       [ Expected of Expected.t and option SymbolDesc.t and string
       | Illegal_begin of SymbolDesc.t
+      | Failed
       | Specific_error of SpecificError.t ];
     exception E of t;
+    value encode: t -> string;
+    value encode_specific: SpecificError.t -> string;
+    value raise_stream_error: t -> 'a;
     value decode: string -> (string * option t);
     value to_string: t -> string;
   end;
@@ -1207,16 +1212,21 @@ module type Syntax = sig
   include (Printer Ast).S;
 end;
 
+(* This is maybe not the ideal place for OCaml parser's specific
+ * errors ... *)
 module Camlp4SpecificError = struct
+
   module NotAnIdentifier = struct
     type t = [ Expr | Ctyp | Patt ];
     exception E of t;
     value to_string (_ : t) = "";
   end;
+
   type t =
-      [ Currified_constructor
-      | Not_an_identifier of NotAnIdentifier.t
-      | Bad_directive of string ];
+    [ Currified_constructor
+    | Not_an_identifier of NotAnIdentifier.t
+    | Bad_directive of string ];
+
   value to_string (_ : t) = "";
 end;
 
@@ -1230,6 +1240,8 @@ module type Camlp4Syntax = sig
   module Ast            : Camlp4Ast with module Loc = Loc;
   module Token          : Camlp4Token with module Loc = Loc;
 
+  (* TODO It would be nice to have the constraint [and module ParseError.SpecificError = Camlp4SpecificError]
+   * but this conflicts with the signature of SpecificError in Camlp4.Struct.Gram.Static. *)
   module Gram           : Grammar.Static with module Loc = Loc and module Token = Token and type ParseError.SpecificError.t = Camlp4SpecificError.t;
   module Quotation      : Quotation with module Ast = Camlp4AstToAst Ast;
 

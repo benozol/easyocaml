@@ -17,8 +17,10 @@
  *)
 
 module Make (Ast     : Sig.Camlp4Ast)
-            (Gram    : Sig.Grammar.Static with module Loc = Ast.Loc and type ParseError.SpecificError.t = Sig.Camlp4SpecificError.t
-                                            with type Token.t = Sig.camlp4_token)
+            (Gram    : Sig.Grammar.Static
+                         with module Loc = Ast.Loc
+                         and type ParseError.SpecificError.t = Sig.Camlp4SpecificError.t
+                         and type Token.t = Sig.camlp4_token)
             (Quotation : Sig.Quotation with module Ast = Sig.Camlp4AstToAst Ast)
 : Sig.Camlp4Syntax with module Loc = Ast.Loc
                     and module Ast = Ast
