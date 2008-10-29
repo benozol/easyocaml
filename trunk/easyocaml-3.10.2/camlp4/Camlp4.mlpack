@@ -2,7 +2,6 @@ Debug
 ErrorHandler
 OCamlInitSyntax
 Options
-ParseError
 PreCast
 Printers
 Register

@@ -12,6 +12,8 @@ end
 let switch_args f y x = f x y
 let between f x g = let y = f x in g y; y
 
+let failwith fmt = Printf.ksprintf failwith fmt
+
 let __ () _ = failwith "Not implemented"
 
 module T2 = struct
@@ -29,7 +31,7 @@ let format_str fmt =
   Format.kfprintf (fun _ -> Format.flush_str_formatter ()) Format.str_formatter fmt
 
 let not_implemented func_name = (* : 'a -> 'b =
-  fun _ -> *) failwith (func_name ^ ": not yet implemented")
+  fun _ -> *) failwith "%s: not yet implemented" func_name
 
 (** Comparisions *)
 

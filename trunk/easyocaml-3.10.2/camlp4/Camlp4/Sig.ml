@@ -873,18 +873,29 @@ end;
 (** A signature for grammars. *)
 module Grammar = struct
 
+  module ParseErrorTypes = struct
+    type symbol_desc =
+      [ Entry of string and option string
+      | Token of string
+      | Keyword of string
+      | Unknown ];
+    type expected =
+      [ Symbol of symbol_desc
+      | Or_list of list expected
+      | Then_list of list string ];
+  end;
+
   module type ParseError =  sig
+    module SymbolDesc : TypeWithToString with type t = ParseErrorTypes.symbol_desc;
+    module Expected : TypeWithToString with type t = ParseErrorTypes.expected;
     module SpecificError : TypeWithToString;
-    type t =
-      [ Illegal_begin of string
-      | Fold1sep_fail
-      | Tree_failed of string and string and string and string
-      | Symb_failed of string and string and string and string
+    type t = 
+      [ Expected of Expected.t and option SymbolDesc.t and string
+      | Illegal_begin of SymbolDesc.t
       | Specific_error of SpecificError.t ];
     exception E of t;
+    value decode: string -> (string * option t);
     value to_string: t -> string;
-    value as_stream_error: t -> exn;
-    value decode: string -> t;
   end;
 
 
