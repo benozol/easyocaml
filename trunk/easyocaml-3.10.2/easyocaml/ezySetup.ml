@@ -50,7 +50,6 @@ let setup () =
   match !setup_val with
     | Some x -> x
     | None ->
-        EzyParser.register EzyCamlgrammar.pack ;
         let s = do_setup () in
           logger#debug "easyocaml setup: modules = %a; inc_dirs = %a; obj_files = %a" 
             (format_option (format_list (format_pair Format.pp_print_string Format.pp_print_bool) ", ")) s.modules

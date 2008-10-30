@@ -10,6 +10,7 @@ Typedtree Ctype Printtyp Includeclass Mtype Includecore
 Includemod Parmatch Typetexp Stypes Typecore
 Typedecl Typeclass Typemod
 
+Camlp4OCamlRevisedParser
 EzyAst          EzyEnv               EzyLang                   EzyTypingCoreTypes
 EzyAsttypes     EzyErrorReportUtils  EzyMisc                   EzyTyping
 EzyCamlgrammar  EzyErrors            EzyOcamlmodules           EzyUtils

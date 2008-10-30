@@ -27,7 +27,7 @@ module type S = sig
                          and module Token = Token;
   module Context      : Context.S with module Token = Token;
   module Action       : Sig.Grammar.Action;
-  module ParseError   : Sig.Grammar.ParseError;
+  module ParseError   : Sig.Grammar.ParseError with module Loc = Loc;
 
   type gram =
     { gfilter         : Token.Filter.t;
@@ -111,7 +111,7 @@ module Make (Lexer  : Sig.Lexer) (SpecificError : Sig.TypeWithToString) = struct
     value getf2 = Obj.obj ;
   end;
   module Lexer = Lexer;
-  module ParseError = ParseError.Make (SpecificError);
+  module ParseError = ParseError.Make Loc SpecificError;
 
   type gram =
     { gfilter         : Token.Filter.t;

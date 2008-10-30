@@ -887,6 +887,7 @@ module Grammar = struct
   end;
 
   module type ParseError =  sig
+    module Loc : Loc;
     module SymbolDesc : TypeWithToString with type t = ParseErrorTs.symbol_desc;
     module Expected : TypeWithToString with type t = ParseErrorTs.expected;
     module SpecificError : TypeWithToString;
@@ -895,11 +896,12 @@ module Grammar = struct
       | Illegal_begin of SymbolDesc.t
       | Failed
       | Specific_error of SpecificError.t ];
-    exception E of t;
+    exception E of Loc.t and t;
     value encode: t -> string;
     value encode_specific: SpecificError.t -> string;
     value raise_stream_error: t -> 'a;
-    value decode: string -> (string * option t);
+    value valid_code: string -> bool;
+    value decode: string -> t;
     value to_string: t -> string;
   end;
 
@@ -932,7 +934,7 @@ module Grammar = struct
     module Loc    : Loc;
     module Action : Action;
     module Token  : Token with module Loc = Loc;
-    module ParseError : ParseError;
+    module ParseError : ParseError with module Loc = Loc;
 
     type gram;
     type internal_entry;
@@ -1202,7 +1204,7 @@ module type Syntax = sig
   module Loc            : Loc;
   module Ast            : Ast with type loc = Loc.t;
   module Token          : Token with module Loc = Loc;
-  module Gram           : Grammar.Static with module Loc = Loc and module Token = Token;
+  module Gram           : Grammar.Static with module Loc = Loc and module Token = Token and;
   module Quotation      : Quotation with module Ast = Ast;
 
   module AntiquotSyntax : (Parser Ast).SIMPLE;
@@ -1240,7 +1242,7 @@ module type Camlp4Syntax = sig
   module Ast            : Camlp4Ast with module Loc = Loc;
   module Token          : Camlp4Token with module Loc = Loc;
 
-  (* TODO It would be nice to have the constraint [and module ParseError.SpecificError = Camlp4SpecificError]
+  (* It would be nice to have the constraint [and module ParseError.SpecificError = Camlp4SpecificError]
    * but this conflicts with the signature of SpecificError in Camlp4.Struct.Gram.Static. *)
   module Gram           : Grammar.Static with module Loc = Loc and module Token = Token and type ParseError.SpecificError.t = Camlp4SpecificError.t;
   module Quotation      : Quotation with module Ast = Camlp4AstToAst Ast;

@@ -408,9 +408,10 @@ let load_ezyocaml ppf =
   begin match (EzySetup.setup ()).EzySetup.features with
     | None -> ()
     | Some fs ->
-        parse_toplevel_phrase := EzyParser.phrase () (EzyFeatures.all_program_features true) ;
-        (* FIXME The Ezycamlgrammar parser should get registered here. But it does not work: all
-         * the other parser modules are loaded, but not Ezycamlgrammar ... why? *)
+        let module M = Camlp4.Register.OCamlSyntaxExtension (Camlp4OCamlRevisedParser.Id) (Camlp4OCamlRevisedParser.Make) in 
+        let module M = Camlp4.Register.OCamlSyntaxExtension (Camlp4OCamlParser.Id) (Camlp4OCamlParser.Make) in
+        Camlp4.Register.iter_and_take_callbacks (fun (_, f) -> f ()); 
+(*         EzyCamlgrammar.restrict fs ; *)
         if not (execute_phrase false ppf (Ptop_dir ("load", Pdir_string "camlp4o.cma"))) then
           fatal_error "Have you -I'ed the containing directory?" ;
   end
