@@ -20,9 +20,9 @@ true: use_stdlib
 <easyocaml/ezyErrors.ml> or <easyocaml/ezycamlgrammar.ml> or <driver/errors.ml> or <driver/myCamlp4Ast2OCamlAst.ml>: include_camlp4
 <driver/main.byte> or <toplevel/topstart.byte>: use_str, use_dynlink, use_unix
 <easyadd/htmlErrorReport.ml>: include_str, include_dynlink
-<easyocaml/ezyCamlgrammar.ml>: camlp4oof
+<easyocaml/ezyCamlgrammar.ml>: camlp4boot
 #, include_camlp4, include_camlp4_parsers
-<easyocaml/myCamlp4Ast2OCamlAst.ml>: camlp4rf
+<easyocaml/myCamlp4Ast2OCamlAst.ml>: camlp4boot
 #, include_camlp4
 
 # The stdlib neither requires the stdlib nor debug information
@@ -30,6 +30,7 @@ true: use_stdlib
 
 <**/*.ml*>: warn_Alez
 
+"toplevel/toploop.ml": include_camlp4, include_camlp4_parsers
 "toplevel/topstart.byte": linkall
 
 <ocamldoc/**>: -debug

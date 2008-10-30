@@ -20,11 +20,19 @@ module T2 = struct
   let create x y = (x, y)
   let map1 ~f (x, y) = f x, y
   let map2 ~f (x, y) = x, f y
+  let curry ~f = fun x y -> f (x, y)
+  let uncurry ~f = fun (x, y) -> f x y
 end
 module T3 = struct
   let beside1 (_,x,y) = x,y
   let beside2 (x,_,y) = x,y
   let beside3 (x,y,_) = x,y
+  let curry ~f = fun x y z -> f (x, y, z)
+  let uncurry ~f = fun (x, y, z) -> f x y z
+end
+module T4 = struct
+  let curry ~f = fun w x y z -> f (w, x, y, z)
+  let uncurry ~f = fun (w, x, y, z) -> f w x y z
 end
 
 let format_str fmt =

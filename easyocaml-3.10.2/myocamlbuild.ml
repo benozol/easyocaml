@@ -280,7 +280,7 @@ Pathname.define_context "easyadd" ["easyocaml"; "typing"; "parsing"; "utils"; (*
 Pathname.define_context "ocamldoc" ["typing"; "parsing"; "utils"; "tools"; "bytecomp"; (*"stdlib"*)];;
 Pathname.define_context "bytecomp" ["bytecomp"; "parsing"; "typing"; "easyocaml"; "utils"; (*"stdlib"*)];;
 Pathname.define_context "tools" ["tools"; (* "toplevel"; *) "parsing"; "utils"; "driver"; "bytecomp"; "asmcomp"; "typing"; (*"stdlib"*)];;
-Pathname.define_context "toplevel" ["toplevel"; "parsing"; "typing"; "easyocaml"; "bytecomp"; "utils"; "driver"; (*"stdlib"*)];;
+Pathname.define_context "toplevel" ["camlp4/Camlp4Parsers"; "toplevel"; "parsing"; "typing"; "easyocaml"; "bytecomp"; "utils"; "driver"; (*"stdlib"*)];;
 Pathname.define_context "driver" ["driver"; "asmcomp"; "bytecomp"; "typing"; "easyocaml"; "utils"; "parsing"; (*"stdlib"*)];;
 Pathname.define_context "debugger" ["bytecomp"; "utils"; "typing"; "parsing"; "toplevel"; "stdlib"];;
 Pathname.define_context "otherlibs/dynlink" ["otherlibs/dynlink"; "bytecomp"; "utils"; "typing"; "parsing"; "stdlib"];;

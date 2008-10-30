@@ -154,6 +154,8 @@ val print_heavies :
   unit -> ?program:string lazy_t -> EzyAst.imported_structure -> Format.formatter -> HeavyErrorSet.t -> unit
 val print_fatal :
   unit -> ?program:string lazy_t -> EzyOcamlmodules.Location.t -> Format.formatter -> fatal -> unit
+val print_parse_error :
+  Format.formatter -> EzyCamlgrammar.ParseError.Loc.t -> EzyCamlgrammar.ParseError.t -> unit
 
 type some_errors = Errors of ErrorSet.t | Heavies of HeavyErrorSet.t
 type annotated_errors = {

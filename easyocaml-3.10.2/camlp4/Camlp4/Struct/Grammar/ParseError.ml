@@ -3,7 +3,9 @@
 (* Easily access constructors for ParseError.t's constituents *)
 module C = Sig.Grammar.ParseErrorTs;
 
-module Make (SpecificError: Sig.TypeWithToString) = struct
+module Make (Loc: Sig.Loc) (SpecificError: Sig.TypeWithToString) = struct
+
+  module Loc = Loc;
 
   module SymbolDesc = struct
     type t = Sig.Grammar.ParseErrorTs.symbol_desc;
@@ -32,7 +34,7 @@ module Make (SpecificError: Sig.TypeWithToString) = struct
     | Failed
     | Specific_error of SpecificError.t ];
 
-  exception E of t;
+  exception E of Loc.t and t;
 
   value to_string = fun
     [ Expected (exp, None, context) ->
@@ -57,11 +59,11 @@ module Make (SpecificError: Sig.TypeWithToString) = struct
   value raise_stream_error err =
     raise (Stream.Error (encode err));
 
+  value valid_code str = String.contains str '\000';
+
   value decode code =
-    try
-      let unmarshal_parse_error : string -> int -> t = Marshal.from_string in
-      let i = String.index code '\000' in
-      (String.sub code 0 i, Some (unmarshal_parse_error code (succ i)))
-    with [ Not_found -> (code, None) ];
+    let unmarshal_parse_error : string -> int -> t = Marshal.from_string in
+    let i = String.index code '\000' in
+    unmarshal_parse_error code (succ i);
 
 end;

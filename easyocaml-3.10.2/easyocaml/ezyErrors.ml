@@ -4,7 +4,7 @@ open EzyUtils.Infix
 open EzyUtils
 open EzyAst
 
-module EzyParseError = EzyCamlgrammar.OCaml.Gram.ParseError
+module EzyParseError = EzyCamlgrammar.ParseError
 
 let logger = new Logger.logger "ezyErrors"
 
@@ -352,8 +352,11 @@ let print_specific_parse_error_desc =
 
 let print_parse_error_desc =
   match lang with
-    | `En | `Fr | `De -> begin fun ppf err -> 
+    | `En | `Fr -> begin fun ppf err -> 
         pp_print_string ppf (EzyParseError.to_string err)
+      end
+    | `De -> begin fun ppf _ ->
+        pp_print_string ppf "schwierig, schwierig"
       end
 
 
@@ -426,6 +429,9 @@ let check = ref (fun ppf -> fprintf ppf "EzyErrors.check@.")
 let print_errors () = !print_errors_ref
 let print_heavies () = !print_heavies_ref
 let print_fatal () = !print_fatal_ref
+let print_parse_error ppf loc err =
+  let program = lazy (failwith "program for print_parse_error not implemented") in
+  print_fatal () ~program (EzyCamlgrammar.import_loc loc) ppf (Parse_error err)
 
 
 module type ERROR_REPORTER = sig
