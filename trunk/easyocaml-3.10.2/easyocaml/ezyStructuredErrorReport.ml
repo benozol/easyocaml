@@ -187,9 +187,13 @@ let print_document' = function
   | `Xml -> begin fun ppf content ->
       Format.pp_print_string ppf "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" ;
       Format.pp_print_string ppf "<!DOCTYPE compile_result SYSTEM \"easyerrors.dtd\">\n" ;
-      Structured.print_xml ppf content
+      Structured.print_xml ppf content ;
+      Format.pp_print_newline ppf ()
     end
-  | `Sexp -> Structured.print_sexp
+  | `Sexp -> begin fun ppf content ->
+      Structured.print_sexp ppf content ;
+      Format.pp_print_newline ppf ()
+    end
 
 
 (* --------------- *)

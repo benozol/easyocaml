@@ -10,20 +10,14 @@ module ErrorReporter = struct
   let name = "Dummy error reporter"
 
   let print_errors ?program ast ppf errors =
-    Format.pp_print_string ppf "Lots of errors"
+    Format.fprintf ppf "Lots of errors@."
 
   let print_heavies ?program ast ppf heavies =
-    Format.pp_print_string ppf "Lots of heavy errors"
+    Format.fprintf ppf "Lots of heavy errors@."
 
   let print_fatal ?program loc ppf fatal =
-    Format.pp_print_string ppf "A fatal error"
+    Format.fprintf ppf "A fatal error: %a@." EzyErrors.print_fatal_error_desc fatal
 end
 
 let _ =
   let module M = EzyErrors.Register (ErrorReporter) in () ;
-  EzyErrors.check := begin fun ppf ->
-    let oc = open_out "dummy.out" in
-    output_string oc "DummyErrorReport.check\n" ;
-    close_out oc ;
-    Format.fprintf ppf "DummyErrorReport.check@.";
-  end
