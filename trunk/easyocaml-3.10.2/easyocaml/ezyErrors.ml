@@ -339,13 +339,16 @@ let print_heavies_default ?program ast ppf heavies =
 
 let print_specific_parse_error_desc =
   match lang with
-    | `En | `De | `Fr -> begin fun ppf -> function
+    | `En | `Fr -> begin fun ppf err ->
+        pp_print_string ppf (EzyCamlgrammar.ParseError.SpecificError.to_string err)
+      end
+    | `De -> begin fun ppf -> function
         | Camlp4.Sig.OCamlSpecificError.Currified_constructor ->
-            pp_print_string ppf "Currified constructor"
+            pp_print_string ppf "Gecurryter Konstruktor"
         | Camlp4.Sig.OCamlSpecificError.Not_an_identifier _ ->
-            pp_print_string ppf "Something is not an identifier" (* TODO be more specific *)
+            pp_print_string ppf "Etwas ist kein Identifizierer" (* TODO be more specific *)
         | Camlp4.Sig.OCamlSpecificError.Bad_directive str ->
-            fprintf ppf "Unknown directive %s" str
+            fprintf ppf "Unbekanne Anweisung %s" str
       end
 
 let print_parse_error_desc =
@@ -353,9 +356,22 @@ let print_parse_error_desc =
     | `En | `Fr -> begin fun ppf err -> 
         pp_print_string ppf (EzyCamlgrammar.ParseError.error_to_string err)
       end
-    | `De -> begin fun ppf _ ->
-        pp_print_string ppf "schwierig, schwierig"
-      end
+    | `De ->
+        let module Err = EzyCamlgrammar.ParseError in
+        begin fun ppf -> function
+          | Err.Expected (exp, None, context) ->
+              fprintf ppf "%s wird erwartet (als [%s])"
+                (Err.Expected.to_string exp) context 
+          | Err.Expected (exp, Some sd, context) ->
+              fprintf ppf "%s wird nach %s erwartet (als [%s])"
+                (Err.Expected.to_string exp) (Err.SymbolDesc.to_string sd) context
+          | Err.Illegal_begin sd ->
+              fprintf ppf "Kein gültiger Anfang der syntaktischen Einheit %s" (Err.SymbolDesc.to_string sd)
+          | Err.Failed ->
+              pp_print_string ppf "Fehlgeschlagen"
+          | Err.Specific_error err ->
+              print_specific_parse_error_desc ppf err
+        end
 
 
 let print_fatal_error_desc =
