@@ -85,11 +85,11 @@ module ParseError = struct
 
   include Structure.ParseError;
 
-  value as_stream_error: t -> exn =
+  value as_stream_error: error -> exn =
     fun err ->
       Stream.Error (encode err);
 
-  value illegal_begin: internal_entry -> t =
+  value illegal_begin: internal_entry -> error =
     fun entry ->
       Illegal_begin (C.Entry (entry.ename, None));
 

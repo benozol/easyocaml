@@ -165,7 +165,7 @@ module Make (Syntax : Sig.Camlp4Syntax) = struct
         if (not Camlp4_config.constructors_arity.val) && res then
           let module E = Gram.ParseError in
           let specific = Sig.Camlp4SpecificError.Currified_constructor in
-          Loc.raise _loc (E.raise_stream_error (E.Specific_error specific))
+          Loc.raise _loc (Stream.Error (E.encode (E.Specific_error specific)))
         else res
     | _ -> False ];
 

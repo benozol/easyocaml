@@ -28,15 +28,16 @@ module Make (Loc: Sig.Loc) (SpecificError: Sig.TypeWithToString) = struct
 
   module SpecificError = SpecificError;
 
-  type t = 
+  type error = 
     [ Expected of Expected.t and option SymbolDesc.t and string
     | Illegal_begin of SymbolDesc.t
     | Failed
     | Specific_error of SpecificError.t ];
 
-  exception E of Loc.t and t;
+  type t = (Loc.t * error);
+  exception E of t;
 
-  value to_string = fun
+  value error_to_string = fun
     [ Expected (exp, None, context) ->
         Expected.to_string exp ^ " expected (in [" ^ context ^ "])"
     | Expected (exp, Some sd, context) ->
@@ -48,9 +49,19 @@ module Make (Loc: Sig.Loc) (SpecificError: Sig.TypeWithToString) = struct
     | Specific_error err ->
         SpecificError.to_string err ];
 
-  value encode: t -> string =
+  value print ppf (loc, error) =
+    Format.fprintf ppf "%a: %s" Loc.print loc (error_to_string error);
+
+  value to_string: t -> string =
+    fun e ->
+      do {
+        print Format.str_formatter e ;
+        Format.flush_str_formatter ()
+      };
+
+  value encode: error -> string =
     fun err ->
-      to_string err ^ "\000" ^ Marshal.to_string err [];
+      error_to_string err ^ "\000" ^ Marshal.to_string err [];
 
   value encode_specific : SpecificError.t -> string =
     fun specific ->
@@ -62,7 +73,7 @@ module Make (Loc: Sig.Loc) (SpecificError: Sig.TypeWithToString) = struct
   value valid_code str = String.contains str '\000';
 
   value decode code =
-    let unmarshal_parse_error : string -> int -> t = Marshal.from_string in
+    let unmarshal_parse_error : string -> int -> error = Marshal.from_string in
     let i = String.index code '\000' in
     unmarshal_parse_error code (succ i);
 

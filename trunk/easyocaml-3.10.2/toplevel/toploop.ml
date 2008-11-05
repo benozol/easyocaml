@@ -408,10 +408,6 @@ let load_ezyocaml ppf =
   begin match (EzySetup.setup ()).EzySetup.features with
     | None -> ()
     | Some fs ->
-        let module M = Camlp4.Register.OCamlSyntaxExtension (Camlp4OCamlRevisedParser.Id) (Camlp4OCamlRevisedParser.Make) in 
-        let module M = Camlp4.Register.OCamlSyntaxExtension (Camlp4OCamlParser.Id) (Camlp4OCamlParser.Make) in
-        Camlp4.Register.iter_and_take_callbacks (fun (_, f) -> f ()); 
-(*         EzyCamlgrammar.restrict fs ; *)
         if not (execute_phrase false ppf (Ptop_dir ("load", Pdir_string "camlp4o.cma"))) then
           fatal_error "Have you -I'ed the containing directory?" ;
   end
@@ -439,13 +435,16 @@ let loop ppf =
       Lexing.flush_input lb;
       Location.reset();
       first_line := true;
-      let phr = try !parse_toplevel_phrase lb with Exit -> raise PPerror in
+      let phr = try !parse_toplevel_phrase lb with Exit -> print_endline "Exit!!"; raise PPerror in
       if !Clflags.dump_parsetree then Printast.top_phrase ppf phr;
       ignore(execute_phrase true ppf phr)
     with
     | End_of_file -> exit 0
     | Sys.Break -> fprintf ppf "Interrupted.@."; Btype.backtrack snap
     | PPerror -> ()
+    | EzyCamlgrammar.ParseError.E _ as x ->
+        print_endline "HUC---";
+        Errors.report_error ppf x; Btype.backtrack snap
     | x -> Errors.report_error ppf x; Btype.backtrack snap
   done
 

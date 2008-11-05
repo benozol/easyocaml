@@ -15,5 +15,4 @@
 (* Error report *)
 open Format
 
-val report: (formatter -> exn -> unit) ref
 val report_error: formatter -> exn -> unit

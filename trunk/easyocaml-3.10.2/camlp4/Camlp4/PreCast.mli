@@ -74,4 +74,4 @@ end;
 module MakeGram (Lexer : Sig.Lexer with module Loc = Loc)
   : Sig.Grammar.Static with module Loc = Loc and module Token = Lexer.Token;
 
-module MakeSyntax (U : sig end) : Sig.Syntax;
+module MakeSyntax (U : sig end) : Sig.Camlp4Syntax;

@@ -891,18 +891,21 @@ module Grammar = struct
     module SymbolDesc : TypeWithToString with type t = ParseErrorTs.symbol_desc;
     module Expected : TypeWithToString with type t = ParseErrorTs.expected;
     module SpecificError : TypeWithToString;
-    type t = 
+    type error = 
       [ Expected of Expected.t and option SymbolDesc.t and string
       | Illegal_begin of SymbolDesc.t
       | Failed
       | Specific_error of SpecificError.t ];
-    exception E of Loc.t and t;
-    value encode: t -> string;
+    type t = (Loc.t * error);
+    exception E of t;
+    value encode: error -> string;
     value encode_specific: SpecificError.t -> string;
-    value raise_stream_error: t -> 'a;
+    value raise_stream_error: error -> 'a;
     value valid_code: string -> bool;
-    value decode: string -> t;
+    value decode: string -> error;
+    value error_to_string: error -> string;
     value to_string: t -> string;
+    value print : Format.formatter -> t -> unit;
   end;
 
 
@@ -1204,7 +1207,7 @@ module type Syntax = sig
   module Loc            : Loc;
   module Ast            : Ast with type loc = Loc.t;
   module Token          : Token with module Loc = Loc;
-  module Gram           : Grammar.Static with module Loc = Loc and module Token = Token and;
+  module Gram           : Grammar.Static with module Loc = Loc and module Token = Token and module ParseError.Loc = Loc;
   module Quotation      : Quotation with module Ast = Ast;
 
   module AntiquotSyntax : (Parser Ast).SIMPLE;
@@ -1244,7 +1247,7 @@ module type Camlp4Syntax = sig
 
   (* It would be nice to have the constraint [and module ParseError.SpecificError = Camlp4SpecificError]
    * but this conflicts with the signature of SpecificError in Camlp4.Struct.Gram.Static. *)
-  module Gram           : Grammar.Static with module Loc = Loc and module Token = Token and type ParseError.SpecificError.t = Camlp4SpecificError.t;
+  module Gram           : Grammar.Static with module Loc = Loc and module Token = Token and type ParseError.SpecificError.t = Camlp4SpecificError.t and module ParseError.Loc = Loc;
   module Quotation      : Quotation with module Ast = Camlp4AstToAst Ast;
 
   module AntiquotSyntax : (Parser Ast).SIMPLE;

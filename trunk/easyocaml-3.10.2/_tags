@@ -30,7 +30,7 @@ true: use_stdlib
 
 <**/*.ml*>: warn_Alez
 
-"toplevel/toploop.ml": include_camlp4, include_camlp4_parsers
+# "toplevel/toploop.ml": include_camlp4, include_camlp4_parsers
 "toplevel/topstart.byte": linkall
 
 <ocamldoc/**>: -debug

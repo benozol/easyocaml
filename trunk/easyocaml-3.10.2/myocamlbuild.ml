@@ -209,6 +209,7 @@ if Pathname.exists exn_tracer then
 use_lib "camlp4/mkcamlp4" "camlp4/camlp4lib";;
 use_lib "toplevel/topstart" "toplevel/toplevellib";;
 use_lib "toplevel/topstart" "camlp4/camlp4lib";;
+(* use_lib "toplevel/topstart" "camlp4/Camlp4Top";; *)
 use_lib "otherlibs/dynlink/extract_crc" "otherlibs/dynlink/dynlink";;
 use_lib "driver/main" "camlp4/camlp4lib";;
 
@@ -275,12 +276,12 @@ Pathname.define_context "camlp4/Camlp4Filters" ["camlp4"; "stdlib"];;
 Pathname.define_context "camlp4/Camlp4Top" ["camlp4"; "stdlib"];;
 Pathname.define_context "parsing" ["parsing"; "utils"; "stdlib"];;
 Pathname.define_context "typing" ["typing"; "parsing"; "utils"; "stdlib"];;
-Pathname.define_context "easyocaml" ["easyocaml"; "typing"; "parsing"; "utils"; "camlp4"; "camlp4/Camlp4Parsers" (*"stdlib"*)];;
+Pathname.define_context "easyocaml" ["easyocaml"; "typing"; "parsing"; "utils"; "camlp4"; "camlp4/Camlp4Parsers"; (*"stdlib"*)];;
 Pathname.define_context "easyadd" ["easyocaml"; "typing"; "parsing"; "utils"; (*"stdlib"*)];;
 Pathname.define_context "ocamldoc" ["typing"; "parsing"; "utils"; "tools"; "bytecomp"; (*"stdlib"*)];;
 Pathname.define_context "bytecomp" ["bytecomp"; "parsing"; "typing"; "easyocaml"; "utils"; (*"stdlib"*)];;
 Pathname.define_context "tools" ["tools"; (* "toplevel"; *) "parsing"; "utils"; "driver"; "bytecomp"; "asmcomp"; "typing"; (*"stdlib"*)];;
-Pathname.define_context "toplevel" ["camlp4/Camlp4Parsers"; "toplevel"; "parsing"; "typing"; "easyocaml"; "bytecomp"; "utils"; "driver"; (*"stdlib"*)];;
+Pathname.define_context "toplevel" ["camlp4/Camlp4Parsers"; "toplevel"; "parsing"; "typing"; "easyocaml"; "bytecomp"; "utils"; "driver"; "camlp4"; (*"stdlib"*)];;
 Pathname.define_context "driver" ["driver"; "asmcomp"; "bytecomp"; "typing"; "easyocaml"; "utils"; "parsing"; (*"stdlib"*)];;
 Pathname.define_context "debugger" ["bytecomp"; "utils"; "typing"; "parsing"; "toplevel"; "stdlib"];;
 Pathname.define_context "otherlibs/dynlink" ["otherlibs/dynlink"; "bytecomp"; "utils"; "typing"; "parsing"; "stdlib"];;
