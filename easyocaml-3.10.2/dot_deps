@@ -1,10 +1,11 @@
 #!/bin/sh
 
+set -x
 ocamlbuild parsing/linenum.ml
 ocamlbuild parsing/lexer.ml
 ocamlbuild parsing/parser.ml
-camlp4oof easyocaml/ezycamlgrammar.ml > _build/easyocaml/ezycamlgrammar.ml
+camlp4rf easyocaml/ezyCamlgrammar.ml > _build/easyocaml/ezyCamlgrammar.ml
 cd _build
-ocamldoc -dot -I utils -I parsing -I typing -I easyocaml -I +camlp4 -I +camlp4/Camlp4Parsers utils/misc.ml utils/tbl.ml utils/config.ml utils/clflags.ml utils/terminfo.ml utils/ccomp.ml utils/warnings.ml utils/consistbl.ml parsing/linenum.ml parsing/location.ml parsing/longident.ml parsing/syntaxerr.ml parsing/parser.ml parsing/lexer.ml parsing/parse.ml parsing/printast.ml typing/unused_var.ml typing/ident.ml typing/path.ml typing/primitive.ml typing/types.ml typing/btype.ml typing/oprint.ml typing/subst.ml typing/predef.ml typing/datarepr.ml typing/env.ml typing/typedtree.ml typing/ctype.ml typing/printtyp.ml typing/includeclass.ml typing/mtype.ml typing/includecore.ml typing/includemod.ml typing/parmatch.ml typing/typetexp.ml typing/stypes.ml typing/typecore.ml typing/typedecl.ml typing/typeclass.ml typing/typemod.ml easyocaml/ezyOcamlmodules.ml easyocaml/ezyFeatures.ml easyocaml/ezyAsttypes.ml easyocaml/ezyTypingCoreTypes.ml easyocaml/ezyErrors.ml easyocaml/ezyStructuredErrorReport.ml easyocaml/ezyConstraints.ml easyocaml/ezyEnv.ml easyocaml/ezyAst.ml easyocaml/ezyGenerate.ml easyocaml/ezyTyping.ml
+ocamldoc -dot -I _build/camlp4 -I _build/camlp4/Camlp4Parsers -I utils -I parsing -I typing -I easyocaml easyocaml/ezy*.ml
 cd ..
 dot -Tps _build/ocamldoc.out > dot_deps.ps

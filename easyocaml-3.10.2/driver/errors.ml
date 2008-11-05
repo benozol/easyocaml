@@ -77,15 +77,17 @@ let original_report ppf = function
     let err = EzyCamlgrammar.ParseError.decode code in
     EzyErrors.print_parse_error ppf loc err
 | Stream.Error code ->
-    failwith "pure Stream.Error"
+    failwith "Pure Stream.Error"
 | Sys_error msg ->
     fprintf ppf "I/O error: %s" msg
 | Warnings.Errors (n) ->
     fprintf ppf "@.Error: error-enabled warnings (%d occurrences)" n
 | x ->
-    fprintf ppf "@]";
-    print_endline "Cant handle";
-    raise x
+    try
+      Camlp4.ErrorHandler.try_print ppf x;
+    with x ->
+      fprintf ppf "@]";
+      raise x
 
 let report = ref original_report
 
