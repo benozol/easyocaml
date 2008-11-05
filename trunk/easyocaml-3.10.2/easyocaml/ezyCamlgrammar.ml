@@ -314,20 +314,11 @@ value register fs print_parse_error toploop_print_location toploop_parse_topleve
       with
       [ End_of_file | Sys.Break | (Loc.Exc_located _ (End_of_file | Sys.Break))
           as x -> let () = logger#debug "wrap recognized an error" in raise x
-      | ParseError.E (loc, err)
-      | Loc.Exc_located loc (ParseError.E (_, err)) ->
+      | ParseError.E (loc, err) ->
           do {
             Stream.junk token_stream;
             logger#debug "catched! located parse error";
             print_parse_error Format.std_formatter loc err ;
-            raise Exit
-          }
-      | Loc.Exc_located loc (Stream.Error (code:string)) ->
-          do {
-            Stream.junk token_stream;
-            logger#debug "catched! located stream error";
-            print_parse_error Format.std_formatter loc (ParseError.decode code);
-            logger#debug "after report - raising Exit now";
             raise Exit
           }
       | x ->
