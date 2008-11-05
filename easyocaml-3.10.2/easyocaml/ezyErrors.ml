@@ -438,8 +438,6 @@ let print_errors_ref = ref print_errors_default
 let print_heavies_ref = ref print_heavies_default
 let print_fatal_ref = ref print_fatal_default
 
-let check = ref (fun ppf -> fprintf ppf "EzyErrors.check@.")
-
 let print_errors () = !print_errors_ref
 let print_heavies () = !print_heavies_ref
 let print_fatal () = !print_fatal_ref
