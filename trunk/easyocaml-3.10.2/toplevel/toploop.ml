@@ -434,6 +434,7 @@ let loop ppf =
   while true do
     let snap = Btype.snapshot () in
     try
+      logger#debug "new loop ...";
       Lexing.flush_input lb;
       Location.reset();
       first_line := true;
@@ -443,7 +444,7 @@ let loop ppf =
     with
     | End_of_file -> exit 0
     | Sys.Break -> fprintf ppf "Interrupted.@."; Btype.backtrack snap
-    | PPerror -> ()
+    | PPerror -> logger#trace "catch PPerror"; ()
     | x -> Errors.report_error ppf x; Btype.backtrack snap
   done
 

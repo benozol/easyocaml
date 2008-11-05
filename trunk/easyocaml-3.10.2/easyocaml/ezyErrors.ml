@@ -328,12 +328,12 @@ let print_heavy ?program ast ppf (loc, heavy) =
         print_heavy_error_desc heavy at Location.print loc
 
 let print_errors_default ?program ast ppf errors =
-  fprintf ppf "@[%a@]"
+  fprintf ppf "@[%a@]@."
     (format_list (print_error ?program ast) "@\n")
     (ErrorSet.elements errors)
 
 let print_heavies_default ?program ast ppf heavies =
-  fprintf ppf "@[%a@]"
+  fprintf ppf "@[%a@]@."
     (format_list (print_heavy ?program ast) "@\n")
     (HeavyErrorSet.elements heavies)
 
@@ -415,7 +415,7 @@ let print_fatal_default ?program loc ppf fatal =
        | `En | `Fr -> fprintf ppf "@[At %a@]@ "
        | `De -> fprintf ppf "@[In %a@]@ "
     end long_print_loc loc ;
-  fprintf ppf "%a@]" print_fatal_error_desc fatal
+  fprintf ppf "%a@]@." print_fatal_error_desc fatal
 
 
 let print_errors_ref = ref print_errors_default
@@ -428,6 +428,7 @@ let print_errors () = !print_errors_ref
 let print_heavies () = !print_heavies_ref
 let print_fatal () = !print_fatal_ref
 let print_parse_error ppf loc err =
+  logger#trace "printing parsing error" ;
   let program = lazy (failwith "program for print_parse_error not implemented") in
   print_fatal () ~program (EzyCamlgrammar.import_loc loc) ppf (Parse_error err)
 
