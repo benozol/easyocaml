@@ -7,17 +7,20 @@ open Camlp4;
 (*pp camlp4oof *)
 value logger = new EzyUtils.Logger.logger "ezy_gram";
 
-(*
-module ECaml =
+module Id = struct
+  value name = "EzyCamlgrammar";
+  value version = "0.1";
+end;
+
+module ECaml = 
   Camlp4OCamlParser.Make
     (Camlp4OCamlRevisedParser.Make
        (Camlp4.OCamlInitSyntax.Make
           (PreCast.Ast)(PreCast.Gram)(PreCast.Quotation)));
- *)
 (* module ECaml = PreCast.Syntax; *)
 
-(* Camlp4OCamlParser.Make (Camlp4OCamlRevisedParser.Make (PreCast.Syntax)); *)
-module ParseError = ECaml.Gram.ParseError; 
+module ParseError =
+  ECaml.Gram.ParseError; 
 
 value import_loc : ECaml.Loc.t -> Location.t =
   fun loc -> Obj.magic (ECaml.Loc.to_ocaml_location loc);
@@ -245,21 +248,20 @@ value restrict spec = do {
   if match pat_spec with [ Some {p_wildcard = True} -> False | _ -> True ] then
     DELETE_RULE Gram patt: "_" END
   else ();
-(*
+  (*
   DELETE_RULE Gram patt: "`"; a_ident END ;
   DELETE_RULE Gram patt: "#"; type_longident END ;
- *)
+  *)
   if match pat_spec with [ Some {p_var = True} -> False | _ -> True ] then
     DELETE_RULE Gram patt: ident END
   else ();
-(*
+  (*
   DELETE_RULE Gram patt: a_INT32 END ;
   DELETE_RULE Gram patt: a_INT64 END ;
   DELETE_RULE Gram patt: a_NATIVEINT END ;
   DELETE_RULE Gram patt: a_CHAR; ".."; a_CHAR END ;
  *)
 };
-
 
 module Ast2pt = Camlp4.Struct.Camlp4Ast2OCamlAst.Make Ast;
 module Lexer = Camlp4.Struct.Lexer.Make Token;
@@ -294,7 +296,6 @@ value register fs print_parse_error toploop_print_location toploop_parse_topleve
   let wrap parse_fun =
     let token_stream_ref = ref None in
     fun lb ->
-      let () = Register.iter_and_take_callbacks (fun (_, f) -> f ()) in
       let token_stream =
         match token_stream_ref.val with
         [ None ->
@@ -310,7 +311,7 @@ value register fs print_parse_error toploop_print_location toploop_parse_topleve
         [ [: `(EOI, _) :] -> raise End_of_file
         | [: :] -> parse_fun token_stream ]
       with
-      [ End_of_file | Sys.Break | Stream.Error _ | (Loc.Exc_located _ (End_of_file | Sys.Break | Stream.Error _)) | ParseError.E _
+      [ End_of_file | Sys.Break | Stream.Error _ | (Loc.Exc_located _ (End_of_file | Sys.Break | Stream.Error _ | ParseError.E _)) | ParseError.E _
           as x -> let () = logger#debug "wrap recognized an error" in raise x
       | x ->
           let () = Stream.junk token_stream in
@@ -364,12 +365,14 @@ value register fs print_parse_error toploop_print_location toploop_parse_topleve
       fun loc txt ->
         Toploop.print_warning (Loc.to_ocaml_location loc) Format.err_formatter
           (Camlp4_import.Warnings.Camlp4 txt);
-    (* Register.iter_and_take_callbacks (fun (name, f) -> logger#debug "register applies %s" name; f ());  *)
     ErrorHandler.register
       (fun ppf ->
          fun [ Stream.Error code -> failwith "pure Stream.Error"
              | Loc.Exc_located (loc, Stream.Error code) -> failwith "located Stream.Error"
+             | Loc.Exc_located (_, ParseError.E _)
+             | ParseError.E _ -> failwith "UUUUH!"
              | x -> let () = logger#debug "the error handler could not recognize the error" in raise x ]);
+(*     Register.iter_and_take_callbacks (fun (name, f) -> do { logger#debug "register applies %s" name; f () }); *)
     restrict fs ;
     (*
     let module Error : Sig.Error = struct

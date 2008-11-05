@@ -35,7 +35,7 @@ let do_setup () =
        !Clflags.easy_dot_type_graph <> false ||
        !Clflags.easylevel <> None ||
        !Clflags.easyteachpacks <> []
-    then EzyErrors.raise_fatal (EzyErrors.Other_fatal "Cannot use easyocaml features unless -easy flag given.")
+    then Misc.fatal_error "Cannot use easyocaml features unless -easy flag given."
     else default
 
 let patch_clflags s =

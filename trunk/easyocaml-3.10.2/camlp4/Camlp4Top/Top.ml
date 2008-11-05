@@ -129,4 +129,4 @@ current_warning.val :=
     Toploop.print_warning (Loc.to_ocaml_location loc) Format.err_formatter
       (Camlp4_import.Warnings.Camlp4 txt);
 
-Register.iter_and_take_callbacks (fun (_, f) -> f ());
+Register.iter_and_take_callbacks (fun (name, f) -> do { print_endline ("Camlp4.Top calls " ^ name); f ()});

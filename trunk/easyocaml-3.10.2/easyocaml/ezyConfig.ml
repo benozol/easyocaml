@@ -40,8 +40,3 @@ let find_generic name meta_file =
 let find_lang_level name = find_generic name lang_level_meta_file
 
 let find_teachpack name = find_generic name teachpack_meta_file
-
-let _ =
-  (* TODO thinkabout: this is not the ideal place for initializing ... *)
-  (* TODO add modules containing modules and functors *)
-  EzyEnv.forbid_modules ["Format"; "Printf"; "Scanf"] ;

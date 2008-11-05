@@ -15,6 +15,8 @@
 open EzyUtils
 open Clflags
 
+let logger = new EzyUtils.Logger.logger "topmain";;
+
 let usage = "Usage: ocaml <options> <object-files> [script-file]\noptions are:"
 
 let preload_objects = ref []
@@ -22,16 +24,29 @@ let preload_objects = ref []
 let prepare ppf =
   if !Clflags.easytyping then
     let easy_setup = 
-      try
-        match EzySetup.setup () with
-          | { EzySetup.features = features } as s ->
-              let features = Option.value ~default:(EzyFeatures.all_program_features true) features in
-              EzyCamlgrammar.register features EzyErrors.print_parse_error
-                Toploop.print_location Toploop.parse_toplevel_phrase Toploop.parse_use_file Toploop.print_warning
-                Topdirs.dir_load Topdirs.dir_directory ; 
-              s
+      try EzySetup.setup ()
       with x -> Errors.report_error ppf x; exit 2
     in
+(*
+    let module Plugin (Unit : sig end) = struct
+      let () =
+        let ezy_setup = EzySetup.setup () in
+        let fs = Option.value ~default:(EzyFeatures.all_program_features true) ezy_setup.EzySetup.features in
+        print_endline "Topmain.prepare";
+        EzyCamlgrammar.restrict fs
+    end in
+    let module M = Camlp4.Register.Plugin (EzyCamlgrammar.Id) (Plugin) in
+    Camlp4.ErrorHandler.register
+      (fun ppf ->
+         function   Stream.Error code -> failwith "pure Stream.Error"
+             | Camlp4.PreCast.Loc.Exc_located (loc, Stream.Error code) -> failwith "located Stream.Error"
+             | Camlp4.PreCast.Loc.Exc_located (_, EzyCamlgrammar.ParseError.E _)
+             | Camlp4.PreCast.Gram.ParseError.E _ -> failwith "UUUUUHHHH!"
+             | x -> print_endline "Extra ErrorHandler could not catch" ; raise x );
+ *)
+    let fs = Option.value ~default:(EzyFeatures.all_program_features true) easy_setup.EzySetup.features in
+    logger#debug "registering EzyCamlgrammar";
+    EzyCamlgrammar.register fs EzyErrors.print_parse_error Toploop.print_location Toploop.parse_toplevel_phrase Toploop.parse_use_file Toploop.print_warning Topdirs.dir_load Topdirs.dir_directory ;
     preload_objects := !preload_objects @ (List.rev (easy_setup.EzySetup.obj_files));
   else ();
   Toploop.set_paths ();

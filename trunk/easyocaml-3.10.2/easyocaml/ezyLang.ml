@@ -22,11 +22,11 @@ end = struct
     let dir = 
       try D.find name
       with Not_found -> 
-        EzyErrors.raise_fatal (EzyErrors.Other_fatal (format_str "%s %s not found in %a" D.kind name (format_list Format.pp_print_string ", ") EzyConfig.search_dirs))
+        Misc.fatal_error (format_str "%s %s not found in %a" D.kind name (format_list Format.pp_print_string ", ") EzyConfig.search_dirs)
     in
     let meta_file = Filename.concat dir D.meta_file in
     let report_error s = 
-      EzyErrors.raise_fatal (EzyErrors.Other_fatal ("An exception occurred while loading " ^ D.kind ^ " from file \"" ^ meta_file ^ "\": " ^ s))
+      Misc.fatal_error ("An exception occurred while loading " ^ D.kind ^ " from file \"" ^ meta_file ^ "\": " ^ s)
     in
       D.reset ();
       (* Dynlink.allow_only [D.module_name]; *)
@@ -38,7 +38,7 @@ end = struct
       );
       (* Dynlink.default_available_units (); *)
       match D.get () with
-        | None -> EzyErrors.raise_fatal (EzyErrors.Other_fatal (("Cannot load " ^ D.kind ^ " from file " ^ meta_file ^ ": configure function not called")))
+        | None -> Misc.fatal_error (("Cannot load " ^ D.kind ^ " from file " ^ meta_file ^ ": configure function not called"))
         | Some x -> (dir, x)  
 end
 

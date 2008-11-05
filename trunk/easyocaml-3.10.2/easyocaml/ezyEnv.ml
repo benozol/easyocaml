@@ -485,3 +485,7 @@ let print ?(s=TyVarSubst.empty) everything ppf env =
     StringMap.KeySet.print (StringMap.keys env.ctors)
     StringMap.KeySet.print (StringMap.keys env.fields)
  *)
+
+let _ =
+  (* TODO add modules containing modules and functors *)
+  forbid_modules ["Format"; "Printf"; "Scanf"] ;
