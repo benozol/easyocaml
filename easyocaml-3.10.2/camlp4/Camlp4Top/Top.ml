@@ -132,4 +132,4 @@ current_warning.val :=
 Register.iter_and_take_callbacks (fun (name, f) -> do { print_endline ("Camlp4.Top calls " ^ name); f ()});
 
 value () =
-  let module M = ErrorHandler.Register (ParseError) in ()
+  let module M = ErrorHandler.Register (Gram.ParseError) in ();
