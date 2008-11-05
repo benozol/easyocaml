@@ -44,7 +44,6 @@ module Make (Structure : Structure.S) = struct
   value action_parse entry ts : Action.t =
     Context.call_with_ctx ts
       (fun c ->
-         let () = print_endline "Entry.action_parse" in
          try entry.estart 0 c (Context.stream c) with
 (*
          [ Stream.Failure ->

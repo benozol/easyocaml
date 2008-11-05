@@ -296,6 +296,7 @@ value register fs print_parse_error toploop_print_location toploop_parse_topleve
   let wrap parse_fun =
     let token_stream_ref = ref None in
     fun lb ->
+      let () = logger#trace "Wrapped parsing function called" in
       let token_stream =
         match token_stream_ref.val with
         [ None ->
@@ -311,8 +312,24 @@ value register fs print_parse_error toploop_print_location toploop_parse_topleve
         [ [: `(EOI, _) :] -> raise End_of_file
         | [: :] -> parse_fun token_stream ]
       with
-      [ End_of_file | Sys.Break | Stream.Error _ | (Loc.Exc_located _ (End_of_file | Sys.Break | Stream.Error _ | ParseError.E _)) | ParseError.E _
+      [ End_of_file | Sys.Break | (Loc.Exc_located _ (End_of_file | Sys.Break))
           as x -> let () = logger#debug "wrap recognized an error" in raise x
+      | ParseError.E (loc, err)
+      | Loc.Exc_located loc (ParseError.E (_, err)) ->
+          do {
+            Stream.junk token_stream;
+            logger#debug "catched! located parse error";
+            print_parse_error Format.std_formatter loc err ;
+            raise Exit
+          }
+      | Loc.Exc_located loc (Stream.Error (code:string)) ->
+          do {
+            Stream.junk token_stream;
+            logger#debug "catched! located stream error";
+            print_parse_error Format.std_formatter loc (ParseError.decode code);
+            logger#debug "after report - raising Exit now";
+            raise Exit
+          }
       | x ->
           let () = Stream.junk token_stream in
           let x =

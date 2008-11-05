@@ -208,7 +208,7 @@ if Pathname.exists exn_tracer then
 
 use_lib "camlp4/mkcamlp4" "camlp4/camlp4lib";;
 use_lib "toplevel/topstart" "toplevel/toplevellib";;
-use_lib "toplevel/topstart" "camlp4/camlp4lib";;
+(* use_lib "toplevel/topstart" "camlp4/camlp4lib";; *)
 (* use_lib "toplevel/topstart" "camlp4/Camlp4Top";; *)
 use_lib "otherlibs/dynlink/extract_crc" "otherlibs/dynlink/dynlink";;
 use_lib "driver/main" "camlp4/camlp4lib";;
