@@ -45,17 +45,17 @@ module Make (Structure : Structure.S) = struct
     Context.call_with_ctx ts
       (fun c ->
          try entry.estart 0 c (Context.stream c) with
-(*
          [ Stream.Failure ->
              raise (ParseError.E (Context.loc_ep c, Failed.ParseError.illegal_begin entry))
+         | Stream.Error code when ParseError.valid_code code ->
+             raise (ParseError.E (Context.loc_ep c, ParseError.decode code))
          | Loc.Exc_located loc (Stream.Error code) when ParseError.valid_code code ->
              raise (ParseError.E (loc, ParseError.decode code))
- *)
          (* It might happen that no ParseError.E can be catched outside of
-          * Camlp4. In this case, comment the above, uncomment the following
-          * and decode by yourself. *)
-         [ Stream.Failure ->
-             Loc.raise (Context.loc_ep c) (Failed.ParseError.as_stream_error (Failed.ParseError.illegal_begin entry))
+            Camlp4. In this case, comment the above, uncomment the following
+            and decode by yourself. *)
+      (* [ Stream.Failure ->
+             Loc.raise (Context.loc_ep c) (Failed.ParseError.as_stream_error (Failed.ParseError.illegal_begin entry)) *)
          | Loc.Exc_located _ _ as exc -> raise exc
          | exc -> Loc.raise (Context.loc_ep c) exc ]);
 

@@ -328,12 +328,12 @@ let print_heavy ?program ast ppf (loc, heavy) =
         print_heavy_error_desc heavy at Location.print loc
 
 let print_errors_default ?program ast ppf errors =
-  fprintf ppf "@[%a@]@."
+  fprintf ppf "@[%a@]@?"
     (format_list (print_error ?program ast) "@\n")
     (ErrorSet.elements errors)
 
 let print_heavies_default ?program ast ppf heavies =
-  fprintf ppf "@[%a@]@."
+  fprintf ppf "@[%a@]@?"
     (format_list (print_heavy ?program ast) "@\n")
     (HeavyErrorSet.elements heavies)
 
