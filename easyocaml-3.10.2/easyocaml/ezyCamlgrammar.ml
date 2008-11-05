@@ -269,6 +269,8 @@ module Lexer = Camlp4.Struct.Lexer.Make Token;
    
 external not_filtered : 'a -> Gram.not_filtered 'a = "%identity";
 
+(** The following function has nearly the same functionaly like Camlp4.Top: It sets parsing functions in Toplevel
+    (here passed by ref because of module dependency reasons) to wrapped parsing functions of ECaml.Gram *)
 value register fs print_parse_error toploop_print_location toploop_parse_toplevel_phrase toploop_parse_use_file toploop_print_warning topdirs_dir_load topdirs_dir_directory =
   (* There is a few Obj.magic due to the fact that we no longer have compiler
      files like Parsetree, Location, Longident but Camlp4_import that wrap them to
@@ -300,9 +302,6 @@ value register fs print_parse_error toploop_print_location toploop_parse_topleve
       let token_stream =
         match token_stream_ref.val with
         [ None ->
-          let () = if Sys.interactive.val then
-            Format.printf "\tCamlp4 Parsing version %s\n@." Camlp4_config.version
-          else () in
           let not_filtered_token_stream = Lexer.from_lexbuf lb in
           let token_stream = Gram.filter (not_filtered not_filtered_token_stream) in
           do { token_stream_ref.val := Some token_stream; token_stream }
