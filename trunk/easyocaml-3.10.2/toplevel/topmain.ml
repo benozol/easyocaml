@@ -27,23 +27,6 @@ let prepare ppf =
       try EzySetup.setup ()
       with x -> Errors.report_error ppf x; exit 2
     in
-(*
-    let module Plugin (Unit : sig end) = struct
-      let () =
-        let ezy_setup = EzySetup.setup () in
-        let fs = Option.value ~default:(EzyFeatures.all_program_features true) ezy_setup.EzySetup.features in
-        print_endline "Topmain.prepare";
-        EzyCamlgrammar.restrict fs
-    end in
-    let module M = Camlp4.Register.Plugin (EzyCamlgrammar.Id) (Plugin) in
-    Camlp4.ErrorHandler.register
-      (fun ppf ->
-         function   Stream.Error code -> failwith "pure Stream.Error"
-             | Camlp4.PreCast.Loc.Exc_located (loc, Stream.Error code) -> failwith "located Stream.Error"
-             | Camlp4.PreCast.Loc.Exc_located (_, EzyCamlgrammar.ParseError.E _)
-             | Camlp4.PreCast.Gram.ParseError.E _ -> failwith "UUUUUHHHH!"
-             | x -> print_endline "Extra ErrorHandler could not catch" ; raise x );
- *)
     let fs = Option.value ~default:(EzyFeatures.all_program_features true) easy_setup.EzySetup.features in
     logger#debug "registering EzyCamlgrammar";
     EzyCamlgrammar.register fs EzyErrors.print_parse_error Toploop.print_location Toploop.parse_toplevel_phrase Toploop.parse_use_file Toploop.print_warning Topdirs.dir_load Topdirs.dir_directory ;
@@ -89,7 +72,7 @@ let main () =
            "<dir>  Add <dir> to the list of include directories";
 
      "-easy", Arg.Set easytyping, "Use easy typing";
-     "-easyerrorprinter", Arg.String (fun s -> easyerrorprinter := Some s), "<obj> Use an own error printer";
+     "-easyerrorprinter", Arg.String EzyMisc.register_error_printer, "<obj> Use your own error printer";
      "-easydot", Arg.Set easy_dot_type_graph,
             " Output a dot file of the type graph";
      "-easylevel", Arg.String (fun s -> easylevel := Some s), " Set the language level";

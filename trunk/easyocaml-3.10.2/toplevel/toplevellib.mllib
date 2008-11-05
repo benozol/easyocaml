@@ -16,7 +16,7 @@ EzyAsttypes     EzyErrorReportUtils  EzyMisc                   EzyTyping
 EzyCamlgrammar  EzyErrors            EzyOcamlmodules           EzyUtils
 EzyConfig       EzyFeatures          EzyParser                 MyCamlp4Ast2OCamlAst
 EzyConstraints  EzyGenerate          EzySetup
-EzyDynload      EzyInstall           EzyStructuredErrorReport
+EzyDynload      EzyInstall           
 EzyEnrichedAst  EzyLangLevel         EzyTeachpack
 
 Lambda Printlambda Typeopt Switch Matching Translobj Translcore

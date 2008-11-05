@@ -87,6 +87,19 @@ function UnboundVar(varName, varLoc) {
   }
 }
 
+function LocalError(desc, loc) {
+  this.desc = desc;
+  this.loc = loc;
+  this.message = function() {
+    var span = document.createElement('span');
+    span.appendChild(document.createTextNode(this.desc));
+    return span;
+  }
+  this.display = function() {
+    setClass(this.loc, errorClass);
+  }
+}
+
 function CircularType(ty1, ty2, opt_endpoint1, opt_endpoint2, errorlocs) {
   this.ty1 = ty1;
   this.ty2 = ty2;

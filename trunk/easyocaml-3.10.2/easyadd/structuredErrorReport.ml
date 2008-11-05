@@ -198,60 +198,35 @@ let print_document' = function
 
 (* --------------- *)
 
+open ErrorToStructured
+
 let register output_type =
-  let module ErrorReporter = struct
-    open ErrorToStructured
-
-    let name = "StructuredErrorReport"
-
-    let print_errors ?program ast ppf errs =
-      let errors = List.map (fun loc_err -> `Normal loc_err) (EzyErrors.ErrorSet.elements errs) in
-      print_document' output_type ppf (compile_result (`Errors errors))
-
-    let print_heavies ?program ast ppf heavies =
-      let mapper = function
-        | (_, EzyErrors.Error_as_heavy loc_err) -> `Normal loc_err
-        | (loc, err) -> `Heavy (loc, err) in
-      let errors = List.map mapper (EzyErrors.HeavyErrorSet.elements heavies) in
-      print_document' output_type ppf (compile_result (`Errors errors))
-
-    let print_fatal ?program loc ppf fatal =
-      print_document' output_type ppf (compile_result (`Fatal_error (loc, fatal)))
-  end in
-  let module M = EzyErrors.Register (ErrorReporter) in ()
-
-(*
-module ErrorReporter = struct
-
-  let output_type =
-    try
-      if Sys.getenv output_type_env_var = "sexp"
-      then `Sexp
-      else `Xml
-    with Not_found -> `Xml
-  let _ = logger#info "Set output type to %s" (match output_type with `Xml -> "XML" | `Sexp -> "Sexp")
-
-  let print_document = print_document' output_type
-
-  open ErrorToStructured
-
-  let name = "StructuredErrorReport"
+  let name = "StructuredErrorReport" in
 
   let print_errors ?program ast ppf errs =
     let errors = List.map (fun loc_err -> `Normal loc_err) (EzyErrors.ErrorSet.elements errs) in
-    print_document ppf (compile_result (`Errors errors))
+    print_document' output_type ppf (compile_result (`Errors errors)) in
 
   let print_heavies ?program ast ppf heavies =
     let mapper = function
       | (_, EzyErrors.Error_as_heavy loc_err) -> `Normal loc_err
       | (loc, err) -> `Heavy (loc, err) in
     let errors = List.map mapper (EzyErrors.HeavyErrorSet.elements heavies) in
-    print_document ppf (compile_result (`Errors errors))
+    print_document' output_type ppf (compile_result (`Errors errors)) in
 
   let print_fatal ?program loc ppf fatal =
-    print_document ppf (compile_result (`Fatal_error (loc, fatal)))
+    print_document' output_type ppf (compile_result (`Fatal_error (loc, fatal))) in
 
-end
+  EzyErrors.register name print_errors print_heavies print_fatal
 
-let () = let module M = EzyErrors.Register (ErrorReporter) in ()
- *)
+
+let _ =
+  let output_type =
+    try
+      if Sys.getenv output_type_env_var = "sexp"
+      then `Sexp
+      else `Xml
+    with Not_found -> `Xml in
+  logger#info "Set output type to %s" (match output_type with `Xml -> "XML" | `Sexp -> "Sexp");
+  register output_type
+
