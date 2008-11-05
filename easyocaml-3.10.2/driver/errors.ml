@@ -83,11 +83,8 @@ let original_report ppf = function
 | Warnings.Errors (n) ->
     fprintf ppf "@.Error: error-enabled warnings (%d occurrences)" n
 | x ->
-    try
-      Camlp4.ErrorHandler.try_print ppf x;
-    with x ->
-      fprintf ppf "@]";
-      raise x
+    fprintf ppf "@]";
+    raise x
 
 let report = ref original_report
 

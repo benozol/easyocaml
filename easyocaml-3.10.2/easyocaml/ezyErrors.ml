@@ -446,20 +446,11 @@ let print_parse_error ppf loc err =
   let program = lazy (failwith "program for print_parse_error not implemented") in
   print_fatal () ~program (EzyCamlgrammar.import_loc loc) ppf (Parse_error err)
 
-
-module type ERROR_REPORTER = sig
-  val name : string
-  val print_errors : ?program:(string lazy_t) -> EzyAst.imported_structure -> formatter -> ErrorSet.t -> unit
-  val print_heavies : ?program:(string lazy_t) -> EzyAst.imported_structure -> formatter -> HeavyErrorSet.t -> unit
-  val print_fatal : ?program:(string lazy_t) -> Location.t -> formatter -> fatal -> unit
-end
-
-module Register (ErrorReporter : ERROR_REPORTER) = struct
-  logger#info "Loading error reporting plugin %s" ErrorReporter.name ;
-  print_errors_ref := ErrorReporter.print_errors ;
-  print_heavies_ref := ErrorReporter.print_heavies ;
-  print_fatal_ref := ErrorReporter.print_fatal ;
-end
+let register name print_errors print_heavies print_fatal =
+  logger#info "Loading error reporting plugin %s" name ;
+  print_errors_ref := print_errors ;
+  print_heavies_ref := print_heavies ;
+  print_fatal_ref := print_fatal ;
               
 type some_errors =
   | Errors of ErrorSet.t

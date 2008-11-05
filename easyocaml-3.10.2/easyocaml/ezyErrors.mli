@@ -17,6 +17,10 @@
   * EzyErrors.set_printer with appropriate error reporting functions. This is than
   * dynamically linked into the easyocaml compiler/toploop with the -easyerrorprinter
   * flag. The appropriate function is called on fatal, heavy and common errors.
+  *
+  * It is recommended for custom error reporting plugins to use
+  * EzyErrors.print_error_desc, print_heavy_error_desc, print_fatal_error_desc to
+  * have uniform descriptions.
   *)
 
 type lang = [ `En | `Fr | `De ]
@@ -134,17 +138,15 @@ module HeavyErrorSet : sig
 end
 
 
-(** To register arbitrary error reporting code, one should implement a module with signature [ERROR_REPORTER] and
-  * pass it to [Register].
+(** To register arbitrary error reporting code, just call this function with a name
+  * and appropriate printers. 
   * This may happen in some module which is given to the compiler with flat -easyerrorprinter *)
-module type ERROR_REPORTER = sig
-  open Format
-  val name : string
-  val print_errors : ?program:(string lazy_t) -> EzyAst.imported_structure -> formatter -> ErrorSet.t -> unit
-  val print_heavies : ?program:(string lazy_t) -> EzyAst.imported_structure -> formatter -> HeavyErrorSet.t -> unit
-  val print_fatal : ?program:(string lazy_t) -> Location.t -> formatter -> fatal -> unit
-end
-module Register (Reporter: ERROR_REPORTER) : sig end
+val register :
+  string ->
+  (?program:(string lazy_t) -> EzyAst.imported_structure -> Format.formatter -> ErrorSet.t -> unit) ->
+  (?program:(string lazy_t) -> EzyAst.imported_structure -> Format.formatter -> HeavyErrorSet.t -> unit) ->
+  (?program:(string lazy_t) -> Location.t -> Format.formatter -> fatal -> unit) ->
+  unit
 
 (**/**)
 

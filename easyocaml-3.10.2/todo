@@ -1,7 +1,10 @@
 
+PRE BETA
+  * more details for Not_mutable error (where is the field defined?)
+
+LONGTERM
   * EzyGenerate returns either a typed ast or some heavy errors
   * ezytyping should convert from Parsetree.t to EzyTypedtree.t (then, the flag in P(exp|pat)_construct should be unnecessary 
-  * refactore from core to extlib
 
 ===
 Fragen:

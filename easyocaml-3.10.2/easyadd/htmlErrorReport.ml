@@ -4,10 +4,10 @@ open EzyOcamlmodules
 open EzyTypingCoreTypes
 open EzyErrors
 
-let template = format_of_string "
+let template () = format_of_string "
 <html>
   <head>
-    <title>EasyCaml HTML error reporing plugin</title>
+    <title>EasyOCaml HTML error reporting plugin</title>
     <link rel='stylesheet' type='text/css' href='easyocaml.css'></link>
     <script type='text/javascript' src='easyocaml.js'></script>
     <script type='text/javascript'>
@@ -30,18 +30,29 @@ let template = format_of_string "
 </html>
 "
 
-let escape_quote =
-  let quote_re = Str.regexp_string "'" in
-  Str.global_replace quote_re "\\'"
+let escape_quote str =
+  (* let quote_re = Str.regexp_string "'" in Str.global_replace quote_re "\\'" *)
+  let len = String.length str in
+  let buf = Buffer.create len in
+  let rec aux offset =
+    if offset = len
+    then Buffer.contents buf
+    else
+      try
+        let next = String.index_from str offset '\'' in
+        if next <> offset then
+          Buffer.add_string buf (String.sub str offset (next - offset));
+        Buffer.add_string buf "\\'";
+        aux (succ next)
+      with Not_found -> Buffer.contents buf in
+  aux 0
 
 let type_to_str ty =
   let pre = format_str "%a" Ty.print ty in
-  let pre = escape_quote pre in
-  "'" ^ pre ^ "'"
+  "'" ^ escape_quote pre ^ "'"
 
 let loc_string loc = 
   format_str "'%a'" Location.print loc
-(* let loc_string = Memo.general loc_string *)
 
 let for_type_error =
   let force_source = function ExtLocation.Source loc -> loc | _ -> invalid_arg "force_source" in
@@ -77,10 +88,6 @@ let for_type_error =
 
 let print_error ppf (loc, err) =
   match err with
-    | Unbound_variable lid ->
-        Format.fprintf ppf "@[<4>new UnboundVar('%a',@ %s),@ @]"
-          Longident.print lid
-          (loc_string loc)
     | Type_error (terr, err_locs) ->
         let class_name, args = for_type_error terr in
         let err_locs' =
@@ -92,16 +99,24 @@ let print_error ppf (loc, err) =
         Format.fprintf ppf "@[<4>new %s(%a,@ @[<1>[%a]@])@],@ " class_name
           (format_list Format.pp_print_string ",@ ") args
           (format_list Format.pp_print_string ",@ ") err_locs'
-    | Mutable_content _ ->
-        not_implemented "HtmlErrorReport.print_error (Unbound_variable _)"
-    | Missing_fields _ ->
-        not_implemented "HtmlErrorReport.print_error (Missing_fields _)"
-    | Unknown_field _ ->
-        not_implemented "HtmlErrorReport.print_error (Unknown_field _)"
-    | No_subtype _ ->
-        not_implemented "HtmlErrorReport.print_error (No_subtype _)"
+    | _ ->
+        Format.fprintf ppf "@[<4>new LocalError('%a',@ %s),@ @]"
+          EzyErrors.print_error_desc err
+          (loc_string loc)
 
+let print_heavy ppf : (Location.t * heavy_error) -> unit = function
+  | _, Error_as_heavy (loc, error) ->
+      print_error ppf (loc, error)
+  | loc, heavy ->
+      Format.fprintf ppf "@[<4>new LocalError('%a',@ %s),@ @]"
+        EzyErrors.print_heavy_error_desc heavy
+        (loc_string loc)
 
+let print_fatal ppf (loc, fatal) =
+  Format.fprintf ppf "@[<4>new LocalError('%a',@ %s),@ @]"
+    EzyErrors.print_fatal_error_desc fatal
+    (loc_string loc)
+  
 
 exception Found of Location.t
 let name_string = "'codeitem'"
@@ -136,23 +151,32 @@ let print_program locs ppf code =
     end ;
   done
 
-module ErrorReporter = struct
-  let name = "Html error reporting"
+let name = "Html error reporting"
 
-  let print_errors ?program ast ppf errors =
-    Format.fprintf ppf template
-      (fun ppf ->
-         ErrorSet.iter (print_error ppf)) errors 
-      (fun ppf -> function
-         | Some p ->
-             print_program (EzyAst.CollectLocs.structure ast) ppf (Lazy.force p)
-         | _ -> Format.pp_print_string ppf "n/a") program
+let print_program_aux ppf = function
+  | ast, Some p ->
+      print_program (EzyAst.CollectLocs.structure ast) ppf (Lazy.force p)
+  | _ -> Format.pp_print_string ppf "n/a"
 
-  let print_heavies ?program ast ppf = not_implemented "HtmlErrorReport.print_heavies"
+let print_errors' ?program ast ppf errors =
+  Format.fprintf ppf (template ())
+    (fun ppf ->
+       ErrorSet.iter (print_error ppf)) errors 
+    print_program_aux (ast, program)
 
-  let print_fatal ?program loc ppf = not_implemented "HtmlErrorReport.print_fatal"
+let print_heavies' ?program ast ppf heavies =
+  Format.fprintf ppf (template ())
+    (fun ppf -> 
+       HeavyErrorSet.iter (print_heavy ppf)) heavies
+    print_program_aux (ast, program)
 
-  let print_noerror ppf = Format.pp_print_string ppf "Successfully compiled."
-end
+let print_fatal' ?program loc ppf fatal =
+  Format.fprintf ppf (template ())
+    print_fatal (loc, fatal)
+    begin fun ppf -> function
+      | Some p ->
+          print_program (LocationSet.singleton loc) ppf (Lazy.force p)
+      | _ -> Format.pp_print_string ppf "n/a"
+    end program
 
-let () = let module M = EzyErrors.Register (ErrorReporter) in () 
+let () = EzyErrors.register name print_errors' print_heavies' print_fatal'
