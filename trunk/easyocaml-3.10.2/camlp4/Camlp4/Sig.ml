@@ -1217,14 +1217,17 @@ module type Syntax = sig
   include (Printer Ast).S;
 end;
 
-(* This is maybe not the ideal place for OCaml parser's specific
- * errors ... *)
-module Camlp4SpecificError = struct
+(** This module describes the errors which are specific to OCaml's parser (i.e. artificial).
+    OCaml's Parser's ParseError is parametrized on this.  *)
+module OCamlSpecificError = struct
 
   module NotAnIdentifier = struct
     type t = [ Expr | Ctyp | Patt ];
     exception E of t;
-    value to_string (_ : t) = "";
+    value to_string = fun
+      [ Expr -> "ident_of_expr"
+      | Ctyp -> "ident_of_ctyp"
+      | Patt -> "ident_of_patt" ];
   end;
 
   type t =
@@ -1232,7 +1235,13 @@ module Camlp4SpecificError = struct
     | Not_an_identifier of NotAnIdentifier.t
     | Bad_directive of string ];
 
-  value to_string (_ : t) = "";
+  value to_string = fun
+    [ Currified_constructor ->
+        "currified constructor"
+    | Not_an_identifier no_id ->
+        NotAnIdentifier.to_string no_id ^ ": this expression is not an identifier"
+    | Bad_directive _ ->
+        "bad directive" ];
 end;
 
 (** A syntax module is a sort of constistent bunch of modules and values.
@@ -1245,9 +1254,9 @@ module type Camlp4Syntax = sig
   module Ast            : Camlp4Ast with module Loc = Loc;
   module Token          : Camlp4Token with module Loc = Loc;
 
-  (* It would be nice to have the constraint [and module ParseError.SpecificError = Camlp4SpecificError]
+  (* It would be nice to have the constraint [and module ParseError.SpecificError = OCamlSpecificError]
    * but this conflicts with the signature of SpecificError in Camlp4.Struct.Gram.Static. *)
-  module Gram           : Grammar.Static with module Loc = Loc and module Token = Token and type ParseError.SpecificError.t = Camlp4SpecificError.t and module ParseError.Loc = Loc;
+  module Gram           : Grammar.Static with module Loc = Loc and module Token = Token and type ParseError.SpecificError.t = OCamlSpecificError.t and module ParseError.Loc = Loc;
   module Quotation      : Quotation with module Ast = Camlp4AstToAst Ast;
 
   module AntiquotSyntax : (Parser Ast).SIMPLE;

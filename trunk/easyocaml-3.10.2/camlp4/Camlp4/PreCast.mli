@@ -52,7 +52,7 @@ module Lexer      : Sig.Lexer
 module Gram       : Sig.Grammar.Static
                       with module Loc = Loc
                        and module Token = Token
-                       and type ParseError.SpecificError.t = Sig.Camlp4SpecificError.t;
+                       and type ParseError.SpecificError.t = Sig.OCamlSpecificError.t;
 module Quotation  : Sig.Quotation with module Ast = Sig.Camlp4AstToAst Ast;
 module DynLoader  : Sig.DynLoader;
 module AstFilters : Sig.AstFilters with module Ast = Ast;

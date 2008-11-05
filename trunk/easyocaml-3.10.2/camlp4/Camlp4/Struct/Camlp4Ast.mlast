@@ -62,7 +62,7 @@ module Make (Loc : Sig.Loc)
 
   value ident_of_expr =
     let error () =
-      invalid_arg "ident_of_expr: this type is not an identifier" in
+      raise (Sig.OCamlSpecificError.NotAnIdentifier.E Sig.OCamlSpecificError.NotAnIdentifier.Expr) in
     let rec self =
       fun
       [ <:expr@_loc< $e1$ $e2$ >> -> <:ident< $self e1$ $self e2$ >>
@@ -77,7 +77,7 @@ module Make (Loc : Sig.Loc)
 
   value ident_of_ctyp =
     let error () =
-      invalid_arg "ident_of_ctyp: this type is not an identifier" in
+      raise (Sig.OCamlSpecificError.NotAnIdentifier.E Sig.OCamlSpecificError.NotAnIdentifier.Ctyp) in
     let rec self =
       fun
       [ <:ctyp@_loc< $t1$ $t2$ >> -> <:ident< $self t1$ $self t2$ >>
@@ -90,7 +90,7 @@ module Make (Loc : Sig.Loc)
 
   value ident_of_patt =
     let error () =
-      invalid_arg "ident_of_patt: this pattern is not an identifier" in
+      raise (Sig.OCamlSpecificError.NotAnIdentifier.E Sig.OCamlSpecificError.NotAnIdentifier.Patt) in
     let rec self =
       fun
       [ <:patt@_loc< $p1$ $p2$ >> -> <:ident< $self p1$ $self p2$ >>

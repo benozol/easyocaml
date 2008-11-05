@@ -340,11 +340,11 @@ let print_heavies_default ?program ast ppf heavies =
 let print_specific_parse_error_desc =
   match lang with
     | `En | `De | `Fr -> begin fun ppf -> function
-        | Camlp4.Sig.Camlp4SpecificError.Currified_constructor ->
+        | Camlp4.Sig.OCamlSpecificError.Currified_constructor ->
             pp_print_string ppf "Currified constructor"
-        | Camlp4.Sig.Camlp4SpecificError.Not_an_identifier _ ->
+        | Camlp4.Sig.OCamlSpecificError.Not_an_identifier _ ->
             pp_print_string ppf "Something is not an identifier" (* TODO be more specific *)
-        | Camlp4.Sig.Camlp4SpecificError.Bad_directive str ->
+        | Camlp4.Sig.OCamlSpecificError.Bad_directive str ->
             fprintf ppf "Unknown directive %s" str
       end
 
@@ -412,8 +412,8 @@ let print_fatal_default ?program loc ppf fatal =
   fprintf ppf "@[<3> * " ;
   if loc <> Location.none then
     begin match lang with
-       | `En | `Fr -> fprintf ppf "@[At %a@]@ "
-       | `De -> fprintf ppf "@[In %a@]@ "
+       | `En | `Fr -> fprintf ppf "@[At %a@]@\n"
+       | `De -> fprintf ppf "@[In %a@]@\n"
     end long_print_loc loc ;
   fprintf ppf "%a@]@." print_fatal_error_desc fatal
 

@@ -164,7 +164,7 @@ module Make (Syntax : Sig.Camlp4Syntax) = struct
         let res = is_expr_constr_call e in
         if (not Camlp4_config.constructors_arity.val) && res then
           let module E = Gram.ParseError in
-          let specific = Sig.Camlp4SpecificError.Currified_constructor in
+          let specific = Sig.OCamlSpecificError.Currified_constructor in
           Loc.raise _loc (Stream.Error (E.encode (E.Specific_error specific)))
         else res
     | _ -> False ];
@@ -487,11 +487,15 @@ module Make (Syntax : Sig.Camlp4Syntax) = struct
       | "ctyp2"
         [ t1 = SELF; "."; t2 = SELF ->
             try <:ctyp< $id:Ast.ident_of_ctyp t1$.$id:Ast.ident_of_ctyp t2$ >>
-            with [ Invalid_argument s -> raise (Stream.Error s) ]
+            with [ Sig.OCamlSpecificError.NotAnIdentifier.E pos ->
+              Syntax.Gram.ParseError.raise_stream_error
+                (Syntax.Gram.ParseError.Specific_error (Sig.OCamlSpecificError.Not_an_identifier pos)) ]
         | t1 = SELF; "("; t2 = SELF; ")" ->
             let t = <:ctyp< $t1$ $t2$ >> in
             try <:ctyp< $id:Ast.ident_of_ctyp t$ >>
-            with [ Invalid_argument s -> raise (Stream.Error s) ] ]
+            with [ Sig.OCamlSpecificError.NotAnIdentifier.E pos ->
+              Syntax.Gram.ParseError.raise_stream_error
+                (Syntax.Gram.ParseError.Specific_error (Sig.OCamlSpecificError.Not_an_identifier pos)) ]]
       | "simple"
         [ "'"; i = a_ident -> <:ctyp< '$i$ >>
         | "_" -> <:ctyp< _ >>
