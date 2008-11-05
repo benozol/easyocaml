@@ -151,52 +151,6 @@ and module_coercion =
   | Tcoerce_functor of module_coercion * module_coercion
   | Tcoerce_primitive of Primitive.description
 
-(*
-let print_pat ppf = function
-  | { pat_desc = Tpat_var id } -> Ident.print ppf id
-  | { pat_desc = Tpat_any } -> Format.pp_print_string ppf "_"
-  | _ -> invalid_arg "Typedtree.print_pat"
-
-let rec print_expr ppf exp =
-
-  let rec print_path ppf = function
-    | Path.Pident id -> Format.pp_print_string ppf (Ident.unique_toplevel_name id)
-    | Path.Pdot (p, str, _) ->
-        print_path ppf p ;
-        Format.pp_print_string ppf str 
-    | Path.Papply (p1, p2) ->
-        Format.fprintf ppf "%a %a" print_path p1 print_path p2 in
-
-  let ty = exp.exp_type in
-  match exp.exp_desc with 
-
-  |  Texp_ident (p, _) ->
-      print_path ppf p
-
-  |  Texp_constant (Asttypes.Const_int n) ->
-      Format.pp_print_int ppf n
-
-  |  Texp_let (Asttypes.Nonrecursive, [pat, head], body) ->
-      Format.fprintf ppf "@[@[(let %a = %a in %a)@]:@[(%a, %a)@]@]" print_pat pat print_expr head print_expr body Types.print ty Env.print_simple exp.exp_env
-
-  |  Texp_function ([pat, expr], Total) ->
-      Format.fprintf ppf "@[@[(fun %a -> %a)@]:@[(%a, %a)@]@]" print_pat pat print_expr expr Types.print ty Env.print_simple exp.exp_env
-
-  |  Texp_apply (fn, args) ->
-      Format.fprintf ppf "@[@[(%a" print_expr fn ;
-      List.iter (function (Some expr, Required) -> print_expr ppf expr | _ -> invalid_arg "Typedtree.print_expr") args ;
-      Format.fprintf ppf ")@]:@[(%a, %a)@]@]" Types.print ty Env.print_simple exp.exp_env
-  | _ -> invalid_arg "Typedtree.print_expr"
-
-let print_str ppf =
-  let rec print_str_it = function
-    | Tstr_eval expr 
-    | Tstr_value (Asttypes.Nonrecursive, [{pat_desc = Tpat_any}, expr]) ->
-        print_expr ppf expr
-    | _ -> invalid_arg "Typedtree.print_str" in
-  List.iter print_str_it 
- *)
-
 (* Auxiliary functions over the a.s.t. *)
 
 let iter_pattern_desc f = function

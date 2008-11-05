@@ -91,10 +91,6 @@ and expression_desc =
   | Pexp_match of expression * (pattern * expression) list
   | Pexp_try of expression * (pattern * expression) list
   | Pexp_tuple of expression list
-
-    (* Pexp_construct (Ulident, Some expr) == Ulident expr
-     * Pexp_construct (Ulident, None) == Ulident
-     *)
   | Pexp_construct of Longident.t * expression option * bool
   | Pexp_variant of label * expression option
   | Pexp_record of (Longident.t * expression) list * expression option
@@ -105,13 +101,7 @@ and expression_desc =
   | Pexp_sequence of expression * expression
   | Pexp_while of expression * expression
   | Pexp_for of string * expression * expression * direction_flag * expression
-
-    (* Pexp_constraint (expr, Some t, None) == (expr : t)
-     * Pexp_constraint (expr, None, Some t) == (expr :> t)
-     * Pexp_constraint (expr, Some t1, Some t2) == (expr : t1 :> t2)
-     *)
   | Pexp_constraint of expression * core_type option * core_type option
-
   | Pexp_when of expression * expression
   | Pexp_send of expression * string
   | Pexp_new of Longident.t
@@ -131,8 +121,6 @@ and value_description =
     pval_prim: string list }
 
 (* Type declarations *)
-
-(* structure item type declarations *)
 
 and type_declaration =
   { ptype_params: string list;

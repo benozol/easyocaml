@@ -37,6 +37,9 @@ end
 
 let format_str fmt =
   Format.kfprintf (fun _ -> Format.flush_str_formatter ()) Format.str_formatter fmt
+let print_to_to_string p x =
+  p Format.str_formatter x ;
+  Format.flush_str_formatter ()
 
 let not_implemented func_name = (* : 'a -> 'b =
   fun _ -> *) failwith "%s: not yet implemented" func_name

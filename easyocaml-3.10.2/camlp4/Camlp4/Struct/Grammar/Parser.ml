@@ -105,7 +105,7 @@ module Make (Structure : Structure.S) = struct
       let _ =
         if strict_parsing_warning.val then
           do {
-            let msg = ParseError.to_string (Failed.ParseError.of_failed_tree entry a s son);
+            let msg = ParseError.error_to_string (Failed.ParseError.of_failed_tree entry a s son);
             Format.eprintf "Warning: trying to recover from syntax error";
             if entry.ename <> "" then Format.eprintf " in [%s]" entry.ename else ();
             Format.eprintf "\n%s%a@." msg Loc.print loc;

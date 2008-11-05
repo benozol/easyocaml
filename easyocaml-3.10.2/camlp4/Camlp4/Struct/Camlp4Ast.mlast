@@ -62,8 +62,7 @@ module Make (Loc : Sig.Loc)
 
   value ident_of_expr =
     let error () =
-      let _ = Sig.Camlp4SpecificError.Not_an_identifier Sig.Camlp4SpecificError.NotAnIdentifier.Expr in
-      invalid_arg "ident_of_expr: this expression is not an identifier" in
+      invalid_arg "ident_of_expr: this type is not an identifier" in
     let rec self =
       fun
       [ <:expr@_loc< $e1$ $e2$ >> -> <:ident< $self e1$ $self e2$ >>

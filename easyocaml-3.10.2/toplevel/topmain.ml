@@ -12,6 +12,7 @@
 
 (* $Id: topmain.ml,v 1.39 2005/01/28 17:52:58 doligez Exp $ *)
 
+open EzyUtils
 open Clflags
 
 let usage = "Usage: ocaml <options> <object-files> [script-file]\noptions are:"
@@ -19,12 +20,21 @@ let usage = "Usage: ocaml <options> <object-files> [script-file]\noptions are:"
 let preload_objects = ref []
 
 let prepare ppf =
-  let easy_setup = 
-    try EzySetup.setup ()
-    with x -> Errors.report_error ppf x; exit 2
-  in
+  if !Clflags.easytyping then
+    let easy_setup = 
+      try
+        match EzySetup.setup () with
+          | { EzySetup.features = features } as s ->
+              let features = Option.value ~default:(EzyFeatures.all_program_features true) features in
+              EzyCamlgrammar.register features EzyErrors.print_parse_error
+                Toploop.print_location Toploop.parse_toplevel_phrase Toploop.parse_use_file Toploop.print_warning
+                Topdirs.dir_load Topdirs.dir_directory ; 
+              s
+      with x -> Errors.report_error ppf x; exit 2
+    in
+    preload_objects := !preload_objects @ (List.rev (easy_setup.EzySetup.obj_files));
+  else ();
   Toploop.set_paths ();
-  preload_objects := !preload_objects @ (List.rev (easy_setup.EzySetup.obj_files));
   try
     let res = 
       List.for_all (Topdirs.load_file ppf) (List.rev !preload_objects) in

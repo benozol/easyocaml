@@ -161,7 +161,7 @@ struct
     "-easy", Arg.Unit F._easytyping,
            " Use easy typing";
     "-easyerrorprinter", Arg.String F._easyerrorprinter,
-           " Use your own pretty printer (must register at Errors.report)";
+           " Use your own pretty printer";
     "-easydot", Arg.Unit F._easy_dot_type_graph,
            " Output a dot file of the type graph";
     "-easylevel", Arg.String F._easylevel, " Set the language level";

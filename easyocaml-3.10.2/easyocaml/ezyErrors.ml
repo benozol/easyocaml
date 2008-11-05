@@ -4,8 +4,6 @@ open EzyUtils.Infix
 open EzyUtils
 open EzyAst
 
-module EzyParseError = EzyCamlgrammar.ParseError
-
 let logger = new Logger.logger "ezyErrors"
 
 type type_error =
@@ -47,7 +45,7 @@ type heavy_error =
   | Error_as_heavy of (Location.t * error)
 
 type fatal = 
-  | Parse_error of EzyCamlgrammar.ParseError.t
+  | Parse_error of EzyCamlgrammar.ParseError.error
   | Import_error of import_error
   | Module_not_found of Longident.t
   | Other_fatal of string
@@ -353,7 +351,7 @@ let print_specific_parse_error_desc =
 let print_parse_error_desc =
   match lang with
     | `En | `Fr -> begin fun ppf err -> 
-        pp_print_string ppf (EzyParseError.to_string err)
+        pp_print_string ppf (EzyCamlgrammar.ParseError.error_to_string err)
       end
     | `De -> begin fun ppf _ ->
         pp_print_string ppf "schwierig, schwierig"

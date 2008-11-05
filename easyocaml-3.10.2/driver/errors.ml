@@ -69,14 +69,22 @@ let original_report ppf = function
     Format.pp_print_flush ppf () ;
     EzyErrors.print_fatal () ?program (match loc with None -> Location.none | Some loc -> loc) ppf fatal
 | EzyCamlgrammar.ParseError.E (loc, err) ->
+    (* ignore (fun (x:EzyCamlgrammar.ParseError.t) (y:Camlp4.PreCast.Gram.ParseError.t) -> x = y); *)
     Format.pp_print_flush ppf () ;
     EzyErrors.print_parse_error ppf loc err
+| EzyCamlgrammar.ECaml.Loc.Exc_located (loc, Stream.Error code) ->
+    print_endline "Found located Stream.Error";
+    let err = EzyCamlgrammar.ParseError.decode code in
+    EzyErrors.print_parse_error ppf loc err
+| Stream.Error code ->
+    failwith "pure Stream.Error"
 | Sys_error msg ->
     fprintf ppf "I/O error: %s" msg
 | Warnings.Errors (n) ->
     fprintf ppf "@.Error: error-enabled warnings (%d occurrences)" n
 | x ->
     fprintf ppf "@]";
+    print_endline "Cant handle";
     raise x
 
 let report = ref original_report

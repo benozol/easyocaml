@@ -102,7 +102,7 @@ type import_error =
 (** Fatal errors terminate compilation directly and are reported single.
   *)
 type fatal =
-  | Parse_error of EzyCamlgrammar.ParseError.t
+  | Parse_error of EzyCamlgrammar.ParseError.error
     (** Syntax error, sometimes including the parsers original exception. *)
   | Import_error of import_error
     (** [Import_error (b, ie)]: Actually valid OCaml code, but either not allowed by
@@ -155,7 +155,7 @@ val print_heavies :
 val print_fatal :
   unit -> ?program:string lazy_t -> EzyOcamlmodules.Location.t -> Format.formatter -> fatal -> unit
 val print_parse_error :
-  Format.formatter -> EzyCamlgrammar.ParseError.Loc.t -> EzyCamlgrammar.ParseError.t -> unit
+  Format.formatter -> EzyCamlgrammar.ParseError.Loc.t -> EzyCamlgrammar.ParseError.error -> unit
 
 type some_errors = Errors of ErrorSet.t | Heavies of HeavyErrorSet.t
 type annotated_errors = {
