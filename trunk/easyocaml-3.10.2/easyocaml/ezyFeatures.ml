@@ -67,6 +67,7 @@ type type_feats = {
   t_variant : bool;
   t_record : bool;
   t_polymorphic : bool;    (* are type parameters allowed? *)
+  t_and : bool;
 }
 
 type struct_feats = {
@@ -141,8 +142,8 @@ let print_expr_feats ppf ef =
   ef.e_type_annotation
 
 let print_type_feats ppf tf =
-  Format.fprintf ppf "{@[synonym: %b@ variant: %b@ record: %b@ polymorphic: %b@]}"
-    tf.t_synonym tf.t_variant tf.t_record tf.t_polymorphic
+  Format.fprintf ppf "{@[synonym: %b@ variant: %b@ record: %b@ polymorphic: %b and: %b@]}"
+    tf.t_synonym tf.t_variant tf.t_record tf.t_polymorphic tf.t_and
 
 let print_struct_feats ppf sf =
   Format.fprintf ppf "{@[annot mand: %b@ eval: %b@ let: %a@ let rec: %a@ type: %a@ exception: %b@ open: %b@ semi semi optional: %b@]}"
@@ -214,6 +215,7 @@ let all_type_features b = {
   t_variant = b ;
   t_record = b ;
   t_polymorphic = b ;
+  t_and = b;
 }
 
 let all_struct_features b = {
