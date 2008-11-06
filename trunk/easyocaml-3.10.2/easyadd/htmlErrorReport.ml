@@ -4,6 +4,8 @@ open EzyOcamlmodules
 open EzyTypingCoreTypes
 open EzyErrors
 
+let logger = new EzyUtils.Logger.logger "htmlErrorReport"
+
 let template () = format_of_string "
 <html>
   <head>

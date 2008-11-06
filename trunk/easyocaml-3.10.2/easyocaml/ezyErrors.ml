@@ -480,5 +480,6 @@ let report_fatal ppf loc program fatal =
   Format.pp_print_flush ppf () ;
   print_fatal () ?program (match loc with None -> Location.none | Some loc -> loc) ppf fatal
 
-let report_parse_error ppf loc opt_program err =
-  report_fatal ppf (Some loc) opt_program (Parse_error err)
+let report_parse_error ppf loc program err =
+  Format.pp_print_flush ppf () ;
+  print_fatal () ?program loc ppf (Parse_error err)
