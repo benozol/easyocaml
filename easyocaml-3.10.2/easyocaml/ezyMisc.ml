@@ -18,7 +18,7 @@ let recognize_error_printer : string -> error_printer =
     else
       if String.check_suffix str ".cmo" 
       then `Plugin str
-      else Misc.fatal_error ("Not a valid error printer: " ^ str ^ " (can only be `xml', `sexp', or a plugin)")
+      else Misc.fatal_error ("Not a valid error printer: " ^ str ^ " (must be an OCaml object file, calling EzyErrors.register")
 
 let register_error_printer : string -> unit =
   fun str ->
