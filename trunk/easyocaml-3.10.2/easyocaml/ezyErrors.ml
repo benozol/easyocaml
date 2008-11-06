@@ -468,3 +468,17 @@ exception Fatal of Location.t option * string lazy_t option * fatal
 let raise_fatal ?loc ?program s =
   raise (Fatal (loc, program, s))
 
+let report_annotated_errors ppf { errors = errors; ast = ast; program = program } =
+  Format.pp_print_flush ppf () ;
+  match errors with
+    | Errors errors -> 
+        print_errors () ?program ast ppf errors
+    | Heavies heavies ->
+        print_heavies () ?program ast ppf heavies
+
+let report_fatal ppf loc program fatal =
+  Format.pp_print_flush ppf () ;
+  print_fatal () ?program (match loc with None -> Location.none | Some loc -> loc) ppf fatal
+
+let report_parse_error ppf loc opt_program err =
+  report_fatal ppf (Some loc) opt_program (Parse_error err)

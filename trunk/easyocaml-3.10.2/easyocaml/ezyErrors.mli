@@ -167,3 +167,6 @@ type annotated_errors = {
 }
 exception AnnotatedError of annotated_errors
 exception Fatal of EzyOcamlmodules.Location.t option * string lazy_t option * fatal
+val report_annotated_errors: Format.formatter -> annotated_errors -> unit
+val report_fatal: Format.formatter -> Location.t option -> string lazy_t option -> fatal -> unit
+val report_parse_error: Format.formatter -> EzyOcamlmodules.Location.t -> string lazy_t option -> EzyCamlgrammar.ParseError.error -> unit
