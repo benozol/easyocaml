@@ -68,6 +68,9 @@ let original_report ppf = function
 | EzyErrors.Fatal (loc, program, fatal) ->
     Format.pp_print_flush ppf () ;
     EzyErrors.print_fatal () ?program (match loc with None -> Location.none | Some loc -> loc) ppf fatal
+| EzyCamlgrammar.E (loc, program, perr) ->
+    Format.pp_print_flush ppf () ;
+    EzyErrors.print_fatal () ~program (match loc with None -> Location.none | Some loc -> loc) ppf (EzyErrors.Parse_error perr)
 | EzyCamlgrammar.ParseError.E (loc, err) ->
     (* ignore (fun (x:EzyCamlgrammar.ParseError.t) (y:Camlp4.PreCast.Gram.ParseError.t) -> x = y); *)
     Format.pp_print_flush ppf () ;
