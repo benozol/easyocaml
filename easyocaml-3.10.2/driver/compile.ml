@@ -116,7 +116,7 @@ let implementation ppf sourcefile outputprefix =
     let parse inputfile ast_impl_magic_number =
       match easy.EzySetup.features with
         | Some fs -> 
-            EzyParser.file () fs inputfile ast_impl_magic_number
+            EzyCamlgrammar.restrict_and_parse_implem fs inputfile ast_impl_magic_number
         | None ->
             Pparse.file ppf inputfile Parse.implementation ast_impl_magic_number in
 
