@@ -7,7 +7,7 @@
     <script type='text/javascript'>
       registerErrors([
 
-new LocalError('Module Abc not found', '1;0-8'),         
+new LocalError('Parse error: illegal begin of [implem]', '1;0-4'),         
       ]);
     </script>
   </head>
@@ -18,7 +18,7 @@ new LocalError('Module Abc not found', '1;0-8'),
     </p>
     <p>
       <div class='code'><div class='currenterror'><span name='codeitem' id='null'></span>
-n/a
+<span name='codeitem' id='1;0-4'>type</span>&nbsp;t&nbsp;=&nbsp;{&nbsp;x&nbsp;:&nbsp;int&nbsp;}<br />let&nbsp;f&nbsp;x&nbsp;=&nbsp;x.x&nbsp;&lt;-&nbsp;100<br />
       </div></div>
     </p>
   </all></body>

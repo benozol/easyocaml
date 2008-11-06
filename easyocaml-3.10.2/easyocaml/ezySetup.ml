@@ -51,7 +51,8 @@ let setup () =
     | Some x -> x
     | None ->
         let s = do_setup () in
-          logger#debug "easyocaml setup: modules = %a; inc_dirs = %a; obj_files = %a" 
+          logger#debug "easyocaml setup: features = %a; modules = %a; inc_dirs = %a; obj_files = %a" 
+            (format_option EzyFeatures.print_program_feats) s.features
             (format_option (format_list (format_pair Format.pp_print_string Format.pp_print_bool) ", ")) s.modules
             (format_list Format.pp_print_string " ") s.inc_dirs
             (format_list Format.pp_print_string " ") s.obj_files;
