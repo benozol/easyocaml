@@ -409,7 +409,7 @@ value restrict_and_register_top spec
 
 (* Actually, I want to throw [EzyErrors.Fatal] for parsing errors. This [E] is to break circular
  * dependencies between EzyCamlgrammar and EzyErrors. *)
-exception E of option EzyOcamlmodules.Location.t and lazy_t string and ParseError.error;
+exception E of EzyOcamlmodules.Location.t and lazy_t string and ParseError.error;
 
 value restrict_and_parse_implem : EzyFeatures.program_feats -> string -> string -> Parsetree.structure =
   fun spec ->
@@ -436,4 +436,4 @@ value restrict_and_parse_implem : EzyFeatures.program_feats -> string -> string 
         (fun () -> close_in ic)
       with
         [ ParseError.E (loc, err) ->
-            raise (E (Some (import_loc loc), program, err)) ];
+            raise (E (import_loc loc, program, err)) ];

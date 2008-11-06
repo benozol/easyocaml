@@ -59,26 +59,14 @@ let original_report ppf = function
     Bytelibrarian.report_error ppf code
 | Bytepackager.Error code ->
     Bytepackager.report_error ppf code
-| EzyErrors.AnnotatedError { EzyErrors.errors = EzyErrors.Errors errors; ast = ast; program = program } ->
-    Format.pp_print_flush ppf () ;
-    EzyErrors.print_errors () ?program ast ppf errors
-| EzyErrors.AnnotatedError { EzyErrors.errors = EzyErrors.Heavies heavies; ast = ast; program = program } ->
-    Format.pp_print_flush ppf () ;
-    EzyErrors.print_heavies () ?program ast ppf heavies
+| EzyErrors.AnnotatedError an_err ->
+    EzyErrors.report_annotated_errors ppf an_err
 | EzyErrors.Fatal (loc, program, fatal) ->
-    Format.pp_print_flush ppf () ;
-    EzyErrors.print_fatal () ?program (match loc with None -> Location.none | Some loc -> loc) ppf fatal
-| EzyCamlgrammar.E (loc, program, perr) ->
-    Format.pp_print_flush ppf () ;
-    EzyErrors.print_fatal () ~program (match loc with None -> Location.none | Some loc -> loc) ppf (EzyErrors.Parse_error perr)
+    EzyErrors.report_fatal ppf loc program fatal
 | EzyCamlgrammar.ParseError.E (loc, err) ->
-    (* ignore (fun (x:EzyCamlgrammar.ParseError.t) (y:Camlp4.PreCast.Gram.ParseError.t) -> x = y); *)
-    Format.pp_print_flush ppf () ;
-    EzyErrors.print_parse_error ppf loc err
-| EzyCamlgrammar.ECaml.Loc.Exc_located (loc, Stream.Error code) ->
-    print_endline "Found located Stream.Error";
-    let err = EzyCamlgrammar.ParseError.decode code in
-    EzyErrors.print_parse_error ppf loc err
+    EzyErrors.report_parse_error ppf (EzyCamlgrammar.import_loc loc) None err
+| EzyCamlgrammar.E (loc, program, error) ->
+    EzyErrors.report_parse_error ppf loc (Some program) error
 | Stream.Error code ->
     failwith "Pure Stream.Error"
 | Sys_error msg ->
