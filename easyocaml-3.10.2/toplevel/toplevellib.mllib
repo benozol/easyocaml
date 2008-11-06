@@ -14,7 +14,7 @@ Camlp4OCamlRevisedParser
 EzyAst          EzyEnv               EzyLang                   EzyTypingCoreTypes
 EzyAsttypes     EzyErrorReportUtils  EzyMisc                   EzyTyping
 EzyCamlgrammar  EzyErrors            EzyOcamlmodules           EzyUtils
-EzyConfig       EzyFeatures          EzyParser                 MyCamlp4Ast2OCamlAst
+EzyConfig       EzyFeatures          MyCamlp4Ast2OCamlAst
 EzyConstraints  EzyGenerate          EzySetup
 EzyDynload      EzyInstall           
 EzyEnrichedAst  EzyLangLevel         EzyTeachpack

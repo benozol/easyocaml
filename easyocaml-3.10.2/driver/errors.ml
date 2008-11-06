@@ -81,10 +81,4 @@ let report = ref original_report
 
 let report_error ppf exn =
   fprintf ppf "@[" ;
-(*   try *)
-    fprintf ppf "%a@]@." !report exn
-(*
-  with x ->
-    fprintf ppf "%a@]@." original_report x ;
-    raise x
- *)
+  fprintf ppf "%a@]@." !report exn
