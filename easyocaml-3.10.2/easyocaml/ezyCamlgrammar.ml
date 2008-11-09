@@ -22,9 +22,12 @@ module Restrict (Spec: sig value spec : EzyFeatures.program_feats; end) (Syntax:
   do {
     logger#info "Restricting by EzyCamlgrammar";
 
-    let (pat_spec, fun_spec, let_spec, letrec_spec, expr_spec, type_spec, str_spec, spec) = maximum spec;
+    let (pat_spec, let_spec, letrec_spec) = maximum spec;
+    let expr_spec = spec.pr_expr_features;
+    let fun_spec = spec.pr_expr_features.e_function;
+    let str_spec = spec.pr_struct_features;
 
-    (* DELETE_RULE Gram patt: "("; SELF; ")" END; *)
+    (* never: DELETE_RULE Gram patt: "("; SELF; ")" END; *)
     match pat_spec with
       [ Some pat_spec ->
           do {
@@ -120,6 +123,10 @@ module Restrict (Spec: sig value spec : EzyFeatures.program_feats; end) (Syntax:
     DELETE_RULE Gram expr: "("; SELF; ":"; ctyp; ":>"; ctyp; ")" END;
     DELETE_RULE Gram expr: "("; SELF; ":>"; ctyp; ")" END;
     
+    if match fun_spec with [ Some { f_fun = False } -> True | _ -> False ] then do {
+      DELETE_RULE Gram expr: "fun"; fun_def END;
+    } else ();
+
     if not expr_spec.e_sequence then do {
       DELETE_RULE Gram expr: SELF; ";"; SELF END;
       DELETE_RULE Gram expr: SELF; ";" END;
@@ -132,7 +139,6 @@ module Restrict (Spec: sig value spec : EzyFeatures.program_feats; end) (Syntax:
     } else ();
     if Option.is_none expr_spec.e_function then do {
       DELETE_RULE Gram expr: "function"; match_case END;
-      DELETE_RULE Gram expr: "fun"; fun_def END;
     } else ();
     if not expr_spec.e_if_then_else then do {
       DELETE_RULE Gram expr: "if"; SELF; "then"; expr LEVEL "top"; "else"; expr LEVEL "top" END;
@@ -162,15 +168,11 @@ module Restrict (Spec: sig value spec : EzyFeatures.program_feats; end) (Syntax:
       DELETE_RULE Gram expr: SELF; "<-"; expr LEVEL "top" END;
     } else ();
 
-    if match fun_spec with [ Some { f_fun = False } -> True | _ -> False ] then do {
-      DELETE_RULE Gram expr: "fun"; fun_def END;
-    } else ();
-
     if match (let_spec, letrec_spec) with [ (Some { l_and = True },_) | (_, Some { lr_and = True }) -> False | _ -> True ] then do {
       DELETE_RULE Gram binding: SELF; "and"; SELF END;
     } else ();
     if match (let_spec, letrec_spec) with [ (Some { l_args = True }, _) | (_, Some { lr_args = True }) -> False | _ -> True ] then do {
-      DELETE_RULE Gram fun_binding: labeled_ipatt END;
+      DELETE_RULE Gram fun_binding: labeled_ipatt; SELF END;
     } else ();
 (*
       DELETE_RULE Gram expr: SELF; infixop6; SELF END;
@@ -182,7 +184,7 @@ module Restrict (Spec: sig value spec : EzyFeatures.program_feats; end) (Syntax:
       DELETE_RULE Gram expr: SELF; infix operator (level 4) (start with "**") (right assoc); SELF END;
       DELETE_RULE Gram expr: prefix operator (start with '!', '?', '~'); SELF END;
  *)
-(*
+(* never delete these rules?
       DELETE_RULE Gram expr: SELF; "land"; SELF END;
       DELETE_RULE Gram expr: SELF; "lor"; SELF END;
       DELETE_RULE Gram expr: SELF; "lxor"; SELF END;
@@ -247,6 +249,62 @@ module Restrict (Spec: sig value spec : EzyFeatures.program_feats; end) (Syntax:
     if not expr_spec.e_qualified_var then do {
       DELETE_RULE Gram val_longident: a_UIDENT; "."; SELF END;
       DELETE_RULE Gram val_longident: a_UIDENT END;
+    } else ();
+
+    DELETE_RULE Gram str_item: "let"; "module"; a_UIDENT; module_binding0; "in"; expr END;
+    DELETE_RULE Gram str_item: "class"; "type"; class_type_declaration END;
+    DELETE_RULE Gram str_item: "class"; class_declaration END;
+    (* TODO (but string_list is unknown) DELETE_RULE Gram labeled_ipatt: "external"; a_LIDENT; ":"; ctyp; "="; string_list END; *)
+    DELETE_RULE Gram str_item: "include"; module_expr END;
+    DELETE_RULE Gram str_item: "module"; "rec"; module_binding END;
+    DELETE_RULE Gram str_item: "module"; "type"; a_UIDENT; "="; module_type END;
+    DELETE_RULE Gram str_item: "module"; a_UIDENT; module_binding0 END;
+
+    if Option.is_none str_spec.s_let then do {
+      DELETE_RULE Gram str_item: "let"; opt_rec; binding; "in"; expr END;
+    } else ();
+    if Option.is_none str_spec.s_let_rec then do {
+      DELETE_RULE Gram str_item: "let"; opt_rec; binding END;
+    } else ();
+    if not str_spec.s_exception then do {
+      DELETE_RULE Gram str_item: "exception"; constructor_declaration; "="; type_longident END;
+      DELETE_RULE Gram str_item: "exception"; constructor_declaration END;
+    } else ();
+    if not str_spec.s_open then do {
+      DELETE_RULE Gram str_item: "open"; module_longident END;
+    } else ();
+    match spec.pr_struct_features.s_type with
+      [ Some type_spec ->
+          do {
+            DELETE_RULE Gram opt_eq_ctyp: END;
+            DELETE_RULE Gram type_kind: "private"; SELF END;
+            DELETE_RULE Gram type_kind: ctyp; "="; "private"; SELF END;
+            DELETE_RULE Gram type_kind: ctyp; "="; "{"; label_declaration; "}" END;
+            DELETE_RULE Gram type_kind: ctyp; "="; OPT "|"; constructor_declarations END;
+
+            if not type_spec.t_record then do {
+              DELETE_RULE Gram type_kind: "{"; label_declaration; "}" END;
+            } else ();
+            (* if not type_spec.t_variant then do {
+              DELETE_RULE Gram type_kind: test_constr_decl; OPT "|"; constructor_declarations END;
+            } else ();*)
+            if not type_spec.t_synonym then do {
+              DELETE_RULE Gram type_kind: ctyp END;
+            } else ();
+
+            if not type_spec.t_polymorphic then do {
+              DELETE_RULE Gram type_ident_and_parameters: "("; LIST1 type_parameter SEP ","; ")"; a_LIDENT END;
+              DELETE_RULE Gram type_ident_and_parameters: type_parameter; a_LIDENT END;
+              DELETE_RULE Gram type_ident_and_parameters: a_LIDENT; LIST0 type_parameter END; (* FIX Camlp4OCamlParser *)
+            } else ();
+          }
+      | None -> 
+          DELETE_RULE Gram str_item: "type"; type_declaration END ];
+    if not str_spec.s_eval_expr then do {
+      DELETE_RULE Gram str_item: expr END;
+    } else ();
+    if not str_spec.s_semisemi_optional then do {
+      DELETE_RULE Gram semi: END;
     } else ();
   };
 end;
