@@ -155,30 +155,24 @@ let print_program locs ppf code =
 
 let name = "Html error reporting"
 
-let print_program_aux ppf = function
-  | ast, Some p ->
-      print_program (EzyAst.CollectLocs.structure ast) ppf (Lazy.force p)
-  | _ -> Format.pp_print_string ppf "n/a"
+let print_program_aux ppf (ast, program) =
+  print_program (EzyAst.CollectLocs.structure ast) ppf (Lazy.force program)
 
-let print_errors' ?program ast ppf errors =
+let print_errors' ~program ast ppf errors =
   Format.fprintf ppf (template ())
     (fun ppf ->
        ErrorSet.iter (print_error ppf)) errors 
     print_program_aux (ast, program)
 
-let print_heavies' ?program ast ppf heavies =
+let print_heavies' ~program ast ppf heavies =
   Format.fprintf ppf (template ())
     (fun ppf -> 
        HeavyErrorSet.iter (print_heavy ppf)) heavies
     print_program_aux (ast, program)
 
-let print_fatal' ?program loc ppf fatal =
+let print_fatal' ~program loc ppf fatal =
   Format.fprintf ppf (template ())
     print_fatal (loc, fatal)
-    begin fun ppf -> function
-      | Some p ->
-          print_program (LocationSet.singleton loc) ppf (Lazy.force p)
-      | _ -> Format.pp_print_string ppf "n/a"
-    end program
+    (print_program (LocationSet.singleton loc)) (Lazy.force program)
 
 let () = EzyErrors.register name print_errors' print_heavies' print_fatal'

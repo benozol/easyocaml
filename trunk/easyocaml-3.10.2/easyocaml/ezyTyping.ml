@@ -286,12 +286,7 @@ let type_expression env program (expr: EzyAst.imported_expression) ast =
       | Result.Ok (s, errs) when EzyErrors.ErrorSet.is_empty errs ->
           enr_exp, s
       | Result.Error errs | Result.Ok (_, errs) ->
-          let err = {
-            EzyErrors.errors = EzyErrors.Errors errs ;
-            ast = [{ EzyAst.pstr_desc = EzyAst.Pstr_eval expr; pstr_loc = Location.none }] ;
-            program = Some program ;
-          } in
-          raise (EzyErrors.AnnotatedError err)
+          EzyErrors.raise_annotated_error (EzyErrors.Errors errs) [{ EzyAst.pstr_desc = EzyAst.Pstr_eval expr; pstr_loc = Location.none }]
             
 let rec print_strs_info s env ppf = function
   | [] -> ()
@@ -334,12 +329,7 @@ let type_structure ?program (oenv: Env.t) (sstr: EzyAst.imported_structure) =
   logger#debug "@[<2>generated constraints:@ %a@]" AtConstrSet.print cs ;
   if not (EzyErrors.HeavyErrorSet.is_empty pp.EzyGenerate.PostProcess.heavies) then begin
     let heavies = EzyErrors.HeavyErrorSet.add_errors pp.EzyGenerate.PostProcess.errors pp.EzyGenerate.PostProcess.heavies in
-    let err = {
-      EzyErrors.errors = EzyErrors.Heavies heavies ;
-      ast = sstr ;
-      program = program ;
-    } in
-    raise (EzyErrors.AnnotatedError err)
+    EzyErrors.raise_annotated_error (EzyErrors.Heavies heavies) sstr
   end else () ;
   let res = solve env' timeout cs pp sstr in
   logger#info "Constraints solved" ;
@@ -347,12 +337,7 @@ let type_structure ?program (oenv: Env.t) (sstr: EzyAst.imported_structure) =
     | Result.Ok (s, errs) when EzyErrors.ErrorSet.is_empty errs ->
         enr_str, s, (* TODO EzyEnv.apply_tyvarsubst s *) env'
     | Result.Error errs | Result.Ok (_, errs) ->
-        let err = {
-          EzyErrors.errors = EzyErrors.Errors errs ;
-          ast = sstr ;
-          program = program ;
-        } in
-        raise (EzyErrors.AnnotatedError err)
+        EzyErrors.raise_annotated_error (EzyErrors.Errors errs) sstr
 
 (* For compilation *)
 (* Typing of an implementation, i.e. a `.ml' file *)                                     
@@ -373,12 +358,7 @@ let type_implementation :
           let ty = TyVarSubst.apply_to_ty s vd.EzyEnv.val_ty in
             if not (TyVarSet.is_empty (Ty.free_vars ty)) then
               let heavies = EzyErrors.HeavyErrorSet.singleton (loc, EzyErrors.Type_variables_not_generalized (v.nm_name, ty)) in
-              let err = {
-                EzyErrors.errors = EzyErrors.Heavies heavies ;
-                ast = ast ;
-                program = Some program ;
-              } in
-            raise (EzyErrors.AnnotatedError err)
+              EzyErrors.raise_annotated_error (EzyErrors.Heavies heavies) ast
         end in
     match strit.EzyAst.pstr_desc with
       | EzyAst.Pstr_rec_value bindings ->

@@ -7,7 +7,7 @@
     <script type='text/javascript'>
       registerErrors([
 
-new LocalError('Parse error: illegal begin of [implem]', '1;0-4'),         
+new LocalError('The record field x is not mutable', '2;14-20'),         
       ]);
     </script>
   </head>
@@ -18,7 +18,7 @@ new LocalError('Parse error: illegal begin of [implem]', '1;0-4'),
     </p>
     <p>
       <div class='code'><div class='currenterror'><span name='codeitem' id='null'></span>
-<span name='codeitem' id='1;0-4'>type</span>&nbsp;t&nbsp;=&nbsp;{&nbsp;x&nbsp;:&nbsp;int&nbsp;}<br />let&nbsp;f&nbsp;x&nbsp;=&nbsp;x.x&nbsp;&lt;-&nbsp;100<br />
+<span name='codeitem' id='1;0-20'>type&nbsp;t&nbsp;=&nbsp;{&nbsp;<span name='codeitem' id='1;11-20'>x&nbsp;:&nbsp;<span name='codeitem' id='1;15-18'>int</span>&nbsp;}</span></span><br /><span name='codeitem' id='2;0-20'>let&nbsp;<span name='codeitem' id='2;4-5'>f</span>&nbsp;<span name='codeitem' id='2;6-20'><span name='codeitem' id='2;6-7'>x</span>&nbsp;=&nbsp;<span name='codeitem' id='2;10-11'>x</span>.x&nbsp;<span name='codeitem' id='2;14-20'>&lt;-&nbsp;<span name='codeitem' id='2;17-20'>100</span></span></span></span><br />
       </div></div>
     </p>
   </all></body>

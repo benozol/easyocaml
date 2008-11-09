@@ -112,18 +112,23 @@ let implementation ppf sourcefile outputprefix =
   end else begin    
     let objfile = outputprefix ^ ".cmo" in
     let oc = open_out_bin objfile in
-
+    let program = lazy (
+      let ic = open_in inputfile in
+      EzyUtils.between EzyUtils.input_all ic (fun _ -> close_in ic)
+    ) in
     let parse inputfile ast_impl_magic_number =
       match easy.EzySetup.features with
         | Some fs -> 
-            EzyCamlgrammar.restrict_and_parse_implem fs inputfile ast_impl_magic_number
+            EzyErrors.wrap_exception_with_program program
+              (fun () -> EzyCamlgrammar.restrict_and_parse_implem fs inputfile ast_impl_magic_number)
         | None ->
             Pparse.file ppf inputfile Parse.implementation ast_impl_magic_number in
 
     let typecheck parse_tree : Typedtree.structure * Typedtree.module_coercion =
       match easy.EzySetup.features with
         | Some fs -> 
-            EzyTyping.type_and_compare_implementation sourcefile outputprefix modulename env parse_tree fs
+            EzyErrors.wrap_exception_with_program program
+              (fun () -> EzyTyping.type_and_compare_implementation sourcefile outputprefix modulename env parse_tree fs)
         | None ->
             Typemod.type_implementation sourcefile outputprefix modulename env parse_tree in
 

@@ -248,7 +248,7 @@ let print_error_desc =
       end
     | `Fr -> not_implemented "EzyErrors.print_error (french)"
 
-let print_error ?program ast ppf (loc, error) =
+let print_error ~program ast ppf (loc, error) =
    match error with
     | Type_error (err, locs) ->
         let sliced_ast = EzyErrorReportUtils.create_slices ast locs in
@@ -319,22 +319,22 @@ let print_heavy_error_desc =
       end
     | `Fr -> not_implemented "EzyErrors.print_heavy (french)"
 
-let print_heavy ?program ast ppf (loc, heavy) =
+let print_heavy ~program ast ppf (loc, heavy) =
   match heavy with
     | Error_as_heavy error ->
-        print_error ?program ast ppf error
+        print_error ~program ast ppf error
     | _ ->
       fprintf ppf "@[<3> * %a@ (%t %a)@]"
         print_heavy_error_desc heavy at Location.print loc
 
-let print_errors_default ?program ast ppf errors =
+let print_errors_default ~program ast ppf errors =
   fprintf ppf "@[%a@]@?"
-    (format_list (print_error ?program ast) "@\n")
+    (format_list (print_error ~program ast) "@\n")
     (ErrorSet.elements errors)
 
-let print_heavies_default ?program ast ppf heavies =
+let print_heavies_default ~program ast ppf heavies =
   fprintf ppf "@[%a@]@?"
-    (format_list (print_heavy ?program ast) "@\n")
+    (format_list (print_heavy ~program ast) "@\n")
     (HeavyErrorSet.elements heavies)
 
 let print_specific_parse_error_desc =
@@ -424,7 +424,7 @@ let long_print_loc ppf loc =
        | `De -> fprintf ppf "Datei %s: %t"
     ) loc.Location.loc_start.Lexing.pos_fname print_details 
 
-let print_fatal_default ?program loc ppf fatal =
+let print_fatal_default ~program loc ppf fatal =
   fprintf ppf "@[<3> * " ;
   if loc <> Location.none then
     begin match lang with
@@ -459,27 +459,45 @@ type some_errors =
 type annotated_errors = {
   errors: some_errors ;
   ast: EzyAst.imported_structure ;
-  program: string lazy_t option ;
+  ann_program: string lazy_t ;
 }
 
 exception AnnotatedError of annotated_errors
-exception Fatal of Location.t option * string lazy_t option * fatal
 
-let raise_fatal ?loc ?program s =
-  raise (Fatal (loc, program, s))
+type fatal_info = {
+  error : fatal;
+  opt_loc : EzyOcamlmodules.Location.t option;
+  fat_program : string lazy_t;
+}
+exception Fatal of fatal_info
 
-let report_annotated_errors ppf { errors = errors; ast = ast; program = program } =
+let raise_annotated_error errors ast =
+  raise (AnnotatedError {errors = errors; ast = ast; ann_program = lazy (assert false)})
+
+let raise_fatal ?loc s =
+  raise (Fatal {opt_loc = loc; fat_program = lazy (assert false); error = s})
+
+let wrap_exception_with_program program f =
+  try
+    f ()
+  with
+    | AnnotatedError ann_errs ->
+        raise (AnnotatedError {ann_errs with ann_program = program})
+    | Fatal fat_info ->
+        raise (Fatal {fat_info with fat_program = program})
+
+let report_annotated_errors ppf { errors = errors; ast = ast; ann_program = program } =
   Format.pp_print_flush ppf () ;
   match errors with
     | Errors errors -> 
-        print_errors () ?program ast ppf errors
+        print_errors () program ast ppf errors
     | Heavies heavies ->
-        print_heavies () ?program ast ppf heavies
+        print_heavies () program ast ppf heavies
 
-let report_fatal ppf loc program fatal =
+let report_fatal ppf { opt_loc = opt_loc; error = fatal; fat_program = program } =
   Format.pp_print_flush ppf () ;
-  print_fatal () ?program (match loc with None -> Location.none | Some loc -> loc) ppf fatal
+  print_fatal () ~program (Option.value ~default:Location.none opt_loc) ppf fatal
 
 let report_parse_error ppf loc program err =
   Format.pp_print_flush ppf () ;
-  print_fatal () ?program loc ppf (Parse_error err)
+  print_fatal () ~program loc ppf (Parse_error err)
