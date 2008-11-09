@@ -279,7 +279,6 @@ let maximum prf =
       Option.map ~f:(fun ff -> ff.f_pattern) prf.pr_expr_features.e_function ;
       prf.pr_expr_features.e_match ;
     ] in
-  let max_ff = prf.pr_expr_features.e_function in
   let max_lf =
     List.fold_left (aux let_features_union) None [
       prf.pr_struct_features.s_let ;
@@ -290,8 +289,4 @@ let maximum prf =
       prf.pr_struct_features.s_let_rec ;
       prf.pr_expr_features.e_let_rec_in ;
     ] in
-  let max_ef = prf.pr_expr_features in
-  let max_tf = prf.pr_struct_features.s_type in
-  let max_sf = prf.pr_struct_features in
-  let max_prf= prf in
-  max_pf, max_ff, max_lf, max_lrf, max_ef, max_tf, max_sf, max_prf
+  max_pf, max_lf, max_lrf
