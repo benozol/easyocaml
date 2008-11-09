@@ -116,8 +116,6 @@ type fatal =
   | Other_fatal of string
     (** Different errors which should not occur in a correctly configured system. *)
 
-val raise_fatal : ?loc:EzyOcamlmodules.Location.t -> ?program:string lazy_t -> fatal -> 'a
-
 (** Some i18n'ed error printing code as a simple default. *)
 val print_type_error_desc : Format.formatter -> type_error -> unit
 val print_error_desc : Format.formatter -> error -> unit
@@ -137,38 +135,53 @@ module HeavyErrorSet : sig
   val add_errors : ErrorSet.t -> t -> t
 end
 
-
 (** To register arbitrary error reporting code, just call this function with a name
   * and appropriate printers. 
   * This may happen in some module which is given to the compiler with flat -easyerrorprinter *)
 val register :
   string ->
-  (?program:(string lazy_t) -> EzyAst.imported_structure -> Format.formatter -> ErrorSet.t -> unit) ->
-  (?program:(string lazy_t) -> EzyAst.imported_structure -> Format.formatter -> HeavyErrorSet.t -> unit) ->
-  (?program:(string lazy_t) -> Location.t -> Format.formatter -> fatal -> unit) ->
+  (program:string lazy_t -> EzyAst.imported_structure -> Format.formatter -> ErrorSet.t -> unit) ->
+  (program:string lazy_t -> EzyAst.imported_structure -> Format.formatter -> HeavyErrorSet.t -> unit) ->
+  (program:string lazy_t -> Location.t -> Format.formatter -> fatal -> unit) ->
   unit
 
-(**/**)
-
 val print_errors :
-  unit -> ?program:string lazy_t -> EzyAst.imported_structure -> Format.formatter -> ErrorSet.t -> unit
+  unit -> program:string lazy_t -> EzyAst.imported_structure -> Format.formatter -> ErrorSet.t -> unit
 val print_heavies :
-  unit -> ?program:string lazy_t -> EzyAst.imported_structure -> Format.formatter -> HeavyErrorSet.t -> unit
+  unit -> program:string lazy_t -> EzyAst.imported_structure -> Format.formatter -> HeavyErrorSet.t -> unit
 val print_fatal :
-  unit -> ?program:string lazy_t -> EzyOcamlmodules.Location.t -> Format.formatter -> fatal -> unit
+  unit -> program:string lazy_t -> EzyOcamlmodules.Location.t -> Format.formatter -> fatal -> unit
 val print_parse_error :
   Format.formatter -> EzyCamlgrammar.ParseError.Loc.t -> EzyCamlgrammar.ParseError.error -> unit
 
+(** {2 Internal functions} *)
+
+
 type some_errors = Errors of ErrorSet.t | Heavies of HeavyErrorSet.t
-type annotated_errors = {
+
+type annotated_errors = private {
   errors : some_errors;
   ast : EzyAst.imported_structure;
-  program : string lazy_t option;
+  ann_program : string lazy_t;
 }
 exception AnnotatedError of annotated_errors
-exception Fatal of EzyOcamlmodules.Location.t option * string lazy_t option * fatal
+
+type fatal_info = private {
+  error : fatal;
+  opt_loc : EzyOcamlmodules.Location.t option;
+  fat_program : string lazy_t;
+}
+exception Fatal of fatal_info
+
+(** EasyOCaml uses the following [raise_fatal] and [raise_annotated_error] functions to terminate 
+  * parsing and typechecking in compination with [wrap_exception_with_program] which furnishes a
+  * possible exceptions with the program code for nice error reporting.
+  *)
+val raise_fatal : ?loc:EzyOcamlmodules.Location.t -> fatal -> 'a
+val raise_annotated_error: some_errors -> EzyAst.imported_structure -> 'a
+val wrap_exception_with_program: string lazy_t -> (unit -> 'a) -> 'a
 
 (* Wrapper of the above [print_(errors|heavies|fatal|parse_error)] for usage in driver/errors.ml. *)
 val report_annotated_errors: Format.formatter -> annotated_errors -> unit
-val report_fatal: Format.formatter -> Location.t option -> string lazy_t option -> fatal -> unit
-val report_parse_error: Format.formatter -> EzyOcamlmodules.Location.t -> string lazy_t option -> EzyCamlgrammar.ParseError.error -> unit
+val report_fatal: Format.formatter -> fatal_info -> unit
+val report_parse_error: Format.formatter -> EzyOcamlmodules.Location.t -> string lazy_t -> EzyCamlgrammar.ParseError.error -> unit

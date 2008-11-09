@@ -61,12 +61,10 @@ let original_report ppf = function
     Bytepackager.report_error ppf code
 | EzyErrors.AnnotatedError an_err ->
     EzyErrors.report_annotated_errors ppf an_err
-| EzyErrors.Fatal (loc, program, fatal) ->
-    EzyErrors.report_fatal ppf loc program fatal
-| EzyCamlgrammar.ParseError.E (loc, err) ->
-    EzyErrors.report_parse_error ppf (EzyCamlgrammar.import_loc loc) None err
+| EzyErrors.Fatal fatal_info ->
+    EzyErrors.report_fatal ppf fatal_info
 | EzyCamlgrammar.E (loc, program, error) ->
-    EzyErrors.report_parse_error ppf loc (Some program) error
+    EzyErrors.report_parse_error ppf loc program error
 | Stream.Error code ->
     failwith "Pure Stream.Error"
 | Sys_error msg ->
