@@ -34,32 +34,33 @@ type letrec_feats = {
 }
 
 type expr_feats = {
-  e_simple_var : bool;
-  e_qualified_var : bool;
-  e_constant : bool;
-  e_let_in : let_feats option; 
-  e_let_rec_in : letrec_feats option; 
-  e_function : fun_feats option;
-  e_match : pattern_feats option;
-  e_try : pattern_feats option;
-  e_raise : bool;
-  e_tuple : bool;
-  e_constructor : bool;
-  e_record_construction : bool;
-  e_record_functional_update : bool;  (* { e with x = e' ... } *)
-  e_record_field_access : bool;
-  e_record_field_update : bool;
-  e_reference_update: bool ; (* PARSING: expr := expr *)
-  e_if_then : bool;
-  e_if_then_else : bool;
   e_array : bool ;
   e_array_update : bool;
-  e_string_access : bool;
-  e_sequence : bool;
-  e_while : bool;
-  e_for : bool;
   e_assert : bool;
-  e_type_annotation : bool
+  e_constant : bool;
+  e_constructor : bool;
+  e_for : bool;
+  e_function : fun_feats option;
+  e_if_then : bool;
+  e_if_then_else : bool;
+  e_let_in : let_feats option; 
+  e_let_rec_in : letrec_feats option; 
+  e_list : bool;
+  e_match : pattern_feats option;
+  e_qualified_var : bool;
+  e_raise : bool;
+  e_record_construction : bool;
+  e_record_field_access : bool;
+  e_record_field_update : bool;
+  e_record_functional_update : bool;  (* { e with x = e' ... } *)
+  e_reference_update: bool ; (* PARSING: expr := expr *)
+  e_sequence : bool;
+  e_simple_var : bool;
+  e_string_access : bool;
+  e_try : pattern_feats option;
+  e_tuple : bool;
+  e_type_annotation : bool;
+  e_while : bool;
 }
 
 type type_feats = {
@@ -112,7 +113,7 @@ let opt_print p ppf = function
 
 let print_expr_feats ppf ef =
   Format.fprintf ppf
-    "{@[simple var: %b@ qual var: %b@ constant: %b@ let in: %a@ let rec in: %a@ function: %a@ match: %a@ try: %a@ raise: %b@ tuple: %b@ constructor: %b@ record constr: %b@ rec func update: %b@ rec field acc: %b@ rec field update: %b@ reference update: %b@ if then: %b@ if then else: %b@ array: %b@ array update: %b@ string acc: %b@ sequence: %b@ while: %b@ for: %b@ assert: %b@ type annot: %b@]}"
+    "{@[simple var: %b@ qual var: %b@ constant: %b@ let in: %a@ let rec in: %a@ function: %a@ list: %b@ match: %a@ try: %a@ raise: %b@ tuple: %b@ constructor: %b@ record constr: %b@ rec func update: %b@ rec field acc: %b@ rec field update: %b@ reference update: %b@ if then: %b@ if then else: %b@ array: %b@ array update: %b@ string acc: %b@ sequence: %b@ while: %b@ for: %b@ assert: %b@ type annot: %b@]}"
    
   ef.e_simple_var
   ef.e_qualified_var
@@ -120,6 +121,7 @@ let print_expr_feats ppf ef =
   (opt_print print_let_feats) ef.e_let_in
   (opt_print print_letrec_feats) ef.e_let_rec_in
   (opt_print print_fun_feats) ef.e_function
+  ef.e_list
   (opt_print print_pattern_feats) ef.e_match
   (opt_print print_pattern_feats) ef.e_try
   ef.e_raise
@@ -182,32 +184,33 @@ let all_letrec_feats b = {
 }
 
 let all_expr_features b = {
-  e_simple_var = b ;
-  e_qualified_var = b ;
-  e_constant = b ;
-  e_let_in = if b then Some {l_pattern = all_pattern_features b; l_and = true; l_args = true} else None ;
-  e_let_rec_in = if b then Some { lr_and = true; lr_args = true } else None ;
-  e_function = if b then Some { f_pattern = all_pattern_features b; f_fun = true } else None ;
-  e_match = if b then Some (all_pattern_features b) else None ;
-  e_try = if b then Some (all_pattern_features b) else None ;
-  e_raise = b ;
-  e_tuple = b ;
   e_array = b ;
   e_array_update = b ;
-  e_string_access = b ;
+  e_assert = b ;
+  e_constant = b ;
   e_constructor = b ;
-  e_record_construction = b ;
-  e_record_functional_update = b ;
-  e_record_field_access = b ;
-  e_record_field_update = b ;
-  e_reference_update = b ;
+  e_for = b ;
+  e_function = if b then Some { f_pattern = all_pattern_features b; f_fun = true } else None ;
   e_if_then = b ;
   e_if_then_else = b ;
+  e_let_in = if b then Some {l_pattern = all_pattern_features b; l_and = true; l_args = true} else None ;
+  e_let_rec_in = if b then Some { lr_and = true; lr_args = true } else None ;
+  e_list = b;
+  e_match = if b then Some (all_pattern_features b) else None ;
+  e_qualified_var = b ;
+  e_raise = b ;
+  e_record_construction = b ;
+  e_record_field_access = b ;
+  e_record_field_update = b ;
+  e_record_functional_update = b ;
+  e_reference_update = b ;
   e_sequence = b ;
+  e_simple_var = b ;
+  e_string_access = b ;
+  e_try = if b then Some (all_pattern_features b) else None ;
+  e_tuple = b ;
+  e_type_annotation = b;
   e_while = b ;
-  e_for = b ;
-  e_assert = b ;
-  e_type_annotation = b
 }
 
 let all_type_features b = {

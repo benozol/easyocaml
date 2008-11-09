@@ -4,6 +4,8 @@ open EzyErrors
 open EzyOcamlmodules
 open EzyUtils
 
+  (* TODO: text EzyFeatures.t_and for type declarations *)
+
 let logger = new Logger.logger "enr_ast"
 
 type exp_data = 
