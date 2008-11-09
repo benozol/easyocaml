@@ -24,209 +24,230 @@ module Restrict (Spec: sig value spec : EzyFeatures.program_feats; end) (Syntax:
 
     let (pat_spec, fun_spec, let_spec, letrec_spec, expr_spec, type_spec, str_spec, spec) = maximum spec;
 
-    DELETE_RULE Gram patt: "`"; a_ident END;
-    DELETE_RULE Gram patt: "#"; type_longident END;
-    DELETE_RULE Gram patt: a_CHAR; ".."; a_CHAR END;
+    (* DELETE_RULE Gram patt: "("; SELF; ")" END; *)
+    match pat_spec with
+      [ Some pat_spec ->
+          do {
+            DELETE_RULE Gram patt: "`"; a_ident END;
+            DELETE_RULE Gram patt: "#"; type_longident END;
+            DELETE_RULE Gram patt: a_CHAR; ".."; a_CHAR END;
 
-    let pat_spec = match pat_spec with [ Some pat_spec -> pat_spec | None -> all_pattern_features False ];
+            if not pat_spec.p_alias then do {
+              DELETE_RULE Gram patt: SELF; "as"; a_LIDENT END;
+            } else ();
+            if not pat_spec.p_or then do {
+              DELETE_RULE Gram patt: SELF; "|"; SELF END;
+            } else ();
+            if not pat_spec.p_tuple then do {
+              DELETE_RULE Gram patt: SELF; ","; LIST1 NEXT SEP "," END;
+            } else ();
+            if not pat_spec.p_list then do {
+              DELETE_RULE Gram patt: SELF; "::"; SELF END; (* constructor ? *)
+              DELETE_RULE Gram patt: "["; "]" END; (* constructor ? *)
+              DELETE_RULE Gram patt: "["; sem_patt_for_list; "::"; SELF; "]" END;
+              DELETE_RULE Gram patt: "["; sem_patt_for_list; "]" END;
+            } else ();
+            if not pat_spec.p_constructor then do { (* TODO
+              DELETE_RULE Gram patt: patt_constr; SELF END;
+              DELETE_RULE Gram patt: patt_constr END; *)
+              ()
+            } else ();
+            if not pat_spec.p_constant then do {
+              DELETE_RULE Gram patt: "-"; a_INT END;
+              DELETE_RULE Gram patt: "-"; a_INT32 END;
+              DELETE_RULE Gram patt: "-"; a_INT64 END;
+              DELETE_RULE Gram patt: "-"; a_NATIVEINT END;
+              DELETE_RULE Gram patt: "-"; a_FLOAT END;
+              DELETE_RULE Gram patt: a_INT END;
+              DELETE_RULE Gram patt: a_INT32 END;
+              DELETE_RULE Gram patt: a_INT64 END;
+              DELETE_RULE Gram patt: a_NATIVEINT END;
+              DELETE_RULE Gram patt: a_FLOAT END;
+              DELETE_RULE Gram patt: a_STRING END;
+              DELETE_RULE Gram patt: a_CHAR END;
+              DELETE_RULE Gram patt: "false" END;
+              DELETE_RULE Gram patt: "true" END;
+              DELETE_RULE Gram patt: "("; ")" END;
+            } else ();
+            if not pat_spec.p_array then do {
+              DELETE_RULE Gram patt: "[|"; "|]" END;
+              DELETE_RULE Gram patt: "[|"; sem_patt; "|]" END;
+            } else ();
+            if not pat_spec.p_record then do {
+              DELETE_RULE Gram patt: "{"; label_patt; "}" END;
+            } else ();
+            if not pat_spec.p_type_annotation then do {
+              DELETE_RULE Gram patt: "("; SELF; ":"; ctyp; ")" END;
+            } else ();
+            if not pat_spec.p_wildcard then do {
+              DELETE_RULE Gram patt: "_" END;
+            } else ();
+            if not pat_spec.p_wildcard then do {
+              DELETE_RULE Gram patt: ident END;
+            } else ();
+          }
+      | None ->
+          Gram.Entry.clear patt ] ;
 
-    if not pat_spec.p_alias then do {
-      DELETE_RULE Gram patt: SELF; "as"; a_LIDENT END;
-      DELETE_RULE Gram ipatt: "("; SELF; "as"; SELF; ")" END;
-    } else ();
-    if not pat_spec.p_or then
-      DELETE_RULE Gram patt: SELF; "|"; SELF END else ();
-    if not pat_spec.p_tuple then do {
-      DELETE_RULE Gram patt: SELF; ","; LIST1 NEXT SEP "," END;
-      DELETE_RULE Gram patt: "("; SELF; ","; comma_ipatt; ")" END;
-    } else ();
-    if not pat_spec.p_list then do {
-      DELETE_RULE Gram patt: SELF; "::"; SELF END;
-      DELETE_RULE Gram patt: "["; "]" END;
-      DELETE_RULE Gram patt: "["; sem_patt_for_list; "::"; SELF; "]" END;
-      DELETE_RULE Gram patt: "["; sem_patt_for_list; "]" END;
-    } else ();
-    (* No access, because this is defined in Camlp4OCamlParser
-    DELETE_RULE Gram patt: patt_constr; SELF END;
-    DELETE_RULE Gram patt: patt_constr END; *)
-    if not pat_spec.p_constant then do {
-      DELETE_RULE Gram patt: "-"; a_INT END;
-      DELETE_RULE Gram patt: "-"; a_INT32 END;
-      DELETE_RULE Gram patt: "-"; a_INT64 END;
-      DELETE_RULE Gram patt: "-"; a_NATIVEINT END;
-      DELETE_RULE Gram patt: "-"; a_FLOAT END;
-      DELETE_RULE Gram patt: "false" END;
-      DELETE_RULE Gram patt: "true" END;
-      DELETE_RULE Gram patt: a_INT END;
-      DELETE_RULE Gram patt: a_INT32 END;
-      DELETE_RULE Gram patt: a_INT64 END;
-      DELETE_RULE Gram patt: a_NATIVEINT END;
-      DELETE_RULE Gram patt: a_FLOAT END;
-      DELETE_RULE Gram patt: a_STRING END;
-      DELETE_RULE Gram patt: a_CHAR END;
-      DELETE_RULE Gram patt: "("; ")" END;
-      DELETE_RULE Gram ipatt: "("; ")" END;
-    } else ();
-    if not pat_spec.p_array then do {
-      DELETE_RULE Gram patt: "[|"; "|]" END;
-      DELETE_RULE Gram patt: "[|"; sem_patt; "|]" END;
-    } else ();
-    if not pat_spec.p_record then do {
-      DELETE_RULE Gram patt: "{"; label_patt; "}" END;
-      DELETE_RULE Gram match_case0: "{"; label_ipatt; "}" END;
-    } else ();
-    if not pat_spec.p_type_annotation then do {
-      DELETE_RULE Gram patt: "("; SELF; ":"; ctyp; ")" END;
-      DELETE_RULE Gram ipatt: "("; SELF; ":"; ctyp; ")" END;
-    } else ();
-    DELETE_RULE Gram patt: "("; SELF; ")" END;
-    if not pat_spec.p_wildcard then do {
-      DELETE_RULE Gram patt: "_" END;
-      DELETE_RULE Gram ipatt: "_" END;
-    } else ();
-    if not pat_spec.p_var then do {
-      DELETE_RULE Gram patt: ident END;
-      DELETE_RULE Gram ipatt: a_LIDENT END;
-    } else ();
+    DELETE_RULE Gram labeled_ipatt: "~"; "("; a_LIDENT; ")" END;
+    DELETE_RULE Gram labeled_ipatt: "~"; "("; a_LIDENT; ":"; ctyp; ")" END;
+    DELETE_RULE Gram labeled_ipatt: "~"; a_LIDENT END;
+    DELETE_RULE Gram labeled_ipatt: "?"; "("; a_LIDENT; "="; expr; ")" END;
+    DELETE_RULE Gram labeled_ipatt: "?"; "("; a_LIDENT; ")" END;
+    DELETE_RULE Gram labeled_ipatt: "?"; "("; a_LIDENT; ":"; ctyp; "="; expr; ")" END;
+    DELETE_RULE Gram labeled_ipatt: "?"; "("; a_LIDENT; ":"; ctyp; ")" END;
+    DELETE_RULE Gram labeled_ipatt: "?"; a_LIDENT END;
+    DELETE_RULE Gram labeled_ipatt: a_LABEL; patt LEVEL "simple" END;
+    DELETE_RULE Gram labeled_ipatt: a_OPTLABEL; "("; patt; ")" END;
+    DELETE_RULE Gram labeled_ipatt: a_OPTLABEL; "("; patt; "="; expr; ")" END;
+    DELETE_RULE Gram labeled_ipatt: a_OPTLABEL; "("; patt; ":"; ctyp; ")" END;
+    DELETE_RULE Gram labeled_ipatt: a_OPTLABEL; "("; patt; ":"; ctyp; "="; expr; ")" END;
+    DELETE_RULE Gram labeled_ipatt: a_OPTLABEL; a_LIDENT END;
 
+    DELETE_RULE Gram expr: "`"; a_ident END;
     DELETE_RULE Gram expr: "let"; "module"; a_UIDENT; module_binding0; "in"; expr LEVEL ";" END;
     DELETE_RULE Gram expr: "object"; opt_class_self_patt; class_structure; "end" END;
     DELETE_RULE Gram expr: "lazy"; SELF END;
+    DELETE_RULE Gram expr: "~"; a_LIDENT END;
     DELETE_RULE Gram expr: `LABEL _; SELF END;
     DELETE_RULE Gram expr: `OPTLABEL _; SELF END;
+    DELETE_RULE Gram expr: "?"; a_LIDENT END;
+    DELETE_RULE Gram expr: SELF; "."; "{"; comma_expr; "}" END;
+    DELETE_RULE Gram expr: SELF; "#"; label END;
     DELETE_RULE Gram expr: "new"; class_longident END;
-    DELETE_RULE Gram expr: "`"; a_ident END;
     DELETE_RULE Gram expr: "{<"; ">}" END;
     DELETE_RULE Gram expr: "{<"; field_expr; ">}" END;
     DELETE_RULE Gram expr: "("; SELF; ":"; ctyp; ":>"; ctyp; ")" END;
     DELETE_RULE Gram expr: "("; SELF; ":>"; ctyp; ")" END;
- (*
-    DELETE_RULE Gram expr: SELF; ";" END;
-    DELETE_RULE Gram expr: "let"; opt_rec; binding; "in"; expr LEVEL ";" END;
-    DELETE_RULE Gram expr: "function"; match_case END;
-    DELETE_RULE Gram expr: "if"; SELF; "then"; expr LEVEL "top"; "else"; expr LEVEL "top" END;
-    DELETE_RULE Gram expr: "if"; SELF; "then"; expr LEVEL "top" END;
-    DELETE_RULE Gram expr: "fun"; fun_def END;
-    DELETE_RULE Gram expr: "match"; sequence; "with"; match_case END;
-    DELETE_RULE Gram expr: "match"; sequence; "with"; match_case END;
-    DELETE_RULE Gram expr: "try"; sequence; "with"; match_case END;
-    DELETE_RULE Gram expr: "for"; a_LIDENT; "="; sequence; direction_flag; sequence; "do"; do_sequence END;
-    DELETE_RULE Gram expr: "while"; sequence; "do"; do_sequence END;
-    DELETE_RULE Gram expr: SELF; ","; LIST1 NEXT SEP "," END;
-    DELETE_RULE Gram expr: SELF; ":="; expr LEVEL "top" END;
-    DELETE_RULE Gram expr: SELF; "<-"; expr LEVEL "top" END;
-    (* No access, because this is defined in Camlp4OCamlRevisedParser ... 
-    DELETE_RULE Gram expr: SELF; infixop6; SELF END;
-    DELETE_RULE Gram expr: SELF; infixop5; SELF END;
-    DELETE_RULE Gram expr: SELF; infix operator (level 0) (comparison operators, and some others); END;
-    DELETE_RULE Gram expr: SELF; infix operator (level 1) (start with '^', '@'); SELF END;
-    DELETE_RULE Gram expr: SELF; infix operator (level 2) (start with '+', '-'); SELF END;
-    DELETE_RULE Gram expr: SELF; infix operator (level 3) (start with '*', '/', '%'); SELF END;
-    DELETE_RULE Gram expr: SELF; infix operator (level 4) (start with "**") (right assoc); SELF END; *)
-    (* DELETE_RULE Gram expr: SELF END; *)
-    DELETE_RULE Gram expr: SELF; "::"; SELF END;
-    DELETE_RULE Gram expr: SELF; "land"; SELF END;
-    DELETE_RULE Gram expr: SELF; "lor"; SELF END;
-    DELETE_RULE Gram expr: SELF; "lxor"; SELF END;
-    DELETE_RULE Gram expr: SELF; "mod"; SELF END;
-    DELETE_RULE Gram expr: SELF; "asr"; SELF END;
-    DELETE_RULE Gram expr: SELF; "lsl"; SELF END;
-    DELETE_RULE Gram expr: SELF; "lsr"; SELF END;
-    DELETE_RULE Gram expr: "-"; SELF END;
-    DELETE_RULE Gram expr: "-."; SELF END;
-    DELETE_RULE Gram expr: SELF; SELF END;
-    DELETE_RULE Gram expr: "assert"; SELF END;
-    DELETE_RULE Gram expr: "~"; a_LIDENT END;
-    DELETE_RULE Gram expr: "?"; a_LIDENT END;
-    DELETE_RULE Gram expr: SELF; "."; "("; SELF; ")" END;
-    DELETE_RULE Gram expr: SELF; "."; "["; SELF; "]" END;
-    DELETE_RULE Gram expr: SELF; "."; "{"; comma_expr; "}" END;
-    DELETE_RULE Gram expr: SELF; "."; SELF END;
-    DELETE_RULE Gram expr: SELF; "#"; label END;
-    DELETE_RULE Gram expr: "!"; SELF END;
-    (* DELETE_RULE Gram expr: prefix operator (start with '!', '?', '~'); SELF END; *)
-    DELETE_RULE Gram expr: "false" END;
-    DELETE_RULE Gram expr: "true" END;
-    (* defined in Camlp4OCamlParser:
-    DELETE_RULE Gram expr: "{"; Camlp4OCamlParser.test_label_eq; label_expr; "}" END; *)
-    DELETE_RULE Gram expr: "{"; expr LEVEL "."; "with"; label_expr; "}" END;
-    DELETE_RULE Gram expr: "["; "]" END;
-    DELETE_RULE Gram expr: "["; sem_expr_for_list; "]" END;
-    DELETE_RULE Gram expr: "[|"; "|]" END;
-    DELETE_RULE Gram expr: "[|"; sem_expr; "|]" END;
-    DELETE_RULE Gram expr: "("; ")" END;
-    DELETE_RULE Gram expr: "("; SELF; ";"; sequence; ")" END;
-    DELETE_RULE Gram expr: "("; SELF; ":"; ctyp; ")" END;
-    DELETE_RULE Gram expr: "("; SELF; ")" END;
-    DELETE_RULE Gram expr: "begin"; "end" END;
-    DELETE_RULE Gram expr: "begin"; sequence; "end" END;
-    DELETE_RULE Gram expr: a_INT END;
-    DELETE_RULE Gram expr: a_INT32 END;
-    DELETE_RULE Gram expr: a_INT64 END;
-    DELETE_RULE Gram expr: a_NATIVEINT END;
-    DELETE_RULE Gram expr: a_FLOAT END;
-    DELETE_RULE Gram expr: a_STRING END;
-    DELETE_RULE Gram expr: a_CHAR END;
-    DELETE_RULE Gram expr: val_longident END;
-  *)
-    (* str_item *)
-    DELETE_RULE Gram str_item: "let"; "module"; a_UIDENT; module_binding0; "in"; expr END;
-    (* Camlp4OCamlRevisedParser:
-    DELETE_RULE Gram str_item: "external"; a_LIDENT; ":"; ctyp; "="; string_list END; *)
-    DELETE_RULE Gram str_item: "include"; module_expr END;
-    DELETE_RULE Gram str_item: "module"; "rec"; module_binding END;
-    DELETE_RULE Gram str_item: "module"; "type"; a_UIDENT; "="; module_type END;
-    DELETE_RULE Gram str_item: "module"; a_UIDENT; module_binding0 END;
-    DELETE_RULE Gram str_item: "class"; "type"; class_type_declaration END;
-    DELETE_RULE Gram str_item: "class"; class_declaration END;
-    (* DELETE_RULE Gram str_item: `ANTIQUOT (("" | "stri" | "anti" | "list"), _) END;
-    DELETE_RULE Gram str_item: `QUOTATION _ END; *)
-    DELETE_RULE Gram str_item: "exception"; constructor_declaration; "="; type_longident END;
-
-    if not str_spec.s_semisemi_optional then
-      DELETE_RULE Gram semi: END else ();
-
-    if Option.is_none expr_spec.e_let_in && Option.is_none expr_spec.e_let_rec_in then
-      DELETE_RULE Gram str_item: "let"; opt_rec; binding; "in"; expr END else ();
-    if Option.is_none str_spec.s_let && Option.is_none str_spec.s_let_rec then
-      DELETE_RULE Gram str_item: "let"; opt_rec; binding END else ();
-    if not str_spec.s_exception then
-      DELETE_RULE Gram str_item: "exception"; constructor_declaration END else ();
-    if not str_spec.s_open then
-      DELETE_RULE Gram str_item: "open"; module_longident END else ();
-    if Option.is_none str_spec.s_type then
-      DELETE_RULE Gram str_item: "type"; type_declaration END else ();
-    if not str_spec.s_eval_expr then
-      DELETE_RULE Gram str_item: expr END else ();
-
-    if match (let_spec, letrec_spec) with
-       [ (Some { l_and = True }, _) | (_, Some { lr_and = True }) -> True | _ -> False ] then
-      DELETE_RULE Gram binding: SELF; "and"; SELF END else ();
-
-    DELETE_RULE Gram fun_binding: labeled_ipatt; SELF END;
-    DELETE_RULE Gram fun_binding: ":>"; ctyp; "="; expr END;
-
-    if match str_spec.s_type with [ Some { t_and = True } -> False | _ -> True ] then
-      DELETE_RULE Gram match_case0: SELF; "and"; SELF END else ();
-    (* TODO remove traces of [constraint] and by rewriting [type_declaration] *)
-
-    if match str_spec.s_type with [ Some { t_polymorphic = True } -> False | _ -> True ] then do {
-      Gram.Entry.clear type_ident_and_parameters;
-      Gram.Entry.clear type_longident_and_parameters;
-      Gram.Entry.clear type_parameters;
+    
+    if not expr_spec.e_sequence then do {
+      DELETE_RULE Gram expr: SELF; ";"; SELF END;
+      DELETE_RULE Gram expr: SELF; ";" END;
+      DELETE_RULE Gram expr: "("; SELF; ";"; sequence; ")" END;
+      DELETE_RULE Gram expr: "begin"; sequence; "end" END;
+      DELETE_RULE Gram expr: "begin"; "end" END;
+    } else ();
+    if Option.is_none expr_spec.e_let_in && Option.is_none expr_spec.e_let_rec_in then do {
+      DELETE_RULE Gram expr: "let"; opt_rec; binding; "in"; expr LEVEL ";" END;
+    } else ();
+    if Option.is_none expr_spec.e_function then do {
+      DELETE_RULE Gram expr: "function"; match_case END;
+      DELETE_RULE Gram expr: "fun"; fun_def END;
+    } else ();
+    if not expr_spec.e_if_then_else then do {
+      DELETE_RULE Gram expr: "if"; SELF; "then"; expr LEVEL "top"; "else"; expr LEVEL "top" END;
+    } else ();
+    if not expr_spec.e_if_then then do {
+      DELETE_RULE Gram expr: "if"; SELF; "then"; expr LEVEL "top" END;
+    } else ();
+    if Option.is_none expr_spec.e_match then do {
+      DELETE_RULE Gram expr: "match"; sequence; "with"; match_case END;
+    } else ();
+    if Option.is_none expr_spec.e_try then do {
+      DELETE_RULE Gram expr: "try"; sequence; "with"; match_case END;
+    } else ();
+    if not expr_spec.e_for then do {
+      DELETE_RULE Gram expr: "for"; a_LIDENT; "="; sequence; direction_flag; sequence; "do"; do_sequence END;
+    } else ();
+    if not expr_spec.e_while then do {
+      DELETE_RULE Gram expr: "while"; sequence; "do"; do_sequence END;
+    } else ();
+    if not expr_spec.e_tuple then do {
+      DELETE_RULE Gram expr: SELF; ","; LIST1 NEXT SEP "," END;
+    } else ();
+    if not expr_spec.e_reference_update then do {
+      DELETE_RULE Gram expr: SELF; ":="; expr LEVEL "top" END;
+    } else ();
+    if not expr_spec.e_record_field_update then do {
+      DELETE_RULE Gram expr: SELF; "<-"; expr LEVEL "top" END;
     } else ();
 
+    if match fun_spec with [ Some { f_fun = False } -> True | _ -> False ] then do {
+      DELETE_RULE Gram expr: "fun"; fun_def END;
+    } else ();
 
-    Gram.Entry.clear module_expr;
-    Gram.Entry.clear module_binding0;
-    Gram.Entry.clear module_binding;
-    Gram.Entry.clear module_type;
-    Gram.Entry.clear sig_item;
-    Gram.Entry.clear module_declaration;
-    Gram.Entry.clear module_rec_declaration;
-    Gram.Entry.clear with_constr;
-    Gram.Entry.clear opt_when_expr;
-    Gram.Entry.clear patt_as_patt_opt;
+    if match (let_spec, letrec_spec) with [ (Some { l_and = True },_) | (_, Some { lr_and = True }) -> False | _ -> True ] then do {
+      DELETE_RULE Gram binding: SELF; "and"; SELF END;
+    } else ();
+    if match (let_spec, letrec_spec) with [ (Some { l_args = True }, _) | (_, Some { lr_args = True }) -> False | _ -> True ] then do {
+      DELETE_RULE Gram fun_binding: labeled_ipatt END;
+    } else ();
+(*
+      DELETE_RULE Gram expr: SELF; infixop6; SELF END;
+      DELETE_RULE Gram expr: SELF; infixop5; SELF END;
+      DELETE_RULE Gram expr: SELF; infix operator (level 0) (comparison operators, and some others); SELF END;
+      DELETE_RULE Gram expr: SELF; infix operator (level 1) (start with '^', '@'); SELF END;
+      DELETE_RULE Gram expr: SELF; infix operator (level 2) (start with '+', '-'); SELF END;
+      DELETE_RULE Gram expr: SELF; infix operator (level 3) (start with '*', '/', '%'); SELF END;
+      DELETE_RULE Gram expr: SELF; infix operator (level 4) (start with "**") (right assoc); SELF END;
+      DELETE_RULE Gram expr: prefix operator (start with '!', '?', '~'); SELF END;
+ *)
+(*
+      DELETE_RULE Gram expr: SELF; "land"; SELF END;
+      DELETE_RULE Gram expr: SELF; "lor"; SELF END;
+      DELETE_RULE Gram expr: SELF; "lxor"; SELF END;
+      DELETE_RULE Gram expr: SELF; "mod"; SELF END;
+      DELETE_RULE Gram expr: SELF; "asr"; SELF END;
+      DELETE_RULE Gram expr: SELF; "lsl"; SELF END;
+      DELETE_RULE Gram expr: SELF; "lsr"; SELF END;
+      DELETE_RULE Gram expr: "-"; SELF END;
+      DELETE_RULE Gram expr: "-."; SELF END;
+      DELETE_RULE Gram expr: SELF; SELF END;
+ *)
+    if not expr_spec.e_assert then do {
+      DELETE_RULE Gram expr: "assert"; SELF END;
+    } else ();
+    if not expr_spec.e_array_update then do {
+      DELETE_RULE Gram expr: SELF; "."; "("; SELF; ")" END;
+    } else ();
+    if not expr_spec.e_string_access then do {
+      DELETE_RULE Gram expr: SELF; "."; "["; SELF; "]" END;
+    } else ();
+    if not expr_spec.e_record_field_access then do {
+      DELETE_RULE Gram expr: SELF; "."; SELF END;
+    } else ();
+      DELETE_RULE Gram expr: "!"; SELF END;
+    if not expr_spec.e_record_construction then do {
+      (* TODO DELETE_RULE Gram expr: "{"; test_label_eq; label_expr; "}" END; *)
+      ()
+    } else ();
+    if not expr_spec.e_record_functional_update then do {
+      DELETE_RULE Gram expr: "{"; expr LEVEL "."; "with"; label_expr; "}" END;
+    } else ();
+    if not expr_spec.e_list then do {
+      DELETE_RULE Gram expr: SELF; "::"; SELF END;
+      DELETE_RULE Gram expr: "["; "]" END;
+      DELETE_RULE Gram expr: "["; sem_expr_for_list; "]" END;
+    } else ();
+    if not expr_spec.e_array then do {
+      DELETE_RULE Gram expr: "[|"; "|]" END;
+      DELETE_RULE Gram expr: "[|"; sem_expr; "|]" END;
+    } else ();
+    if not expr_spec.e_type_annotation then do {
+      DELETE_RULE Gram expr: "("; SELF; ":"; ctyp; ")" END;
+    } else ();
+    (* DELETE_RULE Gram expr: "("; SELF; ")" END; *)
+    if not expr_spec.e_constant then do {
+      DELETE_RULE Gram expr: a_INT END;
+      DELETE_RULE Gram expr: a_INT32 END;
+      DELETE_RULE Gram expr: a_INT64 END;
+      DELETE_RULE Gram expr: a_NATIVEINT END;
+      DELETE_RULE Gram expr: a_FLOAT END;
+      DELETE_RULE Gram expr: a_STRING END;
+      DELETE_RULE Gram expr: a_CHAR END;
+      DELETE_RULE Gram expr: "false" END;
+      DELETE_RULE Gram expr: "true" END;
+      DELETE_RULE Gram expr: "("; ")" END;
+    } else ();
+    (* TODO expr_spec.e_constructor *)
+    if not expr_spec.e_simple_var then do {
+      DELETE_RULE Gram val_longident: a_LIDENT END;
+      DELETE_RULE Gram val_longident: ident END;
+    } else ();
+    if not expr_spec.e_qualified_var then do {
+      DELETE_RULE Gram val_longident: a_UIDENT; "."; SELF END;
+      DELETE_RULE Gram val_longident: a_UIDENT END;
+    } else ();
   };
 end;
 
