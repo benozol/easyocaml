@@ -422,8 +422,7 @@ let initialize_toplevel_env () =
 exception PPerror
 
 let loop ppf =
-  let easy ppf = if !Clflags.easytyping then fprintf ppf " - eased" in
-  fprintf ppf "        Objective Caml version %s%t@.@." Config.version easy ;
+  fprintf ppf "        Objective Caml version %s@.@.";
   initialize_toplevel_env ();
   load_ezyocaml ppf ;
   let lb = Lexing.from_function refill_lexbuf in
