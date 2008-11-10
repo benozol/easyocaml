@@ -7,33 +7,22 @@ open EzyErrors
 let logger = new EzyUtils.Logger.logger "htmlErrorReport"
 
 let template () = format_of_string "
-<html>
-  <head>
-    <title>EasyOCaml HTML error reporting plugin</title>
-    <link rel='stylesheet' type='text/css' href='easyocaml.css'></link>
-    <script type='text/javascript' src='easyocaml.js'></script>
-    <script type='text/javascript'>
-      registerErrors([
-%a        
-      ]);
-    </script>
-  </head>
-  <body onload='javascript:init()'><div class='all'>
-    <span id='reset' onclick='javascript:reset()' class='othererror'>reset</span>
-    <p class='errorlistparagraph'>
-      <ul id='errorlist'></ul>
-    </p>
-    <p>
-      <div class='code'><div class='currenterror'><span name='codeitem' id='null'></span>
+<span id='reset' onclick='javascript:reset()' class='othererror'>reset</span>
+<p class='errorlistparagraph'>
+  <ul id='errorlist'></ul>
+</p>
+<p>
+  <div class='code'><div class='currenterror'><span name='codeitem' id='null'>
 %a
-      </div></div>
-    </p>
-  </all></body>
-</html>
+  </div>
+</p>
+<script type='text/javascript'>
+  init([%a]);
+</script>
 "
 
-let escape_quote str =
-  (* let quote_re = Str.regexp_string "'" in Str.global_replace quote_re "\\'" *)
+let escape_quote char str =
+  (* let quote_re = Str.regexp_string char in Str.global_replace quote_re (char ^ String.make 1 char) *)
   let len = String.length str in
   let buf = Buffer.create len in
   let rec aux offset =
@@ -41,17 +30,19 @@ let escape_quote str =
     then Buffer.contents buf
     else
       try
-        let next = String.index_from str offset '\'' in
+        let next = String.index_from str offset char in
         if next <> offset then
           Buffer.add_string buf (String.sub str offset (next - offset));
-        Buffer.add_string buf "\\'";
+        Buffer.add_string buf ("\\" ^ String.make 1 char);
         aux (succ next)
-      with Not_found -> Buffer.contents buf in
+      with Not_found ->
+        Buffer.add_string buf (String.sub str offset (String.length str - offset));
+        Buffer.contents buf in
   aux 0
 
 let type_to_str ty =
   let pre = format_str "%a" Ty.print ty in
-  "'" ^ escape_quote pre ^ "'"
+  "'" ^ escape_quote '\'' pre ^ "'"
 
 let loc_string loc = 
   format_str "'%a'" Location.print loc
@@ -98,11 +89,11 @@ let print_error ppf (loc, err) =
             | _ -> None in
           ExtLocationSet.elements err_locs |>
           List.filter_map ~f:filter_to_loc in
-        Format.fprintf ppf "@[<4>new %s(%a,@ @[<1>[%a]@])@],@ " class_name
-          (format_list Format.pp_print_string ",@ ") args
-          (format_list Format.pp_print_string ",@ ") err_locs'
+        Format.fprintf ppf "new %s(%a, [%a])" class_name
+          (format_list Format.pp_print_string ", ") args
+          (format_list Format.pp_print_string ", ") err_locs'
     | _ ->
-        Format.fprintf ppf "@[<4>new LocalError('%a',@ %s),@ @]"
+        Format.fprintf ppf "new LocalError('%a', %s)"
           EzyErrors.print_error_desc err
           (loc_string loc)
 
@@ -110,12 +101,12 @@ let print_heavy ppf : (Location.t * heavy_error) -> unit = function
   | _, Error_as_heavy (loc, error) ->
       print_error ppf (loc, error)
   | loc, heavy ->
-      Format.fprintf ppf "@[<4>new LocalError('%a',@ %s),@ @]"
+      Format.fprintf ppf "new LocalError('%a', %s)"
         EzyErrors.print_heavy_error_desc heavy
         (loc_string loc)
 
 let print_fatal ppf (loc, fatal) =
-  Format.fprintf ppf "@[<4>new LocalError('%a',@ %s),@ @]"
+  Format.fprintf ppf "new LocalError('%a', %s)"
     EzyErrors.print_fatal_error_desc fatal
     (loc_string loc)
   
@@ -158,21 +149,23 @@ let name = "Html error reporting"
 let print_program_aux ppf (ast, program) =
   print_program (EzyAst.CollectLocs.structure ast) ppf (Lazy.force program)
 
+let safe_print p ppf x =
+(*   let str = print_to_to_string p x in *)
+  p ppf x
+
 let print_errors' ~program ast ppf errors =
   Format.fprintf ppf (template ())
-    (fun ppf ->
-       ErrorSet.iter (print_error ppf)) errors 
     print_program_aux (ast, program)
+    (format_list print_error ", ") (ErrorSet.elements errors)
 
 let print_heavies' ~program ast ppf heavies =
   Format.fprintf ppf (template ())
-    (fun ppf -> 
-       HeavyErrorSet.iter (print_heavy ppf)) heavies
     print_program_aux (ast, program)
+    (format_list print_heavy ", ") (HeavyErrorSet.elements heavies)
 
 let print_fatal' ~program loc ppf fatal =
   Format.fprintf ppf (template ())
-    print_fatal (loc, fatal)
     (print_program (LocationSet.singleton loc)) (Lazy.force program)
+    (safe_print print_fatal) (loc, fatal)
 
 let () = EzyErrors.register name print_errors' print_heavies' print_fatal'
