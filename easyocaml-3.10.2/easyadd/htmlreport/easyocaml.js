@@ -124,7 +124,9 @@ function CircularType(ty1, ty2, opt_endpoint1, opt_endpoint2, errorlocs) {
   }
 }
 
-function init() {
+function init(errs) {
+  errors = errs;
+
   var spans = document.getElementsByName(codeItemName);
   for(var i = 0; i < spans.length; i++) 
     codeItems[spans[i].getAttribute('id')] = spans[i]
@@ -135,9 +137,9 @@ function init() {
   var errorlist = document.getElementById(errorListId);
   for(var i in errors) {
     var sp = document.createElement('span');
-	sp.setAttribute('onclick', 'javascript:error('+i+')');
-	sp.setAttribute('id', errorId + i);
-	sp.setAttribute('class', otherErrorClass);
+    sp.setAttribute('onclick', 'javascript:error('+i+')');
+    sp.setAttribute('id', errorId + i);
+    sp.setAttribute('class', otherErrorClass);
     sp.appendChild(errors[i].message());
     var li = document.createElement('li');
     li.appendChild(sp);
