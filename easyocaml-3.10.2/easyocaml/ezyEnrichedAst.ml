@@ -4,7 +4,7 @@ open EzyErrors
 open EzyOcamlmodules
 open EzyUtils
 
-  (* TODO: text EzyFeatures.t_and for type declarations *)
+
 
 let logger = new Logger.logger "enr_ast"
 
@@ -266,15 +266,21 @@ let import_strit prf strit =
     pstr_desc = desc ;
   } in
   let module F = EzyFeatures in
+  let explicitly_typed = function
+      (_, {Parsetree.pexp_desc = Parsetree.Pexp_constraint _}) -> true
+    | _ -> false in
   match strit.Parsetree.pstr_desc, prf.F.pr_struct_features with
     | Parsetree.Pstr_eval e, { F.s_eval_expr = true } ->
         build_strit (Pstr_eval (import_expression prf.F.pr_expr_features e))
     | Parsetree.Pstr_value (Asttypes.Nonrecursive, ([_] as bindings)), { F.s_let = Some { F.l_pattern = pf } }
-    | Parsetree.Pstr_value (Asttypes.Nonrecursive, bindings), { F.s_let= Some { F.l_pattern = pf; l_and = true } } ->
+    | Parsetree.Pstr_value (Asttypes.Nonrecursive, bindings), { F.s_let= Some { F.l_pattern = pf; l_and = true } }
+      when not prf.F.pr_struct_features.F.s_annot_mandatory || List.for_all explicitly_typed bindings ->
         build_strit (Pstr_value (import_rules pf prf.F.pr_expr_features bindings))
     | Parsetree.Pstr_value (Asttypes.Recursive, ([_] as bindings)), { F.s_let_rec = Some _ }
-    | Parsetree.Pstr_value (Asttypes.Recursive, bindings), { F.s_let_rec = Some { F.lr_and = true } } ->
+    | Parsetree.Pstr_value (Asttypes.Recursive, bindings), { F.s_let_rec = Some { F.lr_and = true } }
+      when not prf.F.pr_struct_features.F.s_annot_mandatory || List.for_all explicitly_typed bindings ->
         build_strit (Pstr_rec_value (List.map (import_var_binding prf.F.pr_expr_features loc) bindings))
+    | Parsetree.Pstr_type ([_] as tbindings), { F.s_type = Some ({F.t_and = false} as tf) }
     | Parsetree.Pstr_type tbindings, { F.s_type = Some tf } ->
         let build_tbinding (name, td) =
           begin match td.Parsetree.ptype_params, prf.F.pr_struct_features.F.s_type with
