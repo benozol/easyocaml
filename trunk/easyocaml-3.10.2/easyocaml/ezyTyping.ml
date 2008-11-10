@@ -335,7 +335,7 @@ let type_structure ?program (oenv: Env.t) (sstr: EzyAst.imported_structure) =
   logger#info "Constraints solved" ;
   match res with
     | Result.Ok (s, errs) when EzyErrors.ErrorSet.is_empty errs ->
-        enr_str, s, (* TODO EzyEnv.apply_tyvarsubst s *) env'
+        enr_str, s, env'
     | Result.Error errs | Result.Ok (_, errs) ->
         EzyErrors.raise_annotated_error (EzyErrors.Errors errs) sstr
 

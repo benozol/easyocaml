@@ -69,8 +69,6 @@ let print_version_and_library () =
 
 let print_version_string () =
   print_string Config.version;
-  if !Clflags.easytyping then
-    print_string " - eased";
   print_newline(); exit 0
 
 let print_standard_library () =

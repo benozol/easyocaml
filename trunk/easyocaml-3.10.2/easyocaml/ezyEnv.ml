@@ -487,5 +487,4 @@ let print ?(s=TyVarSubst.empty) everything ppf env =
  *)
 
 let _ =
-  (* TODO add modules containing modules and functors *)
   forbid_modules ["Format"; "Printf"; "Scanf"] ;

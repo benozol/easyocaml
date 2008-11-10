@@ -345,8 +345,13 @@ let print_specific_parse_error_desc =
     | `De -> begin fun ppf -> function
         | Camlp4.Sig.OCamlSpecificError.Currified_constructor ->
             pp_print_string ppf "Gecurryter Konstruktor"
-        | Camlp4.Sig.OCamlSpecificError.Not_an_identifier _ ->
-            pp_print_string ppf "Etwas ist kein Identifizierer" (* TODO be more specific *)
+        | Camlp4.Sig.OCamlSpecificError.Not_an_identifier pos ->
+            let pos =
+              match pos with
+                | Camlp4.Sig.OCamlSpecificError.NotAnIdentifier.Patt -> "Pattern"
+                | Camlp4.Sig.OCamlSpecificError.NotAnIdentifier.Expr -> "Expression"
+                | Camlp4.Sig.OCamlSpecificError.NotAnIdentifier.Ctyp -> "Typ" in
+            fprintf ppf "Die %s-Phrase ist kein Identifikator" pos
         | Camlp4.Sig.OCamlSpecificError.Bad_directive str ->
             fprintf ppf "Unbekanne Anweisung %s" str
       end
