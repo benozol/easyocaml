@@ -222,7 +222,7 @@ let all_type_features b = {
 }
 
 let all_struct_features b = {
-  s_annot_mandatory = b ;
+  s_annot_mandatory = not b ;
   s_eval_expr = b ;
   s_let = if b then Some (all_let_feats b) else None ;
   s_let_rec = if b then Some (all_letrec_feats b) else None ;

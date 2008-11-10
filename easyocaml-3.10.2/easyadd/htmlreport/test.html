@@ -1,26 +1,22 @@
-
 <html>
   <head>
     <title>EasyOCaml HTML error reporting plugin</title>
     <link rel='stylesheet' type='text/css' href='easyocaml.css'></link>
     <script type='text/javascript' src='easyocaml.js'></script>
-    <script type='text/javascript'>
-      registerErrors([
-
-new LocalError('The record field x is not mutable', '2;14-20'),         
-      ]);
-    </script>
   </head>
-  <body onload='javascript:init()'><div class='all'>
-    <span id='reset' onclick='javascript:reset()' class='othererror'>reset</span>
-    <p class='errorlistparagraph'>
-      <ul id='errorlist'></ul>
-    </p>
-    <p>
-      <div class='code'><div class='currenterror'><span name='codeitem' id='null'></span>
+  <body> 
+    <div class='all'>
+
+<span id='reset' onclick='javascript:reset()' class='othererror'>reset</span>
+<p class='errorlistparagraph'>
+  <ul id='errorlist'></ul>
+</p>
+<p>
+  <div class='code'><div class='currenterror'><span name='codeitem' id='null'>
 <span name='codeitem' id='1;0-20'>type&nbsp;t&nbsp;=&nbsp;{&nbsp;<span name='codeitem' id='1;11-20'>x&nbsp;:&nbsp;<span name='codeitem' id='1;15-18'>int</span>&nbsp;}</span></span><br /><span name='codeitem' id='2;0-20'>let&nbsp;<span name='codeitem' id='2;4-5'>f</span>&nbsp;<span name='codeitem' id='2;6-20'><span name='codeitem' id='2;6-7'>x</span>&nbsp;=&nbsp;<span name='codeitem' id='2;10-11'>x</span>.x&nbsp;<span name='codeitem' id='2;14-20'>&lt;-&nbsp;<span name='codeitem' id='2;17-20'>100</span></span></span></span><br />
-      </div></div>
-    </p>
-  </all></body>
-</html>
+  </div>
+</p>
+<script type='text/javascript'>
+  init([new LocalError('The record field x is not mutable', '2;14-20')]);
+</script>
 
