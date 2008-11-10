@@ -171,7 +171,17 @@ module Restrict (Spec: sig value spec : EzyFeatures.program_feats; end) (Syntax:
     if match (let_spec, letrec_spec) with [ (Some { l_and = True },_) | (_, Some { lr_and = True }) -> False | _ -> True ] then do {
       DELETE_RULE Gram binding: SELF; "and"; SELF END;
     } else ();
-    if match (let_spec, letrec_spec) with [ (Some { l_args = True }, _) | (_, Some { lr_args = True }) -> False | _ -> True ] then do {
+    let never_args = match (let_spec, letrec_spec) with [ (Some { l_args = True }, _) | (_, Some { lr_args = True }) -> False | _ -> True ];
+    if str_spec.s_annot_mandatory then do {
+       (* it would need *a lot* of reworking of the grammar to express here, that
+        * type annotations of the form "let f : ctyp = expr (in expr)" are mandatory
+        * only for structure item let bindings. So this is solves in EzyEnrichedAst.import_strit
+        *)
+      ()
+    } else ();
+
+    DELETE_RULE Gram fun_binding: ":>"; ctyp; "="; expr END;
+    if never_args then do {
       DELETE_RULE Gram fun_binding: labeled_ipatt; SELF END;
     } else ();
 (*
