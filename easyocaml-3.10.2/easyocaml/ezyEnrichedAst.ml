@@ -44,8 +44,8 @@ type generated_pattern = (exp_data, id_data, name_data, pat_data) pattern
 
 open EzyUtils.Infix
 
-let import_error loc err =
-  EzyErrors.raise_fatal ~loc (EzyErrors.Import_error err)
+let import_error loc ?reason err =
+  EzyErrors.raise_fatal ~loc (EzyErrors.Import_error (err, reason))
 
 let import_constant loc = function
   | Asttypes.Const_int i ->
@@ -104,22 +104,22 @@ let rec import_core_type creative lookup_ctor tyvarmap ct =
         import_core_type creative lookup_ctor tyvarmap ct
     | Parsetree.Ptyp_arrow (str, _, _) ->
         logger#error "EzyAst.import_core_type Ptyp_arrow (str, _, _)" ;
-        raise (import_error ct.Parsetree.ptyp_loc EzyErrors.Not_supported_core_type)
+        import_error ct.Parsetree.ptyp_loc EzyErrors.Not_supported_core_type
     | Parsetree.Ptyp_object _ ->
         logger#error "EzyAst.import_core_type Ptyp_object _" ;
-        raise (import_error ct.Parsetree.ptyp_loc EzyErrors.Not_supported_core_type)
+        import_error ct.Parsetree.ptyp_loc EzyErrors.Not_supported_core_type
     | Parsetree.Ptyp_class _ ->
         logger#error "EzyAst.import_core_type Ptyp_class _" ;
-        raise (import_error ct.Parsetree.ptyp_loc EzyErrors.Not_supported_core_type)
+        import_error ct.Parsetree.ptyp_loc EzyErrors.Not_supported_core_type
     | Parsetree.Ptyp_poly _ ->
         logger#error "EzyAst.import_core_type Ptyp_poly (_::_, _)" ;
-        raise (import_error ct.Parsetree.ptyp_loc EzyErrors.Not_supported_core_type)
+        import_error ct.Parsetree.ptyp_loc EzyErrors.Not_supported_core_type
     | Parsetree.Ptyp_variant _ ->
         logger#error "EzyAst.import_core_type Ptyp_variant _" ;
-        raise (import_error ct.Parsetree.ptyp_loc EzyErrors.Not_supported_core_type)
+        import_error ct.Parsetree.ptyp_loc EzyErrors.Not_supported_core_type
     | Parsetree.Ptyp_alias _ ->
         logger#error "EzyAst.import_core_type Ptyp_alias _" ;
-        raise (import_error ct.Parsetree.ptyp_loc EzyErrors.Not_supported_core_type)
+        import_error ct.Parsetree.ptyp_loc EzyErrors.Not_supported_core_type
 
 and import_core_types creative lookup_ctor tyvarmap ctys =
   List.foldmap (import_core_type creative lookup_ctor) tyvarmap ctys
@@ -128,139 +128,271 @@ let rec import_pattern pf pat =
   let longident lid = { lid_name = lid; lid_data = () } in
   let pattern desc : imported_pattern = 
     { ppat_desc = desc; ppat_loc = pat.Parsetree.ppat_loc; ppat_data = () } in
+  let pat_import_error reason =
+    import_error pat.Parsetree.ppat_loc ~reason (EzyErrors.Not_supported_pattern pat.Parsetree.ppat_desc) in
   let module F = EzyFeatures in
   let sub_pf =
     if pf.F.p_nested then pf else
-      let empty_pf = F.all_pattern_features false in
+      let empty_pf = F.all_pattern_feats false in
       { empty_pf with F.p_wildcard = true; p_var = true } in
-  match pat.Parsetree.ppat_desc, pf with
-    | Parsetree.Ppat_var var, { F.p_var = true } ->
-        pattern (Ppat_var { nm_name = var; nm_loc = pat.Parsetree.ppat_loc; nm_data = () })
-    | Parsetree.Ppat_any, { F.p_wildcard = true } ->
-        pattern Ppat_any
-    | Parsetree.Ppat_constant c, { F.p_constant = true } ->
-        pattern (Ppat_constant (import_constant pat.Parsetree.ppat_loc c))
-    | Parsetree.Ppat_tuple ps, { F.p_tuple = true } ->
-        pattern (Ppat_tuple (List.map (import_pattern sub_pf) ps))
-    | Parsetree.Ppat_construct (k, opt_pat, explicit_arity), { F.p_constructor = true } ->
-        let opt_pat' = match opt_pat with None -> None | Some pat -> Some (import_pattern sub_pf pat) in
-        pattern (Ppat_construct (longident k, opt_pat', explicit_arity))
-    | Parsetree.Ppat_record fs, { F.p_record = true } ->
-        let fs' = List.map (fun (f, p) -> longident f, import_pattern sub_pf p) fs in
-        pattern (Ppat_record fs')
-    | Parsetree.Ppat_or (p1, p2), { F.p_or = true } ->
-        pattern (Ppat_or (import_pattern sub_pf p1, import_pattern sub_pf p2))
-    | Parsetree.Ppat_alias (p, nm), { F.p_alias = true } ->
-        pattern (Ppat_alias (import_pattern sub_pf p, { nm_name = nm; nm_data = (); nm_loc = Location.none } ))
-    | Parsetree.Ppat_constraint (p, ct), { F.p_type_annotation = true } ->
-        pattern (Ppat_constraint (import_pattern sub_pf p, ct))
-    | desc, _ -> raise (import_error pat.Parsetree.ppat_loc (EzyErrors.Not_supported_pattern desc))
+  match pat.Parsetree.ppat_desc with
+    | Parsetree.Ppat_var var ->
+        if pf.F.p_var then
+          pattern (Ppat_var { nm_name = var; nm_loc = pat.Parsetree.ppat_loc; nm_data = () })
+        else
+          pat_import_error "p_var"
+    | Parsetree.Ppat_any ->
+        if pf.F.p_wildcard then
+          pattern Ppat_any
+        else
+          pat_import_error "p_wildcard"
+    | Parsetree.Ppat_constant c ->
+        if pf.F.p_constant then
+          pattern (Ppat_constant (import_constant pat.Parsetree.ppat_loc c))
+        else
+          pat_import_error "p_constant"
+    | Parsetree.Ppat_tuple ps ->
+        if pf.F.p_tuple then
+          pattern (Ppat_tuple (List.map (import_pattern sub_pf) ps))
+        else
+          pat_import_error "p_tuple"
+    | Parsetree.Ppat_construct (k, opt_pat, explicit_arity) ->
+        if pf.F.p_constructor then
+          let opt_pat' = match opt_pat with None -> None | Some pat -> Some (import_pattern sub_pf pat) in
+          pattern (Ppat_construct (longident k, opt_pat', explicit_arity))
+        else
+          pat_import_error "p_constructor"
+    | Parsetree.Ppat_record fs ->
+        if pf.F.p_record then
+          let fs' = List.map (fun (f, p) -> longident f, import_pattern sub_pf p) fs in
+          pattern (Ppat_record fs')
+        else
+          pat_import_error "p_record"
+    | Parsetree.Ppat_or (p1, p2) ->
+        if pf.F.p_or then
+          pattern (Ppat_or (import_pattern sub_pf p1, import_pattern sub_pf p2))
+        else
+          pat_import_error "p_or"
+    | Parsetree.Ppat_alias (p, nm) ->
+        if pf.F.p_alias then
+          pattern (Ppat_alias (import_pattern sub_pf p, { nm_name = nm; nm_data = (); nm_loc = Location.none } ))
+        else
+          pat_import_error "p_alias"
+    | Parsetree.Ppat_constraint (p, ct) ->
+        if pf.F.p_type_annotation then
+          pattern (Ppat_constraint (import_pattern sub_pf p, ct))
+        else
+          pat_import_error "p_type_annotation"
+    | desc -> raise (import_error pat.Parsetree.ppat_loc (EzyErrors.Not_supported_pattern desc))
 
 let rec import_var_binding ef loc (pat, expr) =
   match pat.Parsetree.ppat_desc with
     | Parsetree.Ppat_var var ->
         { nm_name = var; nm_loc = loc; nm_data = () }, import_expression ef expr
     | _ -> 
-        EzyErrors.raise_fatal ~loc (EzyErrors.Import_error (EzyErrors.Not_supported_pattern pat.Parsetree.ppat_desc))
+        EzyErrors.raise_fatal ~loc (EzyErrors.Import_error (EzyErrors.Not_supported_pattern pat.Parsetree.ppat_desc, None))
 
 and import_rule pf ef (pat, exp) = import_pattern pf pat, import_expression ef exp
 and import_rules pf ef rules = List.map (import_rule pf ef) rules
 
 and import_expression ef x =
   let loc = x.Parsetree.pexp_loc in
+  let expr_import_error reason =
+    import_error x.Parsetree.pexp_loc ~reason (EzyErrors.Not_supported_expression x.Parsetree.pexp_desc) in
   let name loc nm = { nm_name = nm; nm_loc = loc; nm_data = () } in 
   let longident lid = { lid_name = lid; lid_data = () } in
   let build_expr ?(loc=loc) desc = { pexp_loc = loc; pexp_desc = desc; pexp_data = () } in
   let module F = EzyFeatures in
-  match x.Parsetree.pexp_desc, ef with
-    | Parsetree.Pexp_ident (Longident.Lident "raise") as raise_desc, { F.e_raise = false } ->
-        raise (import_error loc (EzyErrors.Not_supported_expression raise_desc))
-    | Parsetree.Pexp_ident (Longident.Lident _ as lident), { F.e_simple_var = true }
-    | Parsetree.Pexp_ident (Longident.Ldot _ as lident), { F.e_qualified_var = true } ->
-        build_expr (Pexp_ident (longident lident))
+  match x.Parsetree.pexp_desc with
 
-    | Parsetree.Pexp_constant c, { F.e_constant = true } ->
-        build_expr (Pexp_constant (import_constant loc c))
-
-    | Parsetree.Pexp_let (Nonrecursive, ([_] as bindings), body), { F.e_let_in = Some { F.l_pattern = pf } }
-    | Parsetree.Pexp_let (Nonrecursive, bindings, body), { F.e_let_in = Some {F.l_pattern = pf; l_and = true } } ->
-        build_expr (Pexp_let (import_rules pf ef bindings, import_expression ef body))
-
-    | Parsetree.Pexp_let (Recursive, ([_] as bindings), body), { F.e_let_rec_in = Some _ }
-    | Parsetree.Pexp_let (Recursive, bindings, body), { F.e_let_rec_in = Some { F.lr_and = true } } ->
-        build_expr (Pexp_letrec (List.map (import_var_binding ef x.Parsetree.pexp_loc) bindings, import_expression ef body))
-
-    | Parsetree.Pexp_function ("", None, rules), { F.e_function = Some { F.f_pattern = pf } } ->
-        build_expr (Pexp_function (import_rules pf ef rules))
-
-    | Parsetree.Pexp_apply (head, args), _ when List.for_all ((=) "" << fst) args ->
-        begin match args with
-          | [] -> assert false
-          | [_, arg] ->
-              build_expr (Pexp_apply (import_expression ef head, import_expression ef arg))
-          | args ->
-              logger#info
-                "A different parser than Ocaml's default should be used to avoid inaccuracy for the location of multiple application (%a)."
-                Location.print loc ;
-              let rec aux sofar = function
-                | [] -> sofar
-                | (_, arg) :: rem_args ->
-                    let loc = Location.span head.Parsetree.pexp_loc arg.Parsetree.pexp_loc in
-                    let app = build_expr ~loc (Pexp_apply (sofar, import_expression ef arg)) in
-                    aux app rem_args in
-              aux (import_expression ef head) args
+    | Parsetree.Pexp_ident lident ->
+        begin match lident with
+          | Longident.Lident id ->
+              if id <> "raise" || ef.F.e_raise then
+                if ef.F.e_simple_var then
+                  build_expr (Pexp_ident (longident lident))
+                else
+                  expr_import_error "e_simple_var"
+              else
+                expr_import_error "e_raise"
+          | Longident.Ldot _ ->
+              if ef.F.e_qualified_var then
+                build_expr (Pexp_ident (longident lident))
+              else
+                expr_import_error "e_qualified_var"
+          | _ ->
+              import_error loc (EzyErrors.Not_supported_expression x.Parsetree.pexp_desc)
         end
 
-     | Parsetree.Pexp_match (exp, rules), { F.e_match = Some pf } ->
-         build_expr (Pexp_match (import_expression ef exp, import_rules pf ef rules))
+    | Parsetree.Pexp_constant c ->
+        if ef.F.e_constant then
+          build_expr (Pexp_constant (import_constant loc c))
+        else
+          expr_import_error "e_constant"
 
-     | Parsetree.Pexp_try (exp, rules), { F.e_try = Some pf } ->
-         build_expr (Pexp_try (import_expression ef exp, import_rules pf ef rules))
+    | Parsetree.Pexp_let (Nonrecursive, bindings, body) ->
+        begin match ef.F.e_let_in with
+          | Some ({ F.l_pattern = pf } as lf) ->
+              if lf.F.l_and || (match bindings with [_] -> true | _ -> false) then
+                build_expr (Pexp_let (import_rules pf ef bindings, import_expression ef body))
+              else
+                expr_import_error "l_and"
+          | None ->
+              expr_import_error "e_let_in"
+        end
 
-     | Parsetree.Pexp_tuple exps, { F.e_tuple = true } ->
-         build_expr (Pexp_tuple (List.map (import_expression ef) exps))
+    | Parsetree.Pexp_let (Recursive, bindings, body) ->
+        begin match ef.F.e_let_rec_in with
+          | Some lrf ->
+              if lrf.F.lr_and || (match bindings with [_] -> true | _ -> false) then
+                build_expr (Pexp_letrec (List.map (import_var_binding ef x.Parsetree.pexp_loc) bindings, import_expression ef body))
+              else
+                expr_import_error "lr_and"
+          | None ->
+              expr_import_error "e_let_rec_in"
+        end
 
-     | Parsetree.Pexp_construct (lid, opt_exp, explicit_arity), { F.e_constructor = true } ->
-         build_expr (Pexp_construct (longident lid, Option.map ~f:(import_expression ef) opt_exp, explicit_arity))
+    | Parsetree.Pexp_function ("", None, rules) ->
+        begin match ef.F.e_function with
+          | Some { F.f_pattern = pf } ->
+              build_expr (Pexp_function (import_rules pf ef rules))
+          | None ->
+              expr_import_error "e_function"
+        end
 
-     | Parsetree.Pexp_record (fs, (Some _ as opt_exp)), { F.e_record_functional_update = true }
-     | Parsetree.Pexp_record (fs, (None as opt_exp)), { F.e_record_construction = true } ->
+    | Parsetree.Pexp_apply (head, args) ->
+        if List.for_all ((=) "" << fst) args then
+          begin match args with
+            | [] -> assert false
+            | [_, arg] ->
+                build_expr (Pexp_apply (import_expression ef head, import_expression ef arg))
+            | args ->
+                logger#info
+                  "A different parser than Ocaml's default should be used to avoid inaccuracy for the location of multiple application (%a)."
+                  Location.print loc ;
+                let rec aux sofar = function
+                  | [] -> sofar
+                  | (_, arg) :: rem_args ->
+                      let loc = Location.span head.Parsetree.pexp_loc arg.Parsetree.pexp_loc in
+                      let app = build_expr ~loc (Pexp_apply (sofar, import_expression ef arg)) in
+                      aux app rem_args in
+                aux (import_expression ef head) args
+          end
+        else
+          import_error x.Parsetree.pexp_loc (EzyErrors.Not_supported_expression x.Parsetree.pexp_desc)
+
+     | Parsetree.Pexp_match (exp, rules) ->
+         begin match ef.F.e_match with
+           | Some pf ->
+               build_expr (Pexp_match (import_expression ef exp, import_rules pf ef rules))
+           | None ->
+               expr_import_error "e_match"
+         end
+
+     | Parsetree.Pexp_try (exp, rules) ->
+         begin match ef.F.e_try with
+           | Some pf ->
+               build_expr (Pexp_try (import_expression ef exp, import_rules pf ef rules))
+           | None ->
+               expr_import_error "e_try"
+         end
+
+     | Parsetree.Pexp_tuple exps ->
+         if ef.F.e_tuple then
+           build_expr (Pexp_tuple (List.map (import_expression ef) exps))
+         else
+           expr_import_error "e_tuple"
+
+     | Parsetree.Pexp_construct (lid, opt_exp, explicit_arity) ->
+         if ef.F.e_constructor then
+           build_expr (Pexp_construct (longident lid, Option.map ~f:(import_expression ef) opt_exp, explicit_arity))
+         else
+           expr_import_error "e_constructor"
+
+     | Parsetree.Pexp_record (fs, opt_exp) ->
          let f (f, exp) = longident f, import_expression ef exp in
-         build_expr (Pexp_record (List.map f fs, Option.map ~f:(import_expression ef) opt_exp))
+         begin match opt_exp with
+           | Some orig ->
+               if ef.F.e_record_functional_update then
+                 build_expr (Pexp_record (List.map f fs, Some (import_expression ef orig)))
+               else
+                 expr_import_error "e_record_functional_update"
+           | None ->
+               if ef.F.e_record_construction then
+                 build_expr (Pexp_record (List.map f fs, None))
+               else
+                 expr_import_error "e_record_construction"
+         end
 
-     | Parsetree.Pexp_field (exp, lid), { F.e_record_field_access = true } ->
-         build_expr (Pexp_field (import_expression ef exp, longident lid))
+     | Parsetree.Pexp_field (exp, lid) ->
+         if ef.F.e_record_field_access then
+           build_expr (Pexp_field (import_expression ef exp, longident lid))
+         else
+           expr_import_error "e_record_field_access"
 
-     | Parsetree.Pexp_setfield (exp1, lid, exp2), { F.e_record_field_update = true } ->
-         build_expr (Pexp_setfield (import_expression ef exp1, longident lid, import_expression ef exp2))
+     | Parsetree.Pexp_setfield (exp1, lid, exp2) ->
+         if ef.F.e_record_field_update then
+           build_expr (Pexp_setfield (import_expression ef exp1, longident lid, import_expression ef exp2))
+         else
+           expr_import_error "e_record_field_update"
 
-     | Parsetree.Pexp_ifthenelse (exp1, exp2, (None as opt_exp3)), { F.e_if_then = true }
-     | Parsetree.Pexp_ifthenelse (exp1, exp2, (Some _ as opt_exp3)), { F.e_if_then_else = true } ->
-         build_expr (Pexp_ifthenelse (import_expression ef exp1, import_expression ef exp2, Option.map ~f:(import_expression ef) opt_exp3))
+     | Parsetree.Pexp_ifthenelse (exp1, exp2, opt_exp3) ->
+         begin match opt_exp3 with
+           | Some exp3 ->
+               if ef.F.e_if_then_else then
+                 build_expr (Pexp_ifthenelse (import_expression ef exp1, import_expression ef exp2, Some (import_expression ef exp3)))
+               else
+                 expr_import_error "e_if_then_else"
+           | None ->
+               if ef.F.e_if_then then
+                 build_expr (Pexp_ifthenelse (import_expression ef exp1, import_expression ef exp2, None))
+               else
+                 expr_import_error "e_if_then"
+         end
 
-     | Parsetree.Pexp_sequence (exp1, exp2), { F.e_sequence = true } ->
-         build_expr (Pexp_sequence (import_expression ef exp1, import_expression ef exp2))
+     | Parsetree.Pexp_sequence (exp1, exp2) ->
+         if ef.F.e_sequence then
+           build_expr (Pexp_sequence (import_expression ef exp1, import_expression ef exp2))
+         else
+           expr_import_error "e_sequence"
 
-     | Parsetree.Pexp_while (exp1, exp2), { F.e_while = true } ->
-         build_expr (Pexp_while (import_expression ef exp1, import_expression ef exp2))
+     | Parsetree.Pexp_while (exp1, exp2) ->
+         if ef.F.e_while then
+           build_expr (Pexp_while (import_expression ef exp1, import_expression ef exp2))
+         else
+           expr_import_error "e_while"
 
-     | Parsetree.Pexp_for (str, exp1, exp2, direction_flag, exp3), { F.e_for = true } ->
-         build_expr (Pexp_for (name x.Parsetree.pexp_loc str, import_expression ef exp1, import_expression ef exp2, direction_flag, import_expression ef exp3))
+     | Parsetree.Pexp_for (str, exp1, exp2, direction_flag, exp3) ->
+         if ef.F.e_for then
+           build_expr (Pexp_for (name x.Parsetree.pexp_loc str, import_expression ef exp1, import_expression ef exp2, direction_flag, import_expression ef exp3))
+         else
+           expr_import_error "e_for"
 
-     | Parsetree.Pexp_assert exp, { F.e_assert = true } ->
-         build_expr (Pexp_assert (import_expression ef exp))
+     | Parsetree.Pexp_assert exp ->
+         if ef.F.e_assert then
+           build_expr (Pexp_assert (import_expression ef exp))
+         else
+           expr_import_error "e_assert"
 
-     | Parsetree.Pexp_assertfalse, { F.e_assert = true } ->
-         build_expr Pexp_assertfalse
+     | Parsetree.Pexp_assertfalse ->
+         if ef.F.e_assert then
+           build_expr Pexp_assertfalse
+         else
+           expr_import_error "e_assert"
 
-     | Parsetree.Pexp_constraint (exp, Some ty, None), { F.e_type_annotation = true } ->
-         build_expr (Pexp_constraint (import_expression ef exp, ty))
+     | Parsetree.Pexp_constraint (exp, Some ty, None) ->
+         if ef.F.e_type_annotation then
+           build_expr (Pexp_constraint (import_expression ef exp, ty))
+         else
+           expr_import_error "e_type_annotation"
 
-     | desc, _ ->
+     | desc ->
         raise (import_error loc (EzyErrors.Not_supported_expression desc))
 
 let import_strit prf strit =
   let loc = strit.Parsetree.pstr_loc in
+  let strit_import_error reason =
+    import_error loc ~reason (EzyErrors.Not_supported_structure_item strit.Parsetree.pstr_desc) in
   let build_strit desc = {
     pstr_loc = loc ;
     pstr_desc = desc ;
@@ -269,54 +401,93 @@ let import_strit prf strit =
   let explicitly_typed = function
       (_, {Parsetree.pexp_desc = Parsetree.Pexp_constraint _}) -> true
     | _ -> false in
-  match strit.Parsetree.pstr_desc, prf.F.pr_struct_features with
-    | Parsetree.Pstr_eval e, { F.s_eval_expr = true } ->
-        build_strit (Pstr_eval (import_expression prf.F.pr_expr_features e))
-    | Parsetree.Pstr_value (Asttypes.Nonrecursive, ([_] as bindings)), { F.s_let = Some { F.l_pattern = pf } }
-    | Parsetree.Pstr_value (Asttypes.Nonrecursive, bindings), { F.s_let= Some { F.l_pattern = pf; l_and = true } }
-      when not prf.F.pr_struct_features.F.s_annot_mandatory || List.for_all explicitly_typed bindings ->
-        build_strit (Pstr_value (import_rules pf prf.F.pr_expr_features bindings))
-    | Parsetree.Pstr_value (Asttypes.Recursive, ([_] as bindings)), { F.s_let_rec = Some _ }
-    | Parsetree.Pstr_value (Asttypes.Recursive, bindings), { F.s_let_rec = Some { F.lr_and = true } }
-      when not prf.F.pr_struct_features.F.s_annot_mandatory || List.for_all explicitly_typed bindings ->
-        build_strit (Pstr_rec_value (List.map (import_var_binding prf.F.pr_expr_features loc) bindings))
-    | Parsetree.Pstr_type ([_] as tbindings), { F.s_type = Some ({F.t_and = false} as tf) }
-    | Parsetree.Pstr_type tbindings, { F.s_type = Some tf } ->
-        let build_tbinding (name, td) =
-          begin match td.Parsetree.ptype_params, prf.F.pr_struct_features.F.s_type with
-            | _ :: _, Some { F.t_polymorphic = false } ->
-              raise (import_error loc (EzyErrors.Not_supported_type_declaration td))
-            | _ ->
-              let kind =
-                match td.Parsetree.ptype_kind, td.Parsetree.ptype_manifest, tf  with
-                  | Parsetree.Ptype_abstract, Some td, { F.t_synonym = true } ->
-                      Synonym td
-                  | Parsetree.Ptype_variant (ctors, Asttypes.Public), None, { F.t_variant = true } ->
-                      Variant ctors
-                  | Parsetree.Ptype_record (fls, Asttypes.Public), None, { F.t_record = true } ->
-                      Record fls
-                  | _ ->
-                      raise (import_error td.Parsetree.ptype_loc (EzyErrors.Not_supported_type_declaration td)) in
-              let name' = { nm_name = name; nm_loc = Location.none; nm_data = ()} in
-              let params' = List.map (fun str -> { nm_name = str; nm_loc = Location.none; nm_data = () }) td.Parsetree.ptype_params in
-              let td' = { type_params = params'; type_kind = kind } in
-              name', td'
-          end in
-        build_strit (Pstr_type (List.map build_tbinding tbindings))
-    | Parsetree.Pstr_exception (name, ct), { F.s_exception = true } ->
-        let name' = {
-          nm_name = name ;
-          nm_loc = Location.none ;
-          nm_data = () ;
-        } in
-        build_strit (Pstr_exception (name', ct))
-    | Parsetree.Pstr_open lid, { F.s_open = true } ->
-        let lid' = {
-          lid_name = lid ;
-          lid_data = () ;
-        } in
-        build_strit (Pstr_open lid')
-    | _ as desc, _ -> raise (import_error loc (EzyErrors.Not_supported_structure_item desc))
+  match strit.Parsetree.pstr_desc with
+
+    | Parsetree.Pstr_eval e ->
+        if prf.F.pr_struct_feats.F.s_eval_expr then
+          build_strit (Pstr_eval (import_expression prf.F.pr_expr_feats e))
+        else
+          strit_import_error "s_eval_expr"
+
+    | Parsetree.Pstr_value (Asttypes.Nonrecursive, bindings) ->
+        begin match prf.F.pr_struct_feats.F.s_let with
+          | Some lf ->
+              if not prf.F.pr_struct_feats.F.s_annot_mandatory || List.for_all explicitly_typed bindings then
+                if lf.F.l_and || (match bindings with [_] -> true | _ -> false) then
+                  build_strit (Pstr_value (import_rules lf.F.l_pattern prf.F.pr_expr_feats bindings))
+                else
+                  strit_import_error "s_let.l_and"
+              else
+                strit_import_error "s_annot_mandatory"
+          | None ->
+              strit_import_error "s_let"
+        end
+
+    | Parsetree.Pstr_value (Asttypes.Recursive, bindings) ->
+        begin match prf.F.pr_struct_feats.F.s_let_rec with
+          | Some lrf ->
+              if not prf.F.pr_struct_feats.F.s_annot_mandatory || List.for_all explicitly_typed bindings then
+                if lrf.F.lr_and || (match bindings with [_] -> true | _ -> false) then
+                  build_strit (Pstr_rec_value (List.map (import_var_binding prf.F.pr_expr_feats loc) bindings))
+                else
+                  strit_import_error "s_let_rec.l_and"
+              else
+                strit_import_error "s_annot_mandatory"
+          | None ->
+              strit_import_error "s_let_rec"
+        end
+
+    | Parsetree.Pstr_type tbindings ->
+        begin match prf.F.pr_struct_feats.F.s_type with
+          | Some tf ->
+              if tf.F.t_and || (match tbindings with [_] -> true | _ -> false) then
+                let build_tbinding (name, td) =
+                  begin match td.Parsetree.ptype_params, prf.F.pr_struct_feats.F.s_type with
+                    | _ :: _, Some { F.t_polymorphic = false } ->
+                      raise (import_error loc (EzyErrors.Not_supported_type_declaration td))
+                    | _ ->
+                      let kind =
+                        match td.Parsetree.ptype_kind, td.Parsetree.ptype_manifest, tf  with
+                          | Parsetree.Ptype_abstract, Some td, { F.t_synonym = true } ->
+                              Synonym td
+                          | Parsetree.Ptype_variant (ctors, Asttypes.Public), None, { F.t_variant = true } ->
+                              Variant ctors
+                          | Parsetree.Ptype_record (fls, Asttypes.Public), None, { F.t_record = true } ->
+                              Record fls
+                          | _ ->
+                              raise (import_error td.Parsetree.ptype_loc (EzyErrors.Not_supported_type_declaration td)) in
+                      let name' = { nm_name = name; nm_loc = Location.none; nm_data = ()} in
+                      let params' = List.map (fun str -> { nm_name = str; nm_loc = Location.none; nm_data = () }) td.Parsetree.ptype_params in
+                      let td' = { type_params = params'; type_kind = kind } in
+                      name', td'
+                  end in
+                build_strit (Pstr_type (List.map build_tbinding tbindings))
+              else
+                strit_import_error "t_and"
+          | None ->
+              strit_import_error "s_type"
+        end
+
+    | Parsetree.Pstr_exception (name, ct) ->
+        if prf.F.pr_struct_feats.F.s_exception then
+          let name' = {
+            nm_name = name ;
+            nm_loc = Location.none ;
+            nm_data = () ;
+          } in
+          build_strit (Pstr_exception (name', ct))
+        else
+          strit_import_error "s_exception"
+    | Parsetree.Pstr_open lid ->
+        if prf.F.pr_struct_feats.F.s_open then
+          let lid' = {
+            lid_name = lid ;
+            lid_data = () ;
+          } in
+          build_strit (Pstr_open lid')
+        else
+          strit_import_error "s_open"
+    | desc -> raise (import_error loc (EzyErrors.Not_supported_structure_item desc))
 
 let import_structure prf str =
   logger#debug "Ocaml ast: %a"

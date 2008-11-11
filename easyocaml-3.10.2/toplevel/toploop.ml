@@ -422,7 +422,7 @@ let initialize_toplevel_env () =
 exception PPerror
 
 let loop ppf =
-  fprintf ppf "        Objective Caml version %s@.@.";
+  fprintf ppf "        Objective Caml version %s@.@." Config.version;
   initialize_toplevel_env ();
   load_ezyocaml ppf ;
   let lb = Lexing.from_function refill_lexbuf in

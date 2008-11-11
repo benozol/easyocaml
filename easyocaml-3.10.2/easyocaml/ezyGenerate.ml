@@ -1302,7 +1302,7 @@ let for_structure_item env type_accu strit =
           EzyErrors.raise_fatal ~loc:strit.pstr_loc (EzyErrors.Module_not_found lid.lid_name)
         end
     | Pstr_open { lid_name = lid } ->
-        EzyErrors.raise_fatal ~loc:strit.pstr_loc (EzyErrors.Import_error (EzyErrors.Not_supported_structure_item (Parsetree.Pstr_open lid)))
+        EzyErrors.raise_fatal ~loc:strit.pstr_loc (EzyErrors.Import_error (EzyErrors.Not_supported_structure_item (Parsetree.Pstr_open lid), None))
 
 let for_structure_item env types strit =
   between $for_structure_item env types $ strit $

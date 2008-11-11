@@ -9,7 +9,7 @@ body {
 ul#errorlist, a#reset {
   font-size: small;
 }
-code < span {
+code . span {
   margin: 1px;
 }
 div.code {
@@ -25,7 +25,7 @@ span.currenterror {
   color: #50bbff ! important ;
 }
 span.standard {
-  color: gray; //#ccc;
+  color: gray; /*#ccc*/
   background-color: white;
   font-weight: normal;
 }

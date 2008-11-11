@@ -46,7 +46,7 @@ type heavy_error =
 
 type fatal = 
   | Parse_error of EzyCamlgrammar.ParseError.error
-  | Import_error of import_error
+  | Import_error of import_error * string option
   | Module_not_found of Longident.t
   | Other_fatal of string
 
@@ -382,8 +382,10 @@ let print_parse_error_desc =
 let print_fatal_error_desc =
   match lang with
     | `En | `Fr -> begin fun ppf -> function
-        | Import_error err ->
-            fprintf ppf "This feature is not supported by EasyOcaml (in this language level)" 
+        | Import_error (err, feat_opt) ->
+            fprintf ppf
+              "This feature is not supported by EasyOcaml (%s)"
+              (match feat_opt with Some feat -> "conflicts " ^ feat | None -> "never")
         | Module_not_found lid ->
             fprintf ppf "Module %a not found" Longident.print lid
         | Parse_error err ->
@@ -392,8 +394,10 @@ let print_fatal_error_desc =
             pp_print_string ppf msg
         end
     | `De -> begin fun ppf -> function
-        | Import_error err ->
-            fprintf ppf "Das syntaktische Konstrukt ist (in diesem Sprachlevel) nicht unterstuetzt"
+        | Import_error (err, feat_opt) ->
+            fprintf ppf
+              "Das syntaktische Konstrukt ist (%s) nicht unterstuetzt"
+              (match feat_opt with Some feat -> "entgegen " ^ feat | None -> "nie")
         | Module_not_found lid ->
             fprintf ppf "Das Modul %a konnte nicht gefunden werden" Longident.print lid
         | Parse_error err ->

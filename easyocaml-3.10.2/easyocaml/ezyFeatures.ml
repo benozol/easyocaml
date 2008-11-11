@@ -83,8 +83,8 @@ type struct_feats = {
 }
 
 type program_feats = {
-  pr_expr_features : expr_feats ;
-  pr_struct_features : struct_feats ;
+  pr_expr_feats : expr_feats ;
+  pr_struct_feats : struct_feats ;
 }
 
 let print_pattern_feats ppf pf =
@@ -153,11 +153,11 @@ let print_struct_feats ppf sf =
 
 let print_program_feats ppf pf =
   Format.fprintf ppf "{@[expr: %a@ structure items: %a@]}"
-    print_expr_feats pf.pr_expr_features print_struct_feats pf.pr_struct_features
+    print_expr_feats pf.pr_expr_feats print_struct_feats pf.pr_struct_feats
 
 (** {3 Functions to generate complete and minimal syntactic feature descriptions} *)
 
-let all_pattern_features b =
+let all_pattern_feats b =
   {
     p_wildcard = b ;
     p_var = b ;
@@ -174,29 +174,35 @@ let all_pattern_features b =
   }
 
 let all_let_feats b = {
-  l_pattern = all_pattern_features b ;
+  l_pattern = all_pattern_feats b ;
   l_and = b ;
   l_args = b ;
 }
+
 let all_letrec_feats b = {
   lr_and = b ;
   lr_args = b ;
 }
 
-let all_expr_features b = {
+let all_fun_feats b = {
+  f_pattern = all_pattern_feats b;
+  f_fun = b;
+}
+
+let all_expr_feats b = {
   e_array = b ;
   e_array_update = b ;
   e_assert = b ;
   e_constant = b ;
   e_constructor = b ;
   e_for = b ;
-  e_function = if b then Some { f_pattern = all_pattern_features b; f_fun = true } else None ;
+  e_function = if b then Some { f_pattern = all_pattern_feats b; f_fun = true } else None ;
   e_if_then = b ;
   e_if_then_else = b ;
-  e_let_in = if b then Some {l_pattern = all_pattern_features b; l_and = true; l_args = true} else None ;
+  e_let_in = if b then Some {l_pattern = all_pattern_feats b; l_and = true; l_args = true} else None ;
   e_let_rec_in = if b then Some { lr_and = true; lr_args = true } else None ;
   e_list = b;
-  e_match = if b then Some (all_pattern_features b) else None ;
+  e_match = if b then Some (all_pattern_feats b) else None ;
   e_qualified_var = b ;
   e_raise = b ;
   e_record_construction = b ;
@@ -207,13 +213,13 @@ let all_expr_features b = {
   e_sequence = b ;
   e_simple_var = b ;
   e_string_access = b ;
-  e_try = if b then Some (all_pattern_features b) else None ;
+  e_try = if b then Some (all_pattern_feats b) else None ;
   e_tuple = b ;
   e_type_annotation = b;
   e_while = b ;
 }
 
-let all_type_features b = {
+let all_type_feats b = {
   t_synonym = b ;
   t_variant = b ;
   t_record = b ;
@@ -221,26 +227,26 @@ let all_type_features b = {
   t_and = b;
 }
 
-let all_struct_features b = {
+let all_struct_feats b = {
   s_annot_mandatory = not b ;
   s_eval_expr = b ;
   s_let = if b then Some (all_let_feats b) else None ;
   s_let_rec = if b then Some (all_letrec_feats b) else None ;
-  s_type = if b then Some (all_type_features b) else None ;
+  s_type = if b then Some (all_type_feats b) else None ;
   s_exception = b ;
   s_open = b ;
   s_semisemi_optional = b ;
 }
 
-let all_program_features b = {
-  pr_expr_features = all_expr_features b ;
-  pr_struct_features = all_struct_features b ;
+let all_program_feats b = {
+  pr_expr_feats = all_expr_feats b ;
+  pr_struct_feats = all_struct_feats b ;
 }
 
 
 (** {3 Functions to combine syntactic feature descriptions} *)
 
-let pattern_features_union op f1 f2 = {
+let pattern_feats_union op f1 f2 = {
   p_wildcard = op f1.p_wildcard f2.p_wildcard ;
   p_var = op f1.p_var f2.p_var ;
   p_constant = op f1.p_constant f2.p_constant ;
@@ -255,13 +261,13 @@ let pattern_features_union op f1 f2 = {
   p_nested = op f1.p_nested f2.p_nested ;
 }
 
-let let_features_union op lf1 lf2 = {
-  l_pattern = pattern_features_union op lf1.l_pattern lf2.l_pattern ;
+let let_feats_union op lf1 lf2 = {
+  l_pattern = pattern_feats_union op lf1.l_pattern lf2.l_pattern ;
   l_and = op lf1.l_and lf2.l_and ;
   l_args = op lf1.l_args lf2.l_args ;
 }
 
-let letrec_features_union op lrf1 lrf2 = {
+let letrec_feats_union op lrf1 lrf2 = {
   lr_and = op lrf1.lr_and lrf2.lr_and ;
   lr_args = op lrf1.lr_args lrf2.lr_args ;
 }
@@ -273,20 +279,20 @@ let maximum prf =
       | Some pf, None | None, Some pf -> Some pf
       | Some pf1, Some pf2 -> Some (union (||) pf1 pf2) in
   let max_pf =
-    List.fold_left (aux pattern_features_union) None [
-      Option.map ~f:(fun lf -> lf.l_pattern) prf.pr_struct_features.s_let ;
-      Option.map ~f:(fun lf -> lf.l_pattern) prf.pr_expr_features.e_let_in ;
-      Option.map ~f:(fun ff -> ff.f_pattern) prf.pr_expr_features.e_function ;
-      prf.pr_expr_features.e_match ;
+    List.fold_left (aux pattern_feats_union) None [
+      Option.map ~f:(fun lf -> lf.l_pattern) prf.pr_struct_feats.s_let ;
+      Option.map ~f:(fun lf -> lf.l_pattern) prf.pr_expr_feats.e_let_in ;
+      Option.map ~f:(fun ff -> ff.f_pattern) prf.pr_expr_feats.e_function ;
+      prf.pr_expr_feats.e_match ;
     ] in
   let max_lf =
-    List.fold_left (aux let_features_union) None [
-      prf.pr_struct_features.s_let ;
-      prf.pr_expr_features.e_let_in ;
+    List.fold_left (aux let_feats_union) None [
+      prf.pr_struct_feats.s_let ;
+      prf.pr_expr_feats.e_let_in ;
     ] in
   let max_lrf =
-    List.fold_left (aux letrec_features_union) None [
-      prf.pr_struct_features.s_let_rec ;
-      prf.pr_expr_features.e_let_rec_in ;
+    List.fold_left (aux letrec_feats_union) None [
+      prf.pr_struct_feats.s_let_rec ;
+      prf.pr_expr_feats.e_let_rec_in ;
     ] in
   max_pf, max_lf, max_lrf

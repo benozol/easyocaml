@@ -23,9 +23,9 @@ module Restrict (Spec: sig value spec : EzyFeatures.program_feats; end) (Syntax:
     logger#info "Restricting by EzyCamlgrammar";
 
     let (pat_spec, let_spec, letrec_spec) = maximum spec;
-    let expr_spec = spec.pr_expr_features;
-    let fun_spec = spec.pr_expr_features.e_function;
-    let str_spec = spec.pr_struct_features;
+    let expr_spec = spec.pr_expr_feats;
+    let fun_spec = spec.pr_expr_feats.e_function;
+    let str_spec = spec.pr_struct_feats;
 
     (* never: DELETE_RULE Gram patt: "("; SELF; ")" END; *)
     match pat_spec with
@@ -269,21 +269,18 @@ module Restrict (Spec: sig value spec : EzyFeatures.program_feats; end) (Syntax:
     DELETE_RULE Gram str_item: "module"; "rec"; module_binding END;
     DELETE_RULE Gram str_item: "module"; "type"; a_UIDENT; "="; module_type END;
     DELETE_RULE Gram str_item: "module"; a_UIDENT; module_binding0 END;
+    DELETE_RULE Gram str_item: "exception"; constructor_declaration; "="; type_longident END;
 
-    if Option.is_none str_spec.s_let then do {
-      DELETE_RULE Gram str_item: "let"; opt_rec; binding; "in"; expr END;
-    } else ();
-    if Option.is_none str_spec.s_let_rec then do {
+    if Option.is_none str_spec.s_let && Option.is_none str_spec.s_let_rec then do {
       DELETE_RULE Gram str_item: "let"; opt_rec; binding END;
     } else ();
     if not str_spec.s_exception then do {
-      DELETE_RULE Gram str_item: "exception"; constructor_declaration; "="; type_longident END;
       DELETE_RULE Gram str_item: "exception"; constructor_declaration END;
     } else ();
     if not str_spec.s_open then do {
       DELETE_RULE Gram str_item: "open"; module_longident END;
     } else ();
-    match spec.pr_struct_features.s_type with
+    match spec.pr_struct_feats.s_type with
       [ Some type_spec ->
           do {
             DELETE_RULE Gram opt_eq_ctyp: END;
