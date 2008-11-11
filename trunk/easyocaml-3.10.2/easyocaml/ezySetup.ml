@@ -21,7 +21,7 @@ let do_setup () =
       | Some str -> EzyMisc.register_error_printer str
     end ;
     begin match !Clflags.easylevel with
-      | None -> { default with features = Some (all_program_features true) }
+      | None -> { default with features = Some (all_program_feats true) }
       | Some name -> 
           let init_lang = EzyLang.load name in
           let lang = List.fold_left EzyLang.extend_with_teachpack init_lang !Clflags.easyteachpacks in

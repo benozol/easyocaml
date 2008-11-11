@@ -7,7 +7,7 @@ type t = { features : program_feats;      (** Allowed features *)
            obj_files : string list;       (** list of object files *)
          }
 
-let empty = { features = all_program_features true; modules = []; inc_dirs = []; obj_files = [] }
+let empty = { features = all_program_feats true; modules = []; inc_dirs = []; obj_files = [] }
 
 let teachpack_config_result = ref None
 

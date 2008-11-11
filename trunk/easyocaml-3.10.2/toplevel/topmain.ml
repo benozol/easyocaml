@@ -27,7 +27,7 @@ let prepare ppf =
       try EzySetup.setup ()
       with x -> Errors.report_error ppf x; exit 2
     in
-    let fs = Option.value ~default:(EzyFeatures.all_program_features true) easy_setup.EzySetup.features in
+    let fs = Option.value ~default:(EzyFeatures.all_program_feats true) easy_setup.EzySetup.features in
     logger#debug "registering EzyCamlgrammar";
     EzyCamlgrammar.restrict_and_register_top fs EzyErrors.print_parse_error Toploop.print_location Toploop.parse_toplevel_phrase Toploop.parse_use_file Toploop.print_warning Topdirs.dir_load Topdirs.dir_directory ;
     preload_objects := !preload_objects @ (List.rev (easy_setup.EzySetup.obj_files));

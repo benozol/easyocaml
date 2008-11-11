@@ -108,9 +108,10 @@ type import_error =
 type fatal =
   | Parse_error of EzyCamlgrammar.ParseError.error
     (** Syntax error, sometimes including the parsers original exception. *)
-  | Import_error of import_error
-    (** [Import_error (b, ie)]: Actually valid OCaml code, but either not allowed by
-      * language features [b = false] or not allowed in EasyOCaml at all [b = true]. *)
+  | Import_error of import_error * string option
+    (** [Import_error (err, feat_opt)] Actually valid OCaml code, but the syntactic
+      * category given im [err] is disallowed by the language feature [feat] if
+      * [feat_opt = Some feat] or never allowed else. *)
   | Module_not_found of EzyOcamlmodules.Longident.t
     (** Usage of an unknown module. *)
   | Other_fatal of string
