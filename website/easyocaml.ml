@@ -52,10 +52,9 @@ let easyocamlc lang level program =
     let easylevel = if level = "" then "" else " -easylevel " ^ level in
     ecamlc ^ easylevel ^ file in
 
+  let stdin, stdout, errin = Unix.open_process_full cmd [|"LANGUAGE=" ^ lang_to_envvar lang|] in
   let ic =
-    print_endline cmd;
-    let _, _, ic = Unix.open_process_full cmd [|"LANGUAGE=" ^ lang_to_envvar lang|] in
-    Unix.descr_of_in_channel ic |>
+    Unix.descr_of_in_channel errin |>
     Lwt_unix.of_unix_file_descr |>
     Lwt_chan.in_channel_of_descr in
 
@@ -68,6 +67,11 @@ let easyocamlc lang level program =
          aux () in
        aux ())
     (function End_of_file -> return () | x -> raise x) >>= fun () ->
+(*
+  close_in stdin;
+  close_in errin;
+  close_out stdout;
+ *)
   return (Buffer.contents buf)
 
 

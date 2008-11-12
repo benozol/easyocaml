@@ -3,6 +3,9 @@ open EzyUtils
 open EzyTypingCoreTypes
 open EzyConstraints
 
+(** Build in types. The ExtLocation.t given to the constructors is the witness
+  * for the given type.  This is needed for the endpoints in type constructor
+  * clashes. *)
 module EzyPredef : sig
   val bool_type: ExtLocation.t -> Ty.t
   val unit_type: ExtLocation.t -> Ty.t
