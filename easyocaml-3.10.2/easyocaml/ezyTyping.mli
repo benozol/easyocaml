@@ -25,6 +25,7 @@ val type_expression :
   Env.t -> 'a -> EzyAst.imported_expression -> 'b ->
   generated_expression * TyVarSubst.t
 
+(** Type an implementation (.ml file) *)
 val type_implementation :
   string -> Env.t -> EzyAst.imported_structure ->
   generated_structure * TyVarSubst.t * EzyEnv.t

@@ -25,6 +25,10 @@ module TypeAnnotation : sig
   val valid : EzyEnv.t -> TyVarSubst.t -> t -> ErrorSet.t
 end
 
+(** PostProcess.t contains information which must be checked after the
+  * generation (unbound_vars) or after unification (type_annotations) -
+  * after generation anyway.
+  *)
 module PostProcess : sig
   module TypeAnnotations : sig
     include Set.S with type elt = TypeAnnotation.t
@@ -32,9 +36,9 @@ module PostProcess : sig
       EzyEnv.t -> TyVarSubst.t -> t -> ErrorSet.t
   end
   type t = {
-    heavies : HeavyErrorSet.t;
-    errors : ErrorSet.t;
-    type_annotations : TypeAnnotations.t;
+    heavies: HeavyErrorSet.t ;              (** Errors which do not allow unification and raised before that  *)
+    errors: ErrorSet.t ;                    (** Errors which are reported after unification *)
+    type_annotations: TypeAnnotations.t ;   (** Type annotations are to be checked after unification *)
   }
   val empty : t
   val has_heavies : t -> bool
