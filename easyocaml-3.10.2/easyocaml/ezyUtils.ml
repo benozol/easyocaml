@@ -449,6 +449,9 @@ module StringSet = StringMap.KeySet
 
 (** Monads *)
 
+(** [StateErrorMonadBasis (State) (Error)] is a state monad with an explicit error state, in which
+  * continuing code is not executed.
+  *)
 module StateErrorMonadBasis (State: sig type t end) (Error: sig type t val set_context : t -> t -> t end) : sig
   include Monad.Basic
   val fail : Error.t -> 'a t
@@ -514,125 +517,6 @@ end = struct
 end
 
 (** Logging *)
-
-module Logging = struct
-  type level = Trace | Debug | Info | Warn | Error
-  let level_of_string str =
-    match String.lowercase str with
-      | "trace" -> Trace
-      | "debug" -> Debug
-      | "info" -> Info
-      | "" | "warn" -> Warn
-      | "error" -> Error
-      | _ -> invalid_arg ("Logging.level_of_string: " ^ str)
-
-  let longest_layer = ref 0
-  let level = ref (try level_of_string (Sys.getenv "LOGLEVEL") with Not_found -> Warn)
-  let layers =
-    let aux = function "" -> None | str -> Some (Misc.rev_split_words str) in
-    ref (try aux (Sys.getenv "LAYERS") with Not_found -> None)
-  let time_level = ref (try int_of_string (Sys.getenv "TIMELEVEL") with _ -> 0)
-  let ppf = Format.std_formatter
-  let null_ppf = Format.make_formatter (fun _ _ _ -> ()) (fun _ -> ())
-
-  let _ =
-    if !Sys.interactive then 
-      Format.printf "Logging %s layers %a for time level %d\n" 
-        (match !level with
-           | Trace -> "trace"
-           | Debug -> "debug"
-           | Info -> "info"
-           | Warn -> "warn"
-           | Error -> "error")
-        (fun ppf -> function
-           | None -> Format.pp_print_string ppf "<all>"
-           | Some ls -> format_list Format.pp_print_string ", " ppf ls)
-        !layers
-        !time_level
-
-  let print_context = ref true
-
-  let get_level () = !level
-  let set_debug () = level := Debug
-  let set_info () = level := Info
-  let set_warn () = level := Warn
-  let set_error () = level := Error
-  let set_trace () = level := Trace
-
-  let set_layers l =
-    layers := Some l ;
-    longest_layer := List.fold_left (fun n layer -> max n (String.length layer)) 0 l
-
-  let deset_layers () =
-    layers := None ;
-    longest_layer := 0
-
-  let log newline level layer indent =
-    let prefix = match level with Debug -> "DBG" | Info -> "INF" | Warn -> "WRN" | Error -> "ERR" | Trace -> "TRC" in
-    let level_matches = get_level () <= level in
-    let layer_matches =
-      match !layers with
-        | None -> true
-        | Some ls -> layer = "" || List.mem layer ls in
-    if level_matches && layer_matches then begin
-      if !print_context then
-        Format.fprintf ppf "[%s %s%s] %s" prefix "" layer (String.make indent ' ') ;
-      print_context := newline ;
-      Format.kfprintf (fun ppf -> if newline then Format.pp_print_newline ppf ()) ppf
-    end else
-      Printf.ifprintf ppf
-
-  let raw_time c level diff res =
-    if level < !time_level then begin
-      Format.fprintf ppf "[TME] %2.4f %s " diff (String.make (2 * level) c) ;
-      Format.kfprintf (fun ppf -> Format.pp_print_newline ppf (); res) ppf
-    end else begin
-      Format.kfprintf (fun ppf -> res) null_ppf
-    end
-
-  let last_times = Array.create 10 0.0
-  let time level =
-    let current = Unix.gettimeofday () in
-    let diff =
-      if last_times.(level) = 0.0
-      then 0.0
-      else current -. last_times.(level) in
-    last_times.(level) <- current ;
-    raw_time '-' level diff ()
-
-  let atime_level = ref 1
-  let atime str f x =
-    let start = Unix.gettimeofday () in
-    incr atime_level ;
-    let res = f x in
-    decr atime_level ;
-    let diff = Unix.gettimeofday () -. start in
-    raw_time '-' !atime_level diff res str
-
-
-  module Make (Module : sig val layer: string end) = struct
-
-    let error ?(newline=true) fmt =
-      log newline Error Module.layer 0 fmt
-
-    let warn ?(newline=true) fmt =
-      log newline Warn Module.layer 2 fmt
-
-    let info ?(newline=true) fmt =
-      log newline Info Module.layer 4 fmt
-
-    let debug ?(newline=true) fmt =
-      log newline Debug Module.layer 6 fmt
-
-    let trace ?(newline=true) fmt =
-      log newline Trace Module.layer 8 fmt
-
-    let time = time
-    let atime = atime
-  end
-
-  include Make(struct let layer = "omni" end)
-end
 
 module Logger = struct
   type level = Trace | Debug | Info | Warn | Error
