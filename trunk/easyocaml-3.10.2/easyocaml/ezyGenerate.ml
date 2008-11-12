@@ -130,10 +130,6 @@ module TypeAnnotation = struct
     end
 end
 
-(** PostProcess.t contains information which must be checked after the
-  * generation (unbound_vars) or after unification (type_annotations) -
-  * after generation anyway.
-  *)
 module PostProcess = struct
 
   module TypeAnnotations = struct
@@ -148,9 +144,9 @@ module PostProcess = struct
 
   type t =
       {
-        heavies: HeavyErrorSet.t ;              (* Errors which do not allow unification and raised before that  *)
-        errors: ErrorSet.t ;                    (* Errors which are reported after unification *)
-        type_annotations: TypeAnnotations.t ;   (* Type annotations are to be checked after unification *)
+        heavies: HeavyErrorSet.t ;
+        errors: ErrorSet.t ;
+        type_annotations: TypeAnnotations.t ;
       }
 
   let empty = {

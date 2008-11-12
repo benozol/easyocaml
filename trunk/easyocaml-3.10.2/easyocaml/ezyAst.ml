@@ -170,10 +170,10 @@ and ('expr_data, 'id_data, 'nm_data, 'pat_data) dot_item =
 
 
 type imported_expression = (unit, unit, unit, unit) expression
-
 type imported_structure = (unit, unit, unit, unit) structure
-
+type imported_structure_item = (unit, unit, unit, unit) structure_item
 type imported_pattern = (unit,unit, unit, unit) pattern
+type imported_rule = (unit, unit, unit, unit) rule
 
 let rec variables_in_pattern p =
   match p.ppat_desc with

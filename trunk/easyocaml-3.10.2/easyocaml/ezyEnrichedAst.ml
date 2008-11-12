@@ -15,9 +15,6 @@ type exp_data =
     }
 
 type id_data = Path.t
-    (*{
-      ia_path: Path.t ;
-    }*)
 
 type pat_data =
     {
@@ -27,14 +24,10 @@ type pat_data =
     }
 
 type name_data = Ident.t
-    (*{
-      na_ident: Ident.t ;
-    }*)
 
 type generated_expression = (exp_data, id_data, name_data, pat_data) expression
-
+type generated_structure_item = (exp_data, id_data, name_data, pat_data) EzyAst.structure_item
 type generated_structure = (exp_data, id_data, name_data, pat_data) structure
-
 type generated_pattern = (exp_data, id_data, name_data, pat_data) pattern
 type generated_rule = (exp_data, id_data, name_data, pat_data) rule
 
@@ -60,7 +53,6 @@ let import_constant loc = function
   | _ ->
       raise (import_error loc EzyErrors.Not_supported_constant)
 
-module StringMap = Map.Make(String)
 exception TyVarNotFound of string
 exception Invalid_type_constructor of (Longident.t * int * int)
 exception Unbound_type_constructor of Longident.t
