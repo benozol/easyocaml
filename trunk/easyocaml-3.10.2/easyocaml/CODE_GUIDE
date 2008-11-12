@@ -1,0 +1,128 @@
+
+= This document is a roadmap to machinery and the modules of EasyOCaml =
+
+== Outline ==
+
+Here is a rough outline of EasyOCaml's machinery (in both the compiler and the
+toploop):
+
+ 1 Command line flags are evaluated to check the "-easy" flag and
+   load an error printer, load language level or teachpacks.
+
+ 2 [EzyCamlgrammar] parses the AST from the input, possibly respecting
+   restrictions from the language level => EzyAst.imported_structure
+
+ 3 [EzyGenerate] generate constrains from the AST (involving type information
+   from the default environment and modules loaded by command line or
+   teachpacks/language levels).
+   This yeilds to a quadrupel [generated_structure * AtConstrSet.t *
+   PostProcess.t * EzyEnv.t] where
+
+     [generated_structure] is the AST annotated with type variables and unique
+       identifiers
+
+     [AtConstrSet.t] is a set of constraints on the type variables in the AST
+
+     [PostProcess.t] is build gradually while constraint generation and
+       contains different types of errors (from [EzyErrors]) as well as checks
+       which can only processed after constraint unification (i.e. type
+       annotations)
+
+     [EzyEnv.t] is used to keep track of local variables and contains after
+       constraint generation information on the global types and values of the
+       program.
+
+ 4 [EzyTyping.solve] trys to solve the generated constrains. If solving
+   succeeds, the program is typed by a type substitution on the type variables
+   in the generated AST and the environment and contains type errors otherwise.
+
+ 5 The last step, reimporting the [EzyEnrichedAst.generated_structure] with
+   typing information given by type substition to OCaml's original Typedtree is
+   not yet done. We type the code again with OCaml's original type checker and
+   compare the result to verify its correctness.
+      
+== Details on the modules ==
+
+=== Utilities and miscellaneous ===
+
+Two rather independend modules for code used in EasyOCaml
+
+ [EzyUtils]
+    contains functionality which is not specific to EasyOCaml, but
+    extends the standard library (String, Set, Map), copies code from existing
+    Libraries (from Core: Option, Monad, T2, T3, T4) and new code for Logging and
+    some more (lexical comparision, tools on functions).
+
+ [EzyMisc]
+   contains EasyOCaml-specific code which is used in different
+   locations in the project.
+
+ [EzyOcamlmodules]
+   extensions of the modules used in the standard OCaml system (e.g. Location,
+   Path, Longident, Types, ...) as well as sets and maps on those.
+
+The rest of the modules contains the code for the EasyOCaml implementation:
+
+=== Error reporting ===
+
+EasyOCaml has sophisticated possibilities to represent errors, to allow as
+detailled error reporting as possible. Furthermore, new error reporting plugins
+can be registered.
+
+  [EzyErrorReportUtils]
+    Code for type error slicing (described in Haack & Wells)
+
+  [EzyErrors]
+    Representation (types) of errors wich can occur in EasyOCaml, as well as
+    functions for error plugins to register new error printer.
+
+
+=== Teachpacks and Language Levels ===
+
+  [EzyConfig]
+  [EzyDynload]
+  [EzyInstall]
+  [EzyLang]
+  [EzyLangLevel]
+  [EzySetup]
+  [EzyTeachPackSyntax]
+  [EzyTeachpack]
+
+
+=== The abstract syntax tree ===
+
+The following modules contain representation, manipulation, parsing and
+restrictions on EasyOCaml's AST.
+
+  [EzyFeatures]
+    In EasyOCaml, the *** AST can be restricted in the available features. The
+    represention of those restrictions is described here.
+
+  [EzyAsttypes]
+    Adaption of Asttypes from the standard OCaml system.
+
+  [EzyAst]
+    Representation of the AST in EasyOCaml. This is a bit overloaden as each
+    node is parametrized on some data it contains. This is [unit] for a parsed
+    tree and typing information (mainly the type variable) for a parsed tree
+    after constraint generation.
+
+  [EzyEnrichedAst]
+    This module directly belongs to [EzyAst] but we had to outsource it because
+    of module dependencies between [EzyErrors]. It contains
+     - definitions of the AST after constraint generation
+     - import functions from OCaml's standard Parsetree respecting given
+       restrictions from [EzyFeatures]
+     - comparision of two ASTs which is used to compare OCaml's typing and
+       EasyOCaml's typing afterwards
+
+EzyCamlgrammar
+MyCamlp4Ast2OCamlAst
+
+EzyConstraints
+EzyGenerate
+
+EzyTyping
+EzyTypingCoreTypes
+EzyEnv
+
