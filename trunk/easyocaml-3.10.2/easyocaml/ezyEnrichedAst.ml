@@ -36,6 +36,7 @@ type generated_expression = (exp_data, id_data, name_data, pat_data) expression
 type generated_structure = (exp_data, id_data, name_data, pat_data) structure
 
 type generated_pattern = (exp_data, id_data, name_data, pat_data) pattern
+type generated_rule = (exp_data, id_data, name_data, pat_data) rule
 
 
 (******************************************************************************)
