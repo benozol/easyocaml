@@ -494,7 +494,7 @@ let link objfiles output_name =
     if !Clflags.nopervasives then objfiles
     else if !Clflags.output_c_object then "stdlib.cma" :: objfiles
     else "stdlib.cma" :: (objfiles @ ["std_exit.cmo"]) in
-  let _ = logger#debug "Linking files %a" (EzyUtils.format_list Format.pp_print_string " ") objfiles in
+  let _ = logger#debug "Linking files %a" (EzyUtils.List.print Format.pp_print_string " ") objfiles in
   let tolink = List.fold_right scan_file objfiles [] in
   Clflags.ccobjs := !Clflags.ccobjs @ !lib_ccobjs; (* put user's libs last *)
   Clflags.ccopts := !lib_ccopts @ !Clflags.ccopts; (* put user's opts first *)

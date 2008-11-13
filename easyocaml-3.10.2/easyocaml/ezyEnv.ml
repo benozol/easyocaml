@@ -451,7 +451,7 @@ let print ?(s=TyVarSubst.empty) everything ppf env =
     | Variant vs ->
         let aux k = function
           | [] -> Format.fprintf ppf "| %s " k
-          | tys -> Format.fprintf ppf "| %s of %a " k (format_list Ty.print " * ") tys in
+          | tys -> Format.fprintf ppf "| %s of %a " k (List.print Ty.print " * ") tys in
         StringMap.iter aux vs
     | Record fs ->
         let p ppf (m, ty) =
@@ -465,14 +465,14 @@ let print ?(s=TyVarSubst.empty) everything ppf env =
       | ExtLocation.Interface _ when not everything -> ()
       | _ ->
           Format.fprintf ppf "@[type (%a) %s = %a;@]@ "
-            (format_list Ty.print ", ") td.type_params
+            (List.print Ty.print ", ") td.type_params
             (Ident.name ident)
             print_kind td.type_kind
   in
   Format.fprintf ppf
     "@[Values: %a@]@ @[Types: %a@]@]"(*"@[Ctors:@ %a@]@ @[Fields:@ %a@]"*)
-    (format_list print_value "") (Ident.keys env.values)
-    (format_list print_type "") (Ident.keys env.types)
+    (List.print print_value "") (Ident.keys env.values)
+    (List.print print_type "") (Ident.keys env.types)
 (*
     StringMap.KeySet.print (StringMap.keys env.ctors)
     StringMap.KeySet.print (StringMap.keys env.fields)
@@ -480,8 +480,8 @@ let print ?(s=TyVarSubst.empty) everything ppf env =
 (*
   Format.fprintf ppf
     "Values: %a\nTypes: %a\nCtors: %a\nFields: %a"
-    (format_list print_value "") (Ident.keys env.values)
-    (format_list print_type "") (Ident.keys env.types)
+    (List.print print_value "") (Ident.keys env.values)
+    (List.print print_type "") (Ident.keys env.types)
     StringMap.KeySet.print (StringMap.keys env.ctors)
     StringMap.KeySet.print (StringMap.keys env.fields)
  *)

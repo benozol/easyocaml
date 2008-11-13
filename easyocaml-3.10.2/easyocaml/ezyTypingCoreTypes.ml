@@ -1,4 +1,7 @@
 
+(** The types in this module resemble the data types used in Haack & Wells,
+  * 2004. *)
+
 (******************************************************************************)
 (*                                   Intro                                    *)
 (************************************************************************ {{{ *)
@@ -6,7 +9,7 @@ open EzyUtils
 open EzyUtils.Infix
 open EzyOcamlmodules
 
-let logger = new Logger.logger "tytools"
+let logger = new Logger.logger "coretys"
 
 
 (* }}} ************************************************************************)
@@ -171,7 +174,6 @@ end = struct
     let _, ty' = fresh_variant ty in
     Option.is_some (aux TyVarSubst.empty tx ty')
 
-
   let rec free_vars = function
     | Var tyvar ->
         TyVarSet.singleton tyvar 
@@ -211,6 +213,7 @@ end = struct
       | Arrow (_, tx1, ty1), Arrow (_, tx2, ty2) ->
           equal_modulo_tyvarmap_list ~tyvarmap [tx1; ty1] [tx2; ty2]
       | _ -> tyvarmap, false
+
   and equal_modulo_tyvarmap_list ?(tyvarmap=TyVarMap.empty) txs tys =
     match txs, tys with
       | [], [] -> tyvarmap, true
@@ -220,8 +223,6 @@ end = struct
             equal_modulo_tyvarmap_list ~tyvarmap rem1 rem2 
           else tyvarmap, false
       | _ -> tyvarmap, false
-
-
 
   let rec tyvars = function
     | Var tyvar ->
@@ -250,12 +251,13 @@ end = struct
     |  Constr (_, lid, tys) -> (
         match tys with
           | [] -> Format.fprintf ppf "%s" (Path.name lid)
-          | _ -> Format.fprintf ppf "(%a) %s" (format_list print ", ") tys (Path.name lid)
+          | _ -> Format.fprintf ppf "(%a) %s" (List.print print ", ") tys (Path.name lid)
       )
     | Tuple (_, tys) ->
-        Format.fprintf ppf "(%a)" (format_list print " * ") tys
+        Format.fprintf ppf "(%a)" (List.print print " * ") tys
     | Arrow _ as ty ->
         print_arrow ppf ty
+
   and print_arrow ppf = function
     | Arrow (loc, x, y) ->
         Format.fprintf ppf "(%a -> %a)" print_arrow x print_arrow y

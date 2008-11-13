@@ -1,10 +1,10 @@
+(*pp camlp4rf *)
 open EzyUtils;
 
 open Camlp4_import.Parsetree;
 open Lexing;
 open Camlp4;
 
-(*pp camlp4oof *)
 value logger = new EzyUtils.Logger.logger "ezy_gram";
 
 module Id = struct

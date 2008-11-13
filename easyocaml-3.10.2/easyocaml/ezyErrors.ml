@@ -213,7 +213,7 @@ let print_error_desc =
             fprintf ppf "Type error"
         | Missing_fields (tyctor, lis) ->
             fprintf ppf "The fields %a for record type %a are not defined"
-              (format_list pp_print_string ", ") lis Longident.print tyctor
+              (List.print pp_print_string ", ") lis Longident.print tyctor
         | Unknown_field lid ->
             fprintf ppf "There is no record with a field named %a"
               Longident.print lid          
@@ -232,7 +232,7 @@ let print_error_desc =
             fprintf ppf "Typfehler"
         | Missing_fields (tyctor, lis) ->
             fprintf ppf "Die Feld(er) %a fehlen fuer die Konstruktion eines Records vom Typ %a"
-              (format_list pp_print_string ", ") lis Longident.print tyctor
+              (List.print pp_print_string ", ") lis Longident.print tyctor
         | Unknown_field lid ->
             fprintf ppf "Feldname %a ist unbekannt"
               Longident.print lid          
@@ -262,14 +262,14 @@ let print_error ~program ast ppf (loc, error) =
           print_error_desc error at Location.print loc
 
 let print_record_heavy =
-  let pp = format_list Longident.print ", " in
+  let pp = List.print Longident.print ", " in
   match lang with
     | `En | `De -> begin fun ppf -> function
         | Alien_fields (p1, lis) ->
             let aux ppf (lid, p2) =
               fprintf ppf "field %a belongs to %s" Longident.print lid (Path.name p2) in
             fprintf ppf "@[<3> * The field does not belong to type %s: %a"
-              (Path.name p1) (format_list aux ", ") lis
+              (Path.name p1) (List.print aux ", ") lis
         | Unknown_fields lis ->
             fprintf ppf "@[<3> * The field(s) %a are unknown"
               pp lis
@@ -286,29 +286,29 @@ let print_heavy_error_desc =
     | `En | `De -> begin fun ppf -> function
         | Several_bindings names ->
             fprintf ppf "The variables %a are bound several times"
-              (format_list pp_print_string ", ") names
+              (List.print pp_print_string ", ") names
         | Different_bindings ([], only_right) ->
             fprintf ppf "The variables %a are only bound on the right hand side of the or pattern"
-              (format_list pp_print_string ", ") only_right
+              (List.print pp_print_string ", ") only_right
         | Different_bindings (only_left, []) ->
             fprintf ppf "The variables %a are only bound on the left hand side of the or pattern"
-              (format_list pp_print_string ", ") only_left
+              (List.print pp_print_string ", ") only_left
         | Different_bindings (only_left, only_right) ->
             fprintf ppf "The variables %a are only bound on the left hand side of the or pattern and %a are only bound on the right hand side"
-              (format_list pp_print_string ", ") only_left
-              (format_list pp_print_string ", ") only_right
+              (List.print pp_print_string ", ") only_left
+              (List.print pp_print_string ", ") only_right
         | Invalid_variant_construction (lid, expected, real) ->
             fprintf ppf "The constructor %a expexts %d argument(s)@ but is here applied to %d argument(s)"
               Longident.print lid expected real
         | Invalid_record errs ->
             fprintf ppf "Errors in record definition:@ @[%a@]"
-              (format_list print_record_heavy "@ ") errs
+              (List.print print_record_heavy "@ ") errs
         | Unknown_variant lid ->
             fprintf ppf "Unbound constructor %a" Longident.print lid
         | Type_variables_not_generalized (nm, _) ->
             fprintf ppf "Variable %s is monomorph and contains type variables (thus cannot be generalized)" nm
         | Type_names_not_unique nms ->
-            fprintf ppf "The type names %a are not unique in this module" (format_list pp_print_string ", ") nms
+            fprintf ppf "The type names %a are not unique in this module" (List.print pp_print_string ", ") nms
         | Invalid_type_constructor (lid, n, m) ->
             fprintf ppf "The type constructor %a expects %d argument(s), but is here applied to %d argument(s)"
               Longident.print lid n m
@@ -329,12 +329,12 @@ let print_heavy ~program ast ppf (loc, heavy) =
 
 let print_errors_default ~program ast ppf errors =
   fprintf ppf "@[%a@]@?"
-    (format_list (print_error ~program ast) "@\n")
+    (List.print (print_error ~program ast) "@\n")
     (ErrorSet.elements errors)
 
 let print_heavies_default ~program ast ppf heavies =
   fprintf ppf "@[%a@]@?"
-    (format_list (print_heavy ~program ast) "@\n")
+    (List.print (print_heavy ~program ast) "@\n")
     (HeavyErrorSet.elements heavies)
 
 let print_specific_parse_error_desc =

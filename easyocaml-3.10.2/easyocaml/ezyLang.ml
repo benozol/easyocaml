@@ -22,7 +22,7 @@ end = struct
     let dir = 
       try D.find name
       with Not_found -> 
-        Misc.fatal_error (format_str "%s %s not found in %a" D.kind name (format_list Format.pp_print_string ", ") EzyConfig.search_dirs)
+        Misc.fatal_error (format_str "%s %s not found in %a" D.kind name (List.print Format.pp_print_string ", ") EzyConfig.search_dirs)
     in
     let meta_file = Filename.concat dir D.meta_file in
     let report_error s = 
