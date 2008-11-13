@@ -6,11 +6,16 @@
 \newcommand\otem{\item[\checkmark]}
 
 \title{Language features of EasyCaml}
-\author{}
+\author{Benus Becker}
 
 \begin{document}
 
 \maketitle
+
+This document describes the language features supported by EasyOCaml. Programs
+including the syntactic elements for patterns, expressions, structure items and
+type/exception declarations mentioned below should be correctly typed by
+EasyOCaml.
 
 \section{Types}
 
@@ -18,19 +23,19 @@
 \begin{itemize}
   \item Primitive types
 	\begin{itemize}
-	  \otem \texttt{int}
+	  \item \texttt{int}
 	  \item \texttt{string}
 	  \item \texttt{bool}
 	  \item \texttt{character}
 	  \item \texttt{float}
 	  \item \texttt{unit}
 	\end{itemize}
-  \otem Type variables
-  \otem Functions 
-  \item Tuples
-  \item Arrays
-  \item Variant types
-  \item Record types
+  \item type variables
+  \item functions 
+  \item tuples
+  \item arrays
+  \item variant types
+  \item record types
 \end{itemize}
 \end{multicols}
 
@@ -40,11 +45,11 @@
 
 \begin{multicols}{2}
 \begin{itemize}
-  \otem Evaluations (\texttt{expr;;})
-  \otem Values (\texttt{let pat = expr;;})
-  \item Type declarations
-  \item Exception declarations
-  \item Opening of modules
+  \item evaluations (\texttt{expr;;})
+  \item (recursive) definition of values (\texttt{let (rec) pat = expr;;})
+  \item type declarations
+  \item declarations of exceptionss
+  \item opening of modules
 \end{itemize}
 \end{multicols}
 
@@ -52,35 +57,37 @@
 
 \begin{multicols}{2}
 \begin{itemize}
-  \otem Variables
-  \otem Infix operators
-  \otem Functions
-  \otem Binding of variables
+  \item variables
+  \item functions
+  \item infix operators
+  \item pattern matching
+  \item binding of variables
   \item recursive bindings
-  \item Tupel construction
-  \item Record construction and access
-  \item Arrays construction and access
-  \item Conditionals (if-then-else, if-then)
-  \item While loops
-  \item For loops
-  \item Sequences
-  \item Type annotations
-  \item Pattern matching
-  \item Raise and construction of exceptions
+  \item tupel construction
+  \item record construction and access
+  \item arrays construction and access
+  \item conditionals (with or without \texttt{else} branch)
+  \item while loops
+  \item for loops
+  \item sequences
+  \item type annotations
+  \item raise and construction of exceptions
 \end{itemize}
 \end{multicols}
 
-\subsection{Patterns}
+\subsection{Patterns\footnote{arrays and records are not yet implemented}}
 
 \begin{multicols}{2}
 \begin{itemize}
-  \item Bound unrejectable (\texttt{x}) 
-  \item Unbound unrejectable (\texttt{\_})
-  \item Constants
-  \item Tuples
-  \item Arrays
-  \item Variants
-  \item Records
+  \item bound unrejectable (\texttt{x}) 
+  \item unbound unrejectable (\texttt{\_})
+  \item constants
+  \item tuples
+  \item variant constructors
+  \item arrays
+  \item records
+  \item type annotations
+  \item nested patterns
 \end{itemize}
 \end{multicols}
 
@@ -88,10 +95,10 @@
 
 \begin{multicols}{2}
 \begin{itemize}
-  \item Abbreviation
-  \item Variant types
-  \item Record types
-  \item Type parameters
+  \item abbreviation
+  \item variant types
+  \item record types
+  \item type parameters
 \end{itemize}
 \end{multicols}
 
