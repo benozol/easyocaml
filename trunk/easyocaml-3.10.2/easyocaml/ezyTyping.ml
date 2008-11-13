@@ -311,7 +311,7 @@ let rec print_strs_info s env ppf = function
       List.iter pp bindings ;
       print_strs_info s env ppf rem
   | { EzyAst.pstr_desc = EzyAst.Pstr_type tds } :: rem ->
-      Format.fprintf ppf "@[type %a@]@ " (format_list (EzyAst.print_name ()) " and ") (List.map fst tds) ;
+      Format.fprintf ppf "@[type %a@]@ " (List.print (EzyAst.print_name ()) " and ") (List.map fst tds) ;
       print_strs_info s env ppf rem
   | { EzyAst.pstr_desc = EzyAst.Pstr_open nm } :: rem ->
       Format.fprintf ppf "@[open %a@]@ " Longident.print nm.lid_name ;
@@ -406,7 +406,7 @@ let type_and_compare_implementation sourcefile outputprefix modulename initial_e
     type_implementation sourcefile initial_env str in
   begin try
     let tt, mc = Typemod.type_implementation sourcefile outputprefix modulename initial_env parse_tree in
-    begin match EzyEnrichedAst.Equality.eq_structure s enr_str tt with
+    begin match EzyEnrichedAst.eq_structure s enr_str tt with
       | Some msg -> alpha_error msg
       | None -> ()
     end ;
@@ -424,7 +424,7 @@ let type_and_compare_top_phrase fs oldenv str =
     Typecore.reset_delayed_checks ();
     let (str, sg, newenv) = Typemod.type_structure oldenv str in
     Typecore.force_delayed_checks ();
-    begin match EzyEnrichedAst.Equality.eq_structure s enr_str str with
+    begin match EzyEnrichedAst.eq_structure s enr_str str with
       | Some msg -> alpha_error msg
       | None -> ()
     end ;

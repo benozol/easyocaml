@@ -52,10 +52,10 @@ let setup () =
     | None ->
         let s = do_setup () in
           logger#debug "easyocaml setup: features = %a; modules = %a; inc_dirs = %a; obj_files = %a" 
-            (format_option EzyFeatures.print_program_feats) s.features
-            (format_option (format_list (format_pair Format.pp_print_string Format.pp_print_bool) ", ")) s.modules
-            (format_list Format.pp_print_string " ") s.inc_dirs
-            (format_list Format.pp_print_string " ") s.obj_files;
+            (Option.print EzyFeatures.print_program_feats) s.features
+            (Option.print (List.print (T2.print Format.pp_print_string Format.pp_print_bool) ", ")) s.modules
+            (List.print Format.pp_print_string " ") s.inc_dirs
+            (List.print Format.pp_print_string " ") s.obj_files;
           patch_clflags s;
           setup_val := Some s;
           s

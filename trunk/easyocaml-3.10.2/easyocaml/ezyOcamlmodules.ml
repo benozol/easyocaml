@@ -9,10 +9,6 @@ let is_infix =
   in fun s -> (StringSet.mem s infixes
                || (s <> "" && List.mem s.[0] first_chars))
 
-(******************************************************************************)
-(*                      Extensions of modules from ocaml                      *)
-(******************************************************************************)
-
 module Location = struct
   module Original = Location
   type location = Location.t = {
@@ -161,7 +157,7 @@ module Types = struct
       | Tpoly (ty, tys) -> failwith "Types.print TPoly _ not implemented"
       | Ttuple tys ->
           Format.pp_print_string ppf "(" ;
-          format_list print " * " ppf tys ;
+          List.print print " * " ppf tys ;
           Format.pp_print_string ppf ")"
       | Tvariant _ -> failwith "Types.print TPoly _ not implemented"
       | Tsubst _ -> failwith "Types.print Tsubst _ not implemented"

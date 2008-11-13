@@ -1,4 +1,8 @@
-(** Random helpers *)
+(** This module is a collection of some handy functionality used in the rest of
+  * EasyOCaml. It contains copies from existing libraries (mainly Jane Street's
+  * Core) to circumvent dependencies while bootstrapping. *)
+
+(** {3 Random helpers} *)
 
 let curry f = fun x y -> f (x, y)
 let uncurry f = fun (x, y) -> f x y
@@ -10,18 +14,32 @@ module Result = struct
 end
 
 let switch_args f y x = f x y
+
 let between f x g = let y = f x in g y; y
 
 let failwith fmt = Printf.ksprintf failwith fmt
 
-let __ () _ = failwith "Not implemented"
+let format_str fmt =
+  Format.kfprintf (fun _ -> Format.flush_str_formatter ()) Format.str_formatter fmt
 
+module Infix = struct
+  let (|>) x f = f x
+  let ($) f x = f x
+  let (<<) f g = fun x -> f (g x)
+  let (>>) f g = fun x -> g (f x)
+  let (//) = switch_args
+  let (///) f y z = fun x -> f x y z
+end
+
+(** {3 On tuples} *)
 module T2 = struct
   let create x y = (x, y)
   let map1 ~f (x, y) = f x, y
   let map2 ~f (x, y) = x, f y
   let curry ~f = fun x y -> f (x, y)
   let uncurry ~f = fun (x, y) -> f x y
+  let print p1 p2 ppf (x,y) = 
+    Format.fprintf ppf "(%a, %a)" p1 x p2 y
 end
 module T3 = struct
   let beside1 (_,x,y) = x,y
@@ -35,29 +53,30 @@ module T4 = struct
   let uncurry ~f = fun (w, x, y, z) -> f w x y z
 end
 
-let format_str fmt =
-  Format.kfprintf (fun _ -> Format.flush_str_formatter ()) Format.str_formatter fmt
-let print_to_to_string p x =
-  p Format.str_formatter x ;
-  Format.flush_str_formatter ()
+let not_implemented descr = 
+  failwith "%s: not yet implemented" descr
+let not_implemented_fun func_name: 'a -> 'b =
+  fun _ ->
+    failwith "%s: not yet implemented" func_name
 
-let not_implemented func_name = (* : 'a -> 'b =
-  fun _ -> *) failwith "%s: not yet implemented" func_name
+(** {3 Comparisions} *)
 
-(** Comparisions *)
-
+(** Compare two hetergonenous pairs with comparision functions for each constituent. *)
 let lexical2 cmp1 cmp2 (x, y) (x', y') =
   match cmp1 x x' with
     | 0 -> cmp2 y y'
     | n -> n
 
+(** Lexically compare a pair [('a * 'a)]. *)
 let lexical cmp = lexical2 cmp cmp
 
+(** Compare a hetergonenous triple with comparision functions for each constituent. *)
 let lexical3 cmp1 cmp2 cmp3 (x, y, z) (x', y', z') =
   match cmp1 x x' with
     | 0 -> lexical2 cmp2 cmp3 (y, z) (y', z')
     | n -> n
 
+(** Compare two lists lexically. *)
 let rec lexical_list cmp li1 li2 =
   match li1, li2 with
     | [], [] -> 0
@@ -69,6 +88,7 @@ let rec lexical_list cmp li1 li2 =
           | n -> n
         end
 
+(** [input t] reads the contents of a channel to a string. Copied from Core 0.5 *)
 let input_all t = (* copied from core 0.5 *)
   let buf = String.create 4096 in
   let buffer = Buffer.create 16 in
@@ -82,16 +102,7 @@ let input_all t = (* copied from core 0.5 *)
   in
   loop ();
   Buffer.contents buffer;
-;;
 
-module Infix = struct
-  let (|>) x f = f x
-  let ($) f x = f x
-  let (<<) f g = fun x -> f (g x)
-  let (>>) f g = fun x -> g (f x)
-  let (//) = switch_args
-  let (///) f y z = fun x -> f x y z
-end
 
 (** Printing *)
 
@@ -105,23 +116,8 @@ module type PrintableOrderedType = sig
   include Printable with type printable = t
 end
 
-let format_list p sep ppf li =
-  match li with
-    | [] -> ()
-    | x :: rest ->
-        p ppf x ; 
-        let f x =
-          Format.fprintf ppf sep ;
-          p ppf x in
-        List.iter f rest
 
-let format_option p ppf o =
-  match o with
-    | None -> Format.fprintf ppf "None"
-    | Some x -> Format.fprintf ppf "Some(%a)" p x
-
-let format_pair p1 p2 ppf (x,y) = 
-  Format.fprintf ppf "(%a, %a)" p1 x p2 y
+(** {3 Improved modules from stdlib} *)
 
 module Option = struct
   type 'a t = 'a option
@@ -149,9 +145,11 @@ module Option = struct
       | Some x1, Some x2 -> cmp x1 x2
   let for_exn f x =
     try Some (f x) with _ -> None
+  let print p ppf o =
+    match o with
+      | None -> Format.fprintf ppf "None"
+      | Some x -> Format.fprintf ppf "Some (%a)" p x
 end
-
-(** Improved modules from stdlib *)
 
 module List = struct
 
@@ -162,7 +160,7 @@ module List = struct
 
   let reduce f li =
     match li with
-      | [] -> invalid_arg "reduce"
+      | [] -> invalid_arg "List.reduce"
       | h :: t -> List.fold_left f h t
 
   let init f n =
@@ -232,6 +230,15 @@ module List = struct
           | None -> map_option f xs
           | Some y -> y :: map_option f xs
     
+  let print p sep ppf li =
+    match li with
+      | [] -> ()
+      | x :: rest ->
+          p ppf x ; 
+          let f x =
+            Format.fprintf ppf sep ;
+            p ppf x in
+          List.iter f rest
 end
 
 module Set = struct
@@ -366,6 +373,11 @@ module Sys = struct
     with Sys_error _ -> false
 end
 
+module StringMap = Map.Make(String)
+module StringSet = StringMap.KeySet
+
+(** {3 Monads} *)
+
 module Monad = struct
   module type Basic = sig 
     type 'a t
@@ -444,10 +456,6 @@ module Monad = struct
   end
 end
 
-module StringMap = Map.Make(String)
-module StringSet = StringMap.KeySet
-
-(** Monads *)
 
 (** [StateErrorMonadBasis (State) (Error)] is a state monad with an explicit error state, in which
   * continuing code is not executed.
@@ -516,8 +524,12 @@ end = struct
       | Result.Error (msg, st) -> f msg st
 end
 
-(** Logging *)
+(** {3 Logging} *)
 
+(** This module defines the logger used in EasyOCaml. The level of detail is
+  * controlled by the EASYOCAML_LOGLEVEL environment variable. Possible values
+  * are "trace", "debug" "info", "warn" and "error". EASYOCAML_LOGLAYERS is a
+  * (space seperated) list of layers which is logged at all. *)
 module Logger = struct
   type level = Trace | Debug | Info | Warn | Error
   let level_of_string str =
@@ -532,9 +544,9 @@ module Logger = struct
     match level with
       | Debug -> "DBG" | Info -> "INF" | Warn -> "WRN"
       | Error -> "ERR" | Trace -> "TRC"
-  let level = ref (try level_of_string (Sys.getenv "LOGLEVEL") with Not_found -> Warn)
-  let layers = ref (try Some (Misc.rev_split_words (Sys.getenv "LAYERS")) with Not_found -> None)
-  let time_level = ref (try int_of_string (Sys.getenv "TIMELEVEL") with _ -> 0)
+  let level = ref (try level_of_string (Sys.getenv "EASYOCAML_LOGLEVEL") with Not_found -> Warn)
+  let layers = ref (try Some (Misc.rev_split_words (Sys.getenv "EASYOCAML_LOGLAYERS")) with Not_found -> None)
+  let time_level = ref (try int_of_string (Sys.getenv "TEASYOCAML_TIMELEVEL") with _ -> 0)
   let ppf = Format.std_formatter
   let null_ppf = Format.make_formatter (fun _ _ _ -> ()) (fun _ -> ())
 
@@ -587,8 +599,6 @@ module Logger = struct
         Format.fprintf ppf "[TME] %2.4f %s %s" diff (String.make (2 * !atime_level) '-') msg ;
       res *)
 
-
-
   type 'a formatting = ('a, Format.formatter, unit) format -> 'a
   class logger layer = object (self)
     method error : 'a . 'a formatting = _log layer Error 1
@@ -598,9 +608,7 @@ module Logger = struct
     method trace : 'a . 'a formatting = _log layer Trace 8
     method time : 'a . int -> 'a formatting =
       fun _ fmt -> Format.ifprintf ppf fmt
-(*
-    method atime : 'a 'b . string -> ('a -> 'b) -> 'a -> 'b =
-      fun str f x -> f x
- *)
+(*  method atime : 'a 'b . string -> ('a -> 'b) -> 'a -> 'b =
+      fun str f x -> f x *)
   end
 end

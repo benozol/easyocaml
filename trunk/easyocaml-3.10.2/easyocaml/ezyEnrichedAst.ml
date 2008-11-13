@@ -600,8 +600,8 @@ module Equality = struct
             | l1, l2 ->
                 M.failf ?loc "type %a vs %a: constructor parameter count: %d vs %d" Path.print k Path.print k' (List.length l1) (List.length l2) in
           let msg = format_str "Constructor (%a) %s vs (%a) %s"
-                      (format_list Ty.print ", ") tys (Path.name k)
-                      (format_list Types.print ", ") tys' (Path.name k') in
+                      (List.print Ty.print ", ") tys (Path.name k)
+                      (List.print Types.print ", ") tys' (Path.name k') in
           eq_path ?loc k k' msg >>
           for_all (tys, tys')
       | Ty.Arrow (label, ety1, ety2), Types.Tarrow ("", ty1, ty2, _) -> 
@@ -806,12 +806,12 @@ module Equality = struct
             let aux ppf (p, _) = EzyAst.print_pat () ppf p in
             Format.fprintf ppf "@[Pstr_value (%a):@ @[%a@]@]"
               Location.print strit.pstr_loc
-              (format_list aux ",@ ") bs
+              (List.print aux ",@ ") bs
         | Pstr_rec_value bs ->
             let aux ppf (n, _) = Format.pp_print_string ppf n.nm_name in
             Format.fprintf ppf "@[Pstr_rec_value (%a):@ @[%a@]@]"
               Location.print strit.pstr_loc
-              (format_list aux ",@ ") bs
+              (List.print aux ",@ ") bs
         | _ -> Format.pp_print_string ppf "<not interesting>" in
     M.between (m_eq_structure_item s estrit strit)
       (fun st ->
@@ -825,20 +825,21 @@ module Equality = struct
       | estrit :: erem, ostrit :: orem ->
           m_eq_structure_item s estrit ostrit >>= fun b ->
           if b then aux (erem, orem) else aux (erem, ostrit :: orem)
-      | _ -> M.fail "eq_structure" in
+      | _ -> M.fail "Equality.structure" in
     M.between
       (aux (estr, ostr))
       (fun st ->
          logger#info "@[%s comparing ecaml/ocaml typing"
            (match st with Result.Ok _ -> "Success" | Result.Error _ -> "Failed"))
 
-  let eq_expression s eexpr expr =
+  let expression s eexpr expr =
     M.perform Conf.null (m_eq_expression eexpr expr s)
       (fun () st -> None)
       (fun msg st -> Some msg)
 
-  let eq_structure (s: TyVarSubst.t) estr str = 
+  let structure (s: TyVarSubst.t) estr str = 
     M.perform Conf.null (m_eq_structure s estr str)
       (fun () st -> None)
       (fun msg st -> Some msg)
 end
+let eq_structure = Equality.structure

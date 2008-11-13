@@ -4,13 +4,19 @@ open EzyErrors
 open EzyConstraints
 open EzyEnrichedAst
 
+(** The functions [unify], [minimize], [enum] and [solve] are implementations
+  * of the algorithms described in Haack & Wells, 2004. *)
+
+(** [unify env cs] trys to unify the constraints [cs]. It returns a type
+  * assignment for the type variables on success and otherwise a type error and
+  * a pair of a set of locations and a location, which is __nice__ in the sense
+  * of Haack & Wells. The environment [env] is used to expand type synonyms. *)
 val unify :
   EzyEnv.t -> AtConstrSet.t ->
-  ((Ty.t * ExtLocationSet.t) TyVarMap.t, type_error * ExtLocationSet.t * ExtLocationMap.key) EzyUtils.Result.t
-
+  ((Ty.t * ExtLocationSet.t) TyVarMap.t, type_error * ExtLocationSet.t * ExtLocation.t) EzyUtils.Result.t
 
 val minimize :
-  EzyEnv.t -> AtConstrSet.t -> ExtLocationSet.printable -> ExtLocationMap.key ->
+  EzyEnv.t -> AtConstrSet.t -> ExtLocationSet.t -> ExtLocation.t ->
   type_error * ExtLocationSet.t
 
 val enum :
@@ -21,18 +27,8 @@ val solve :
   EzyEnv.t -> float -> AtConstrSet.t -> EzyGenerate.PostProcess.t -> 'a ->
   (TyVarSubst.t * ErrorSet.t, ErrorSet.t) EzyUtils.Result.t
 
-val type_expression :
-  Env.t -> 'a -> EzyAst.imported_expression -> 'b ->
-  generated_expression * TyVarSubst.t
-
-(** Type an implementation (.ml file) *)
-val type_implementation :
-  string -> Env.t -> EzyAst.imported_structure ->
-  generated_structure * TyVarSubst.t * EzyEnv.t
-
-val type_structure :
-  ?program:'a -> Env.t -> EzyAst.imported_structure ->
-  generated_structure * TyVarSubst.t * EzyEnv.t
+(** The following functions apply EzyEnrichedAst.eq_structure to the typed AST
+  * to check consistency of EasyOCaml's type checker with OCaml's original one. *)
 
 val type_and_compare_implementation :
   string -> string -> string -> Env.t -> Parsetree.structure -> EzyFeatures.program_feats ->

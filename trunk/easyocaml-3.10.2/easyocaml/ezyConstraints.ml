@@ -4,9 +4,10 @@ open EzyUtils.Infix
 open EzyTypingCoreTypes
 
 (******************************************************************************)
-(*                                 AtConstr                                   *)
+(*                                 AtConstr                                   *
+ * [AtConstr.t] is a constraint between two types annotated with a single     *
+ * extended location.                                                         *)
 (******************************************************************************)
-
 module AtConstr = struct
 
   type t = {
@@ -34,7 +35,6 @@ module AtConstr = struct
 
   let print ppf { loc = loc; tys = (x, y) } =
      Format.fprintf ppf "%a =%a= %a" Ty.print x ExtLocation.print loc Ty.print y 
-(*    Format.fprintf ppf "%a = %a" Ty.print x Ty.print y*)
 
   let type_substitute { loc = loc; tys = (x, y) } s =
     { loc = loc ; tys = Ty.type_substitute x s, Ty.type_substitute y s }
@@ -42,9 +42,11 @@ end
 
 
 (******************************************************************************)
-(*                               AtConstrSet                                  *)
+(*                               AtConstrSet                                  *
+ * Sets of simple constraints [AtConstr.t]. They are stored in a map by their *
+ * location to make operations fast which are based on the location (and are  *
+ * heavily used while constraint solving.                                     *)
 (******************************************************************************)
-
 module AtConstrSet = struct
 
   module SimpleAtConstrSet = struct (* scs *)
@@ -142,15 +144,12 @@ end
 
 
 (******************************************************************************)
-(*                                  Constr                                    *)
+(*                                  Constr                                    * 
+ * A constraint between two types annotated with a set of extended locations. *)
 (******************************************************************************)
 
-module Constr = struct
 
-  (* type ty = {
-    original: Ty.t ;
-    expanded: Ty.t lazy ;
-  } *)
+module Constr = struct
 
   type t = {
     locs : ExtLocationSet.t ;
@@ -166,7 +165,6 @@ module Constr = struct
     lexical2 ExtLocationSet.compare (lexical Ty.compare) (c1.locs, c1.tys) (c2.locs, c2.tys)
 
   let print ppf { locs = locs ; tys = (x, y) } =
-(*    Format.fprintf ppf "%a = %a (%a)@?" Ty.print x Ty.print y ExtLocationSet.print locs*)
     Format.fprintf ppf "%a = %a" Ty.print x Ty.print y
 
   let from_at_constr { AtConstr.loc = loc; tys = (x, y) } =
@@ -209,7 +207,9 @@ module ConstrSet = struct
 end
 
 (******************************************************************************)
-(*                                ConstrSet                                   *)
+(*                                  DerEnv                                    *
+ * The derived environment used while unifying the constraints to keep track  *
+ * of the type assignments so far (see Haack & Wells for more information).   *)
 (******************************************************************************)
 
 module DerEnv = struct
