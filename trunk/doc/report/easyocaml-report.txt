@@ -8,115 +8,121 @@
 
 ----8<----
 
-* Objectives of EasyOCaml and Introduction
+* Objectives and Introduction
 
-OCaml is a programming language which unifies functional, imperative and object
-oriented concepts in a ML-like language with a powerful and sound type system.
-Its main implementation (http://caml.inria.fr) ships with an platform
-independend byte code compiler and an effient machine code compiler and there
-are a lot of existing libraries, which make really multi purpose programming
-language.
+OCaml (Leroy et al., 2007) is a programming language which unifies functional,
+imperative and object oriented concepts in a ML-like language with a powerful
+and sound type system.  Its main implementation (http://caml.inria.fr) ships
+with an platform independend byte code compiler and an effient machine code
+compiler and there are a lot of existing libraries, which make it a real multi
+purpose programming language.
 
 But by now, OCaml is not a language well suited for __teaching programming__:
-Foremost, it features a complex type system but type errors, for example,
-are reported only by a message and a single location in the code without hints
-on reasons for it (This is mainly because of used algorithm which is very
+Foremost, it has a complex type system. But type errors, for example,
+are reported only by a message and a single location in the code without any
+hints on reasons for it (this is mainly due to the utilized algorithm which is very
 efficient, though).  The objectives of this work are, in large, to make OCaml a
-programming language better suited for beginners and teaching programming. We
+programming language better suited for beginners and teaching programming. We achive this by
 
- - improved OCaml's error messages by providing a modified parser and a new
-   type checker.
+ - improving OCaml's error messages by providing a modified parser and a new
+   type checker
 
- - equiped OCaml with an infrastructure to make it adaptable for teaching
-   programming, in meams of restricting the supported features of the language,
+ - equiping OCaml with an infrastructure to make it adaptable for teaching
+   programming, in means of restricting the supported features of the language,
    or providing code and the startup environment in a simple way of
-   distribution (language levels).
+   distribution (language levels)
 
- - we integrated all that into OCaml's original REPL and compiler system to
-   take advantage on existing libraries and OCaml's code generation facilities.
+ - integrating all that into OCaml's original REPL and compiler system to
+   take advantage of existing libraries and OCaml's code generation facilities
 
-** Supported Lanugage
+** Supported Language
 
 EasyOCaml supports a strict subset of OCaml, namely Caml without module
 declarations (called "Caml-$m$"). Take a look into the file
-easyocaml-features.pdf for more details on the supported features.
+easyocaml-features.pdf for more details on the supported features. +++
 
 ** Similar Projects
 
-There are some projects which heavily infuenced our work:
+There are some projects which heavily influenced our work:
 
-__Haack & Wells__ have decribed and implemented a technique to produce more
+__Haack & Wells__ (2004) have decribed and implemented a technique to produce more
 descriptive type error messages in a subset of SML.  Their work is seminal for
-constraint based type checking with attention on good error reporting.
+constraint based type checking with attention on good error reporting and
+builds the foundation for EasyOCaml's type checker.
 
-__Helium__ is a system for teaching progamming in Haskell. In a similar manner,
-type checking is done via constraint solving. Furthermore, it features detailed
-error messages including hints how to fix certain errors (based on heuristics).
+__Helium__ (Heeren et al., 2003) is a system for teaching progamming in
+Haskell. In a similar manner, type checking is done via constraint solving.
+Furthermore, it features detailed error messages including hints how to fix
+certain errors based on certain heuristics.
 
-Finally, __\DrScheme__ is a programming environment for the Scheme language that is
-build for teaching programming.  It has introduced the concept of language levels
-and teachpacks to restrict the syntax and broaden functionality espacially for
-excercises.
+Finally, __\DrScheme__ (Felleisen et al., 1998) is a programming environment
+for the Scheme language that is build for teaching programming.  It has
+introduced the concept of language levels and teachpacks to restrict the syntax
+and broaden functionality espacially for excercises. These are part of EasyOCaml.
 
 This report has three targets: Firstly, to present EasyOCaml and the concepts
-used and developed for it (audience: users) through section {ref: startpart1}
--- {ref: endpart1}.  Secondly, it combines these concepts with the actual
-implementation and describes its architecture in code (audience: developer) in
-section {ref: impldets}.  Thirdly, formal foundations for the type checker are
-given the appendix (audience: the interested reader) in section {ref: sec_rules}.
+used and developed for it (target audience: the users) through section {ref:
+startpart1} -- {ref: endpart1}.  Secondly, it combines these concepts with the
+actual implementation and describes its architecture in code (target audience:
+the developers) in section {ref: impldets}.  Thirdly, formal foundations for
+the type checker are given the appendix (target audience: the interested
+readers) in section {ref: sec_rules}.
 
 
-* Constraint based type inference
+* Constraint Based Type Inference
 {anchor: startpart1}
 
-The type inference currently used by OCaml is a Hindley-Milner algorithm in its
-core.  Although it is very efficient and broadly extended to OCaml's
-requirements, it lacks memory:  For examples, type inference for variables
-works by accumulating (unifying) information on their usage while traversing
+The type inference currently used by OCaml is a Hindley-Milner (1982) algorithm
+  +++ read Pierce, 22
+in its core.  Although it is very efficient and broadly extended to OCaml's
+requirements, it lacks a memory:  For example, type inference for variables
+works by accumulating (unifying) information on their usages while traversing
 the AST. Broadly spoken, a type constructor clash is detected as the usage just
-inspected contradicts the information gathered so far.  Therefore, OCaml's type
-checker cannot report any __reasons__ for a type error but reports only the
-location where the error became obvious to the type checker.  An important work
-while debugging type errors in OCaml persists of manually searching other
+inspected contradicts the information collected so far.  Therefore, OCaml's
+type checker cannot report any __reasons__ for a type error but reports only
+the location where the error became obvious to the type checker.  Much work
+while debugging type errors in OCaml persists of manually searching for other
 usages of the mis-typed variable in the program which lead to the type
 constructor clash.
 
 ** Haack & Wells
 
 Haack & Wells described an algorithm which exceeds a Hindley-Milner-style
-type inference (algorithm $T$) engine in two ways:
-Firstly, every type error reported contains information on exactly those
-locations in the program which are essential to the error, by means of dropping
-it would vanish the error.  Secondly, it reports all type errors in a program
-at once (whilst locations which partake in several type errors are most notable
-a source of the errors, by the way).  
+type inference (algorithm $T$) in two ways: Firstly, every type error reported
+contains information on exactly those locations in the program which are
+essential to the error, by means of dropping it would vanish the error.
+Secondly, it reports all type errors in a program at once (whilst locations
+which partake in several type errors are most notable the source of the errors,
+by the way).  
 
-In a sense, algorithm $T$ does two things at once while traversing the AST; it
+In a sense, algorithm $T$ does two things at once while traversing the AST: it
 generates type information on the variables and unifies it with existing type
 information anon.  Haack & Wells' algorithm achieves its goals by seperating
-these steps:
+these steps.
 
-  Constraint generation :: Every node of the AST is annotated with a type
-  variable. While traversing the AST, information on those type variables are
+  Constraint generation :: Every node of the AST gets annotated with a type
+  variable. While traversing the AST, information on those type variables is
   collected from the usage and context of each node.  The information is stored
   as a set of constraints on the type variables.
 
 The intention is the following: If those constraints are unifiable, the
 resulting substitution represents a valid typing of the program with respect
 to the nodes' type variables. Otherwise, the program has at least one type
-error and the representation of the gathered type information as a set of
-constraints enables the algorithm to reexamine the errors in a second stage:
+error. But the representation of the gathered type information as a set of
+constraints is still available and enables the algorithm to reexamine the
+errors in a second stage:
 
-  Error enumeration and minization :: ...
+  Error enumeration and minimization :: ... +++
 
 ** Extensions for EasyOCaml
 
-See section {ref: sec_rules} for a complete list of inference rules used in EasyOCaml.
+See section {ref: sec_rules} for a complete list of inference rules used in
+EasyOCaml. +++
 
 * Errors and Error Reporting Adaptibility
 
 EasyOCaml is essentially build for usage in programming teachings.  As this,
-special attention is paid to the way it reports its errors.
+special attention is paid to the way errors are reported.
 
 Firstly, errors should provide a __right__ amount of details, too less
 information is of course insufficient, but too much information can be
@@ -129,7 +135,10 @@ Secondly, error reporting should be adaptable: For a beginner, reading errors in
 a foreign language can distract or even prevent him from fixing an error.
 Furthermore, the error output should be adaptable in its overall structure to
 serve as the input for different kinds of presentation, e.g. plain text on
-command line or HTML for displaying it visually in a web browser.
+command line or HTML for visually display it in a web browser.
+
+The last section has explained the improvements of EasyOCaml to type error
+messages. The following will describe improvements to the parser.
 
 ** New Errors for Camlp4
 
@@ -140,50 +149,54 @@ in its core, and this requires parsing errors to be reported as ''Stream.Error
 of string'' exceptions.
 
 Nevertheless, we furnished Camlp4 with a new error reporting system, up to now
-just to make error reporting adaptable, but it should be possible now to extend
-the information of parse errors by the parser's current state.
+just to make error reporting adaptable, but it should be possible now to augment
+the information of parse errors by the parser's current state. Now, a parsing
+error ''ParseError.t'' is one of the following:
 
   ''Expected (entry, opt_before, context)'' :: is raised if when the parser
-  stucks while parsing a phrase: ''entry'' describes the category of the
-  subphrase to be expected, ''opt_before'' might describe the category of the
-  entry just parsed and ''context'' denotes the category of the phrase which is
-  just parsed.
+  stucks while parsing a phrase: ''entry'' describe the categories of the
+  possible, expected subphrases, ''opt_before'' might describe the category of the
+  entry just parsed and ''context'' denotes the category of the phrase
+  currently parsed.
 
   ''Illegal_begin sym'' :: is raised when the parser is not able to parse the
-  top category ''sym''.
+  top categories described by ''sym''.
 
   ''Failed'' :: is raised only in ''Camlp4.Struct.Grammar.Fold''.
 
   ''Specific_error err'' :: Beside the generic parsing errors just mentioned,
   it is possible to extend the parsing errors per language by "artificial"
   errors which are specific to a language, e.g. ''Currified constructor'' in
-  OCaml wich is not represented in the grammar but checked in code.
+  OCaml, which is not represented in the grammar but checked in code.
   (further errors for EasyOCaml are specified in ''Camlp4.Sig.OCamlSpecificError''.)
 
 Now, how are these errors represented in the string information of the
 ''Stream.Error''?  Not without a hack, which is luckily hidden behind the
-Camlp4 interface:  Internally, camlp4 throws ''Stream.Error'' exceptions but
+interface of Camlp4:  Internally, Camlp4 throws ''Stream.Error'' exceptions but
 the string has the following format: "''<msg>\\000<mrsh>''" where ''<msg>'' is
 the usual Camlp4 error message and ''<mrsh>'' is a marshalled parsing
 error as just described. The string of a ''Stream.Error'' is decomposed again
 in the interface function for parsing (namely
 ''Camlp4.Struct.Grammar.Entry.action_parse''), and reported as a
-''\ParseError'' to the user.
+''\ParseError.t'' to the user.
 
 ** Adaptibility
 
 For internationalization of error messages and different structure of error
-messages for different settings, EasyOCaml provides adaptability of error
+messages for different display settings, EasyOCaml provides adaptability of error
 messages by a plugin system.  Error reporting plugins should use
-''EzyError'''s internationalized functions to output the text describing the
-error message (''EzyErrors.print*_desc'') to keep them uniform but can print
-it any structure:  Currently, a plain text format is default but a HTML printer
-which highlights the locations of an error in source code and a XML/Sexp printer
-for usage in an IDE are provided.
+''EzyError'''s internationalized functions to output the error's description
+(''EzyErrors.print*_desc'') to keep them uniform but can print it any
+structure:  Currently, a plain text format is default and a HTML printer which
+highlights the locations of an error in source code and a XML/Sexp printer for
+usage in an IDE are delivered with EasyOCaml.
 
 The user can register an error printer via the command line flag
 ''-easyerrorprinter''.  The module is dynamically linked and registers itself
-in ''EzyErrors'' where it overwrites the appropriate functions.
+with ''EzyErrors.register'' where appropriate functions are overwritten.
+
+The following section describes the tools, EasyOCaml provides specifically for
+teaching programming.
 
 * Language Levels and Teachpacks
 
@@ -196,41 +209,36 @@ syntactic elements tought sofar, to not have syntax errors regarding unknown
 syntactic elements.
 
 Here is in more detail, what language levels can define:
- - The available syntactic features.  One can specify the syntactic elements
-   which are allowed for patterns, expressions, structure items and type
-   declarations, in high detail. Currently, most of these restrictions are
-   implemented by deleting the according entries from the grammar (thanks to
-   the power of Camlp4!).  However, some features like mandatory type
-   annotations for toplevel values are checked afterwards while importing the
-   AST into a type of ''EzyAst''.
- - Settings of path inclusion and object loading.  Teachpacks can specify the
-   directories which are included for searching objects, just like the ''-I''
-   command line flag.  A teachpack can contain objects itself and the
-   specification which are to load (just like putting them on the command
-   line).  Furthermore, teachpacks can specify which modules are opened on
-   startup.
+The available __syntactic features__.  One can specify the syntactic elements
+which are allowed for patterns, expressions, structure items and type
+declarations, in high detail. Currently, most of these restrictions are
+implemented by deleting the according entries from the grammar (thanks to the
+power of Camlp4!).  However, some features like mandatory type annotations for
+toplevel values are checked afterwards while importing the AST into a type of
+''EzyAst''.
+Settings of __path inclusion__ and __object loading and opening__.  Teachpacks
+can specify the directories which are included for searching objects, just like
+the ''-I'' command line flag.  A teachpack can contain objects itself and the
+specification which are to load (just like putting them on the command line).
+Furthermore, teachpacks can specify which modules are opened on startup.
 
 Teachpacks can specify the settings for path inclusion and object loading.
 Whereas only one language level can be loaded, teachpacks can extend a possible
 language level.
 
-The user can specify which language level respectively teachpack to use by the
-''-easylevel'' respectively ''-easyteachpack'' command line parameter.
+The user can specify which language level and teachpack to use by the
+''-easylevel'' and ''-easyteachpack'' command line parameter respectivly.
 EasyOCaml then searches for it in the following directories:
 
 There is a global and a user configuration directory. First, EasyOCaml
 searches the user then the global configuration directory.  Here's how the
 global configuration directory is determined (in descending preference):
-
  #. Environment variable EASYOCAML_GLOBAL_DIR
  #. Compile-time option
-
 Here's how the user configuration directory is determined (in
 descending preference):
-
  #. Environment variable EASYOCAML_USER_DIR
  #. $HOME/.easyocaml
-
 Layout of the easyocaml configuration directory:
 
 #Verbatim <<-----
@@ -241,6 +249,8 @@ Layout of the easyocaml configuration directory:
             tp-2
             ...
 -----
+Each language level and teachpack contains a module ''LANG_META'' which is
+loaded into EasyOCaml.
 
 The idea of teachpacks and language levels is taken from \DrScheme.  See
 http://docs.plt-scheme.org/drscheme/extending-drscheme.html for more
@@ -248,14 +258,14 @@ information.
 
 {anchor: endpart1}
 
-* Details on the Implementation
+* Details of the Implementation
 
 {anchor: impldets}
 
 ** Outline of EasyOCaml's Pipeline
 
-Here is a rough outline of EasyOCaml's machinery (in both the compiler and the
-toploop):
+Here is a rough outline of EasyOCaml's pipeline which is quite similar for both
+the compiler and the toploop:
 
  #. {anchor: steps} Command line flags are evaluated to check the "''-easy''" flag and an error
  printer, load language level and/or teachpack might be loaded.
@@ -264,7 +274,7 @@ toploop):
  restrictions from the language level which yields an
  ''EzyAst.imported_structure''.
 
- #. ''EzyGenerate'' generate constrains from the AST (involving type
+ #. ''EzyGenerate'' generate constraints from the AST (involving type
  information from the default environment and modules loaded by command line or
  teachpacks/language levels).  This yields a quadruple
  ''generated_structure * AtConstrSet.t * PostProcess.t * EzyEnv.t'' where
@@ -285,8 +295,8 @@ toploop):
    the program.
 
  #. ''EzyTyping.solve'' tries to solve the generated constrains.  If solving
- succeeds, the program is typed by a type substitution on the type variables in
- the generated AST and the environment and contains type errors otherwise.
+ succeeds, the program is typed by a substitution on the variables in the
+ generated AST and the environment and contains type errors otherwise.
 
  #. The last step, reimporting the ''EzyEnrichedAst.generated_structure'' with
  typing information given by type substitution to OCaml's original Typedtree is
