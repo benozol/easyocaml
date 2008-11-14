@@ -251,6 +251,7 @@ let enum env max_time cs =
 (*                               SOLVE & TYPE                                 *)
 (******************************************************************************)
 
+let timeout = try float_of_string (Sys.getenv "EASYOCAML_ENUM_TIMEOUT") with _ -> 3.0
 
 let solve env max_time cs pp ast: (TyVarSubst.t * EzyErrors.ErrorSet.t, EzyErrors.ErrorSet.t) Result.t =
   let module Pp = EzyGenerate.PostProcess in
@@ -274,8 +275,6 @@ let solve env max_time cs pp ast: (TyVarSubst.t * EzyErrors.ErrorSet.t, EzyError
             (EzyErrors.ErrorSet.from_list (List.map (fun (err, locs) -> (Location.none, EzyErrors.Type_error (err, locs))) type_errors))
             (EzyErrors.ErrorSet.union pp.Pp.errors ta_errs) in
         Result.Error errs
-
-let timeout = try float_of_string (Sys.getenv "TIMEOUT") with _ -> 3.0
 
 let type_expression env program (expr: EzyAst.imported_expression) ast =
   let env' = EzyEnv.import env in
