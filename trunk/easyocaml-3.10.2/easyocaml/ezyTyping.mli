@@ -19,6 +19,11 @@ val minimize :
   EzyEnv.t -> AtConstrSet.t -> ExtLocationSet.t -> ExtLocation.t ->
   type_error * ExtLocationSet.t
 
+(** This variable constrols now long EasyOCaml enumerates errors. It can be
+  * assigned via the environment variable EASYOCAML_ENUM_TIMEOUT and defaults
+  * to 3.0 *)
+val timeout : float
+
 val enum :
   EzyEnv.t -> float -> AtConstrSet.t ->
   (type_error * ExtLocationSet.t) list
@@ -29,7 +34,6 @@ val solve :
 
 (** The following functions apply EzyEnrichedAst.eq_structure to the typed AST
   * to check consistency of EasyOCaml's type checker with OCaml's original one. *)
-
 val type_and_compare_implementation :
   string -> string -> string -> Env.t -> Parsetree.structure -> EzyFeatures.program_feats ->
   Typedtree.structure * Typedtree.module_coercion
