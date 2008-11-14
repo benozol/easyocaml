@@ -1,6 +1,6 @@
 #TITLE: EasyOCaml: Concepts, Implementation and Teachnicallities
 #DATE: Summer 2008
-#AUTHOR: Benus Becker
+#AUTHOR: Benus Becker, Stefan Wehr, Peter Thiemann
 #AUTHORNOTE: Institut fur Informatik, Abteilung Programmiersprachen, Uni Freiburg
 
 #MAKETITLE
@@ -72,49 +72,76 @@ readers) in section {ref: sec_rules}.
 * Constraint Based Type Inference
 {anchor: startpart1}
 
-The type inference currently used by OCaml is a Hindley-Milner (1982) algorithm
-  +++ read Pierce, 22
-in its core.  Although it is very efficient and broadly extended to OCaml's
-requirements, it lacks a memory:  For example, type inference for variables
-works by accumulating (unifying) information on their usages while traversing
-the AST. Broadly spoken, a type constructor clash is detected as the usage just
-inspected contradicts the information collected so far.  Therefore, OCaml's
-type checker cannot report any __reasons__ for a type error but reports only
-the location where the error became obvious to the type checker.  Much work
-while debugging type errors in OCaml persists of manually searching for other
-usages of the mis-typed variable in the program which lead to the type
+The type inference currently used by OCaml has the algorithm by Damas-Milner
+(1982)??? at its core.  Although it is very efficient and broadly extended to
+OCaml's requirements, it lacks a memory:  For example, type inference for
+variables works by accumulating (unifying) information on their usages while
+traversing the AST. Broadly spoken, a type constructor clash is detected as the
+usage just inspected contradicts the information collected so far.  Therefore,
+OCaml's type checker cannot report any __reasons__ for a type error but reports
+only the location where the error became obvious to the type checker.  Much
+work while debugging type errors in OCaml persists of manually searching for
+other usages of the mis-typed variable in the program which lead to the type
 constructor clash.
 
 ** Haack & Wells
 
-Haack & Wells described an algorithm which exceeds a Hindley-Milner-style
-type inference (algorithm $T$) in two ways: Firstly, every type error reported
-contains information on exactly those locations in the program which are
-essential to the error, by means of dropping it would vanish the error.
-Secondly, it reports all type errors in a program at once (whilst locations
-which partake in several type errors are most notable the source of the errors,
-by the way).  
+Haack & Wells (2004) have described an algorithm which exceeds a
+Damas-Milner-style type inference (algorithm $W$) in two ways: Firstly, every
+type error reported contains information on exactly those locations in the
+program which are essential to the error, by means of dropping it would vanish
+the error.  Secondly, it reports all type errors in a program at once (whilst
+locations which partake in several type errors are most notable the source of
+the errors, by the way).  
 
 In a sense, algorithm $T$ does two things at once while traversing the AST: it
 generates type information on the variables and unifies it with existing type
 information anon.  Haack & Wells' algorithm achieves its goals by seperating
 these steps.
 
-  Constraint generation :: Every node of the AST gets annotated with a type
-  variable. While traversing the AST, information on those type variables is
-  collected from the usage and context of each node.  The information is stored
-  as a set of constraints on the type variables.
+While __constraint generation__, every node of the AST gets annotated with a
+type variable. While traversing the AST, information on those type variables is
+collected from the usage and context of each node.  The information is stored
+as a set of constraints on the type variables.
 
-The intention is the following: If those constraints are unifiable, the
-resulting substitution represents a valid typing of the program with respect
-to the nodes' type variables. Otherwise, the program has at least one type
-error. But the representation of the gathered type information as a set of
-constraints is still available and enables the algorithm to reexamine the
-errors in a second stage:
+The intention is the following: If __unification__ on those constraints
+succeeds, the resulting substitution represents a valid typing of the program
+with respect to the nodes' type variables.
 
-  Error enumeration and minimization :: ... +++
+Otherwise, the program has at least one type error. But now, the collected type
+information is still available as a set of constraints and enables the
+algorithm to reexamine the errors in a second stage of __error enumeration and
+minimization__: Error enumeration is basically done by systematically removing
+constraints grounded at one program location from the constraint set and
+running unification again on the result. Haack & Wells also present an
+iterative version of this algorithm which is implemented in EasyOCaml. Although
+it avoids recomputation of the same errors over and over again, error
+enumeration has neverthess exponential time consumptions. Thus error
+enumeration delimited to a given time amount which can be specified by the
+environment variable ''EASYOCAML_ENUM_TIMEOUT''.
+
+The result of error enumeration is a set of errors each represented as a
+complete set of locations whose nodes in the AST have yielded to the error
+(__complete__ in being a superset of the constraints which caused the type
+error). By application of error minimization on each error, the algorithm
+guarantees __minimality__ of the reported errors in the sense that removing the
+constraints annotated with a location would vanish the error itself.
+
+In addition to type errors, Haack & Wells technique also enables the type
+checker to collect unbound variables in the program while generating. Their
+types are assumed as a free variable to not introduce a type error, but unbound
+variables are reported with the type errors after error enumeration.
 
 ** Extensions for EasyOCaml
+
+Haack & Wells' description comes with constraint generation rules only for
+variables, infix operations, functional abstraction, application and local
+polymorphic variable bindings. Although this is a good starting point to
+describe the involved algorithms, we had to extend it to the Caml-$m$.
+
+  - records ...
+  - variants ...
+  - type annotations ...
 
 See section {ref: sec_rules} for a complete list of inference rules used in
 EasyOCaml. +++
