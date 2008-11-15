@@ -12,6 +12,9 @@ let _ =
           e_let_in = Some let_feats;
           e_simple_var = true; 
           e_function = Some ff;
+          e_list = true;
+          e_tuple = true;
+          e_constructor = true;
           e_if_then_else = true; } in
   let sf =
     { (all_struct_feats false) with
@@ -20,4 +23,4 @@ let _ =
           s_let = Some let_feats } in
   let prf = 
     { pr_expr_feats = ef; pr_struct_feats = sf } in
-  configure prf [] []
+  configure prf ["Mylist", true; "Mypervasives", true] ["mylist.cmo"; "mypervasives.cmo"]
