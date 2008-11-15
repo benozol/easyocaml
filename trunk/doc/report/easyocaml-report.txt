@@ -1,4 +1,4 @@
-#TITLE: EasyOCaml: Concepts, Implementation and Teachnicallities
+#TITLE: EasyOCaml: Concepts, Implementation and Teachnicalities
 #DATE: Summer 2008
 #AUTHOR: Benus Becker, Stefan Wehr, Peter Thiemann
 #AUTHORNOTE: Institut fur Informatik, Abteilung Programmiersprachen, Uni Freiburg
@@ -13,16 +13,17 @@
 OCaml (Leroy et al., 2007) is a programming language which unifies functional,
 imperative and object oriented concepts in a ML-like language with a powerful
 and sound type system.  Its main implementation (http://caml.inria.fr) ships
-with an platform independend byte code compiler and an effient machine code
+with a platform independent byte code compiler and an effient machine code
 compiler and there are a lot of existing libraries, which make it a real multi
 purpose programming language.
 
-But by now, OCaml is not a language well suited for __teaching programming__:
-Foremost, it has a complex type system. But type errors, for example,
-are reported only by a message and a single location in the code without any
-hints on reasons for it (this is mainly due to the utilized algorithm which is very
-efficient, though).  The objectives of this work are, in large, to make OCaml a
-programming language better suited for beginners and teaching programming. We achive this by
+But up to now, OCaml is not a language well suited for __teaching
+programming__: Foremost, it has a complex type system. But type errors, for
+example, are reported only by a message and a single location in the code
+without giving any reasons for it (this is mainly due to the utilized algorithm
+which is very efficient, though).  The objectives of this work are, in large,
+to make OCaml a programming language better suited for beginners and to teach
+programming. We achive this by
 
  - improving OCaml's error messages by providing a modified parser and a new
    type checker
@@ -45,7 +46,7 @@ easyocaml-features.pdf for more details on the supported features. +++
 
 There are some projects which heavily influenced our work:
 
-__Haack & Wells__ (2004) have decribed and implemented a technique to produce more
+__Haack & Wells__ (2004) have described and implemented a technique to produce more
 descriptive type error messages in a subset of SML.  Their work is seminal for
 constraint based type checking with attention on good error reporting and
 builds the foundation for EasyOCaml's type checker.
@@ -58,15 +59,16 @@ certain errors based on certain heuristics.
 Finally, __\DrScheme__ (Felleisen et al., 1998) is a programming environment
 for the Scheme language that is build for teaching programming.  It has
 introduced the concept of language levels and teachpacks to restrict the syntax
-and broaden functionality espacially for excercises. These are part of EasyOCaml.
+and broaden functionality espacially for excercises. These are included in
+EasyOCaml.
 
 This report has three targets: Firstly, to present EasyOCaml and the concepts
-used and developed for it (target audience: the users) through section {ref:
-startpart1} -- {ref: endpart1}.  Secondly, it combines these concepts with the
-actual implementation and describes its architecture in code (target audience:
-the developers) in section {ref: impldets}.  Thirdly, formal foundations for
+used and developed for it (target audience: the users) through section{ref:startpart1} --{ref:endpart1}.  Secondly, it combines these concepts with
+the actual implementation and describes its architecture in code (target
+audience:
+the developers) in section{ref:impldets}.  Thirdly, formal foundations for
 the type checker are given the appendix (target audience: the interested
-readers) in section {ref: sec_rules}.
+readers) in section{ref:sec_rules}.
 
 
 * Constraint Based Type Inference
@@ -88,10 +90,10 @@ constructor clash.
 
 Haack & Wells (2004) have described an algorithm which exceeds a
 Damas-Milner-style type inference (algorithm $W$) in two ways: Firstly, every
-type error reported contains information on exactly those locations in the
+type error report contains information on exactly those locations in the
 program which are essential to the error, by means of dropping it would vanish
 the error.  Secondly, it reports all type errors in a program at once (whilst
-locations which partake in several type errors are most notable the source of
+locations which are involved in several type errors are most notable the source of
 the errors, by the way).  
 
 In a sense, algorithm $T$ does two things at once while traversing the AST: it
@@ -99,14 +101,14 @@ generates type information on the variables and unifies it with existing type
 information anon.  Haack & Wells' algorithm achieves its goals by seperating
 these steps.
 
-While __constraint generation__, every node of the AST gets annotated with a
+During __constraint generation__, every node of the AST gets annotated with a
 type variable. While traversing the AST, information on those type variables is
 collected from the usage and context of each node.  The information is stored
 as a set of constraints on the type variables.
 
 The intention is the following: If __unification__ on those constraints
 succeeds, the resulting substitution represents a valid typing of the program
-with respect to the nodes' type variables.
+with respect to the type variables of the nodes.
 
 Otherwise, the program has at least one type error. But now, the collected type
 information is still available as a set of constraints and enables the
@@ -129,7 +131,7 @@ constraints annotated with a location would vanish the error itself.
 
 In addition to type errors, Haack & Wells technique also enables the type
 checker to collect unbound variables in the program while generating. Their
-types are assumed as a free variable to not introduce a type error, but unbound
+types are assumed as a free variable to avoid a type error, but unbound
 variables are reported with the type errors after error enumeration.
 
 ** Extensions for EasyOCaml
@@ -137,26 +139,26 @@ variables are reported with the type errors after error enumeration.
 Haack & Wells' description comes with constraint generation rules only for
 variables, infix operations, functional abstraction, application and local
 polymorphic variable bindings. Although this is a good starting point to
-describe the involved algorithms, we had to extend it to the Caml-$m$.
+describe the algorithms involved, we had to extend it to the Caml-$m$.
 
   - records ...
   - variants ...
   - type annotations ...
 
-See section {ref: sec_rules} for a complete list of inference rules used in
+See section{ref: sec_rules} for a complete list of inference rules used in
 EasyOCaml. +++
 
 * Errors and Error Reporting Adaptibility
 
-EasyOCaml is essentially build for usage in programming teachings.  As this,
-special attention is paid to the way errors are reported.
+EasyOCaml is essentially build for teaching programming .  Therefore, special
+attention is paid to the way errors are reported.
 
-Firstly, errors should provide a __right__ amount of details, too less
-information is of course insufficient, but too much information can be
-confusing, too. So, for example in type constructor clashes exactly those
+Firstly, errors should provide a __right__ amount of details, too few
+information is of course insufficient, but also too much information can be
+confusing. So, for example in type constructor clashes exactly those
 locations are reported, which are essential to the error.  Delivering more
-information on the reasons of type errors is EasyOCaml's type checker is
-exactly what it is made for.
+information on the reasons of type errors is exactly what EasyOCaml's type
+checker is made for.
 
 Secondly, error reporting should be adaptable: For a beginner, reading errors in
 a foreign language can distract or even prevent him from fixing an error.
@@ -175,7 +177,7 @@ never represented in data.  The reason is that Camlp4 is a OCaml stream parser
 in its core, and this requires parsing errors to be reported as ''Stream.Error
 of string'' exceptions.
 
-Nevertheless, we furnished Camlp4 with a new error reporting system, up to now
+Nevertheless, we supplied Camlp4 with a new error reporting system, up to now
 just to make error reporting adaptable, but it should be possible now to augment
 the information of parse errors by the parser's current state. Now, a parsing
 error ''ParseError.t'' is one of the following:
@@ -202,7 +204,7 @@ Now, how are these errors represented in the string information of the
 interface of Camlp4:  Internally, Camlp4 throws ''Stream.Error'' exceptions but
 the string has the following format: "''<msg>\\000<mrsh>''" where ''<msg>'' is
 the usual Camlp4 error message and ''<mrsh>'' is a marshalled parsing
-error as just described. The string of a ''Stream.Error'' is decomposed again
+error as just described. The string of a ''Stream.Error'' is again decomposed
 in the interface function for parsing (namely
 ''Camlp4.Struct.Grammar.Entry.action_parse''), and reported as a
 ''\ParseError.t'' to the user.
@@ -232,7 +234,7 @@ compiler or toplevel system in means of the environment which is accessible to
 the user and the available syntax.  Language levels are useful for teaching
 programming, as they can be designed just for specific exercises -- probably
 providing an easy interface to some advanced API and restrictions on the
-syntactic elements tought sofar, to not have syntax errors regarding unknown
+syntactic elements tought so far, to avoid syntax errors regarding unknown
 syntactic elements.
 
 Here is in more detail, what language levels can define:
@@ -241,13 +243,15 @@ which are allowed for patterns, expressions, structure items and type
 declarations, in high detail. Currently, most of these restrictions are
 implemented by deleting the according entries from the grammar (thanks to the
 power of Camlp4!).  However, some features like mandatory type annotations for
-toplevel values are checked afterwards while importing the AST into a type of
-''EzyAst''.
+toplevel values are checked afterwards while importing the AST to EasyOCaml's
+AST.
+
 Settings of __path inclusion__ and __object loading and opening__.  Teachpacks
 can specify the directories which are included for searching objects, just like
 the ''-I'' command line flag.  A teachpack can contain objects itself and the
-specification which are to load (just like putting them on the command line).
-Furthermore, teachpacks can specify which modules are opened on startup.
+specification which have to be loaded (just like putting them on the command
+line).  Furthermore, teachpacks can specify which modules are opened on
+startup.
 
 Teachpacks can specify the settings for path inclusion and object loading.
 Whereas only one language level can be loaded, teachpacks can extend a possible
@@ -294,14 +298,15 @@ information.
 Here is a rough outline of EasyOCaml's pipeline which is quite similar for both
 the compiler and the toploop:
 
- #. {anchor: steps} Command line flags are evaluated to check the "''-easy''" flag and an error
- printer, load language level and/or teachpack might be loaded.
+ #. {anchor: steps} Command line flags are evaluated to check the "''-easy''"
+ flag and an error printer and possibly load a teachpack and/or language
+ levels.
 
  #. ''EzyCamlgrammar'' parses the AST from the input, possibly respecting
  restrictions from the language level which yields an
  ''EzyAst.imported_structure''.
 
- #. ''EzyGenerate'' generate constraints from the AST (involving type
+ #. ''EzyGenerate'' generates constraints from the AST (involving type
  information from the default environment and modules loaded by command line or
  teachpacks/language levels).  This yields a quadruple
  ''generated_structure * AtConstrSet.t * PostProcess.t * EzyEnv.t'' where
@@ -312,13 +317,13 @@ the compiler and the toploop:
    ''\AtConstrSet.t'' :: is a set of constraints on the type variables in the
    AST.
   
-   ''\PostProcess.t'' :: is build gradually while constraint generation and
+   ''\PostProcess.t'' :: is build gradually during constraint generation and
    contains sets of different types of errors (from ''EzyErrors'') as well
    as checks which can only processed after constraint unification (i.e.
    type annotations)
   
-   ''\EzyEnv.t'' :: is used to keep track of local variables and contains
-   after constraint generation information on the global types and values of
+   ''\EzyEnv.t'' :: is used to keep track of local variables and after
+   constraint generation contains information on the global types and values of
    the program.
 
  #. ''EzyTyping.solve'' tries to solve the generated constrains.  If solving
@@ -406,10 +411,11 @@ restrictions on EasyOCaml's AST.
 
   \EzyAsttypes :: Adaption of Asttypes from the standard OCaml system.
 
-  \EzyAst :: Representation of the AST in EasyOCaml.  This is a bit
-  overloaden as each node is parametrized on some data it contains.  This is
-  ''unit'' for a parsed tree and typing information (mainly the type variable)
-  for a parsed tree after constraint generation.
+  \EzyAst :: Representation of the AST in EasyOCaml.  This is a bit overloaden
+  as each node is parametrized on some data it contains.  This is ''unit'' for
+  a parsed tree and typing information (mainly the type variable) for a parsed
+  tree after constraint generation. Furthermore, each syntactic category can be
+  some "dots" which is only used in type error slicing.
 
   \EzyCamlgrammar :: The EasyOCaml Parser as a Camlp4 extension of
   ''Camlp4OCamlParser''.  It just deletes some entries in the latter (partially

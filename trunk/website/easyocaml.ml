@@ -7,14 +7,11 @@ open XHTML.M
 let (|>) x f = f x
 
 let ocamlrun = "/usr/bin/ocamlrun"
-let install str = "/home/benus/install" ^ str
+let installation str = "/home/benus/install/" ^ str
 let language_levels = [
-  "", "None";
-(*
-  "easy", "Few language constructs and opened List module";
-  "medium", "All language constructs";
-  "full", "All language constructs and opened List module";
- *)
+  "", "No language level. Full EasyOCaml.";
+  "lang-minimal", "Available functions: cons, iter, map, fold from List and +, -, *, /, succ, pred form Pervasives. Hard restrictions on the syntax.";
+  "lang-advanced", "Access to the modules Pervasives (preopened), Char, Random, String. No imperative language features and mandatory type annotations for toplevel values.";
 ]
 
 type lang = [ `En | `Fr | `De ]
@@ -35,10 +32,8 @@ let lang_to_envvar: lang -> string = function
 
 let easyocamlc lang level program =
 
-  (* /usr/bin/ocamlrun install/bin/ocamlc -easy -I install/lib/ocaml x.ml *)
+  (* /usr/bin/ocamlrun installation/bin/ocamlc -easy -I installation/lib/ocaml x.ml *)
   (* let errorprinter = "htmlErrorPrinter.cmo" in *)
-  let ecamlc =
-    ocamlrun ^ " " ^ install"/bin/ocamlc -I " ^ install"/lib/ocaml -easy -easyerrorprinter " ^ install"/htmlErrorReport.cmo " in
 
   let file =
     let ic = Unix.open_process_in "mktemp" in
@@ -48,13 +43,32 @@ let easyocamlc lang level program =
     close_out oc;
     file in
 
-  let cmd =
-    let easylevel = if level = "" then "" else " -easylevel " ^ level in
-    ecamlc ^ easylevel ^ file in
+  let cmd_ecamlc =
+    let params = [
+      ocamlrun;
+      installation "bin/ocamlc";
+      "-I " ^ installation "lib/ocaml";
+      "stdlib.cma";
+      "-easy";
+      "-easyerrorprinter " ^ installation "htmlErrorReport.cmo"; 
+      if level = "" then "" else " -easylevel " ^ level;
+      file;
+    ] in
+    String.concat " " params in
 
-  let stdin, stdout, errin = Unix.open_process_full cmd [|"LANGUAGE=" ^ lang_to_envvar lang|] in
+  let env_vars =
+    let li = [
+      "LANGUAGE", lang_to_envvar lang;
+      "LANG", lang_to_envvar lang;
+      "EASYOCAML_USER_DIR", installation "easyocaml"; 
+    ] in
+    Array.of_list (List.map (fun (k,v) -> k ^ "=" ^ v) li) in
+
   let ic =
-    Unix.descr_of_in_channel errin |>
+    Array.iter print_endline env_vars;
+    print_endline cmd_ecamlc;
+    let _, _, ic = Unix.open_process_full cmd_ecamlc env_vars in
+    Unix.descr_of_in_channel ic |>
     Lwt_unix.of_unix_file_descr |>
     Lwt_chan.in_channel_of_descr in
 
@@ -67,11 +81,6 @@ let easyocamlc lang level program =
          aux () in
        aux ())
     (function End_of_file -> return () | x -> raise x) >>= fun () ->
-(*
-  close_in stdin;
-  close_in errin;
-  close_out stdout;
- *)
   return (Buffer.contents buf)
 
 
@@ -95,11 +104,18 @@ let easyocaml_demo =
 
 (* Handler *)
 
+let ocsigen = div [a ~a:[a_href (uri_of_string "http://ocsigen.org/")] [
+  img ~alt:"Ocsigen powered" ~src:(uri_of_string "http://ocsigen.org/ocsigen8-100x30.png") ()
+]]
+
 let document sp headline content =
   return
     (html
-       (head (title (pcdata headline))
-          [Xhtml.css_link ~uri:(Xhtml.make_uri ~service:(static_dir sp) ~sp ["style.css"]) ()])
+       (head (title (pcdata headline)) [
+         Xhtml.css_link ~uri:(Xhtml.make_uri ~service:(static_dir sp) ~sp ["style.css"]) ();
+         Xhtml.css_link ~uri:(Xhtml.make_uri ~service:(static_dir sp) ~sp ["easyocaml.css"]) ();
+         Xhtml.js_script ~uri:(Xhtml.make_uri ~service:(static_dir sp) ~sp ["easyocaml.js"]) ();
+       ])
        (body content))
 
 let easyocaml_main_handler sp () () =
@@ -115,7 +131,7 @@ let easyocaml_main_handler sp () () =
            ] in
          [ p ([pcdata "Human language:"; br ()] @ List.map radio [`En; `Fr; `De]);
            p [
-             pcdata "Language level: "; br ();
+             pcdata "Language level (hover for informations): "; br ();
              let first, rest =
                let option_for_level (level, descr) = [a_title descr], level, Some (pcdata level), false in
                match List.map option_for_level language_levels with
@@ -129,13 +145,17 @@ let easyocaml_main_handler sp () () =
              pcdata "Program code:"; br ();
              Xhtml.textarea ~name:program ~rows:20 ~cols:80 ();
            ];
-           p [Xhtml.string_input ~input_type:`Submit ~value:"check" ()]
+           p [Xhtml.string_input ~input_type:`Submit ~value:"check" ()];
+           ocsigen
          ]) ()
   ]
 
 let easyocaml_demo_handler sp () (language, (level, program)) =
   easyocamlc (match language with Some l -> l | None -> `En) level program >>= fun html ->
-  return (unsafe_data html)
+  document sp "EasyOCaml demo" [
+    h2 [pcdata "EasyOCaml demo"];
+    (unsafe_data html)
+  ]
 
 
 let _ =
