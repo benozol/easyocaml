@@ -1,0 +1,1239 @@
+\documentclass[11pt,a4paper,english]{article}
+\usepackage[latin1]{inputenc}
+\usepackage{hyperref}
+%\usepackage{deplate}
+\usepackage{amsmath, amsfonts, amssymb}
+\usepackage{mathpartir}
+\usepackage{extarrows}
+\usepackage{multicol}
+\usepackage[usenames,dvipsnames]{color}
+
+\newcommand\etyjudge[5]{#1;\, #2\, \Downarrow_e\, \langle #3,\ #4,\ #5\rangle}
+\newcommand\styjudge[5]{#1;\, #2\, \Downarrow_s\, \langle #3,\ #4,\ #5 \rangle}
+\newcommand\ptyjudge[5]{#1;\, #2\, \Downarrow_p\, \langle #3,\ #4,\ #5 \rangle}
+\newcommand\rtyjudge[6]{#1;\, #2\, \Downarrow_r\, \langle #3,\ #4,\ #5,\ #6 \rangle}
+\newcommand\code[1]{{\texttt{#1}}}
+\newcommand\type[1]{\underline{#1}}
+\newcommand\onrecord{|_{rec}}
+\newcommand\onident{|_{\text{id}}}
+\newcommand\onvar{|_{\text{var}}}
+\newcommand\for[3]{\text{ for } #1=#2,\dots,#3}
+\newcommand\fresh{\text{ fresh}}
+\newcommand\mono{\textsf{mono}}
+\newcommand\poly{\textsf{poly}}
+\newcommand\mutable{\textsf{mutable}}
+\newcommand\immutable{\textsf{immutable}}
+\newcommand\what{$^{*}$\protect\marginpar{$^{*}$\emph{+++}}}
+
+\DeclareMathOperator{\dom}{dom}
+
+\begin{document}
+
+\title{EasyOCaml\footnote{http://easyocaml.forge.ocamlcore.org}: Concepts, Implementation and Teachnicalities}
+\author{Benus Becker\protect\footnote{Institut fur Informatik, Abteilung Programmiersprachen, Uni Freiburg}}
+\date{Summer 2008}
+
+\maketitle
+\begin{abstract}
+OCaml is not a language well suited for beginners or teaching programming,
+because error messages are sometimes hard to understand without some
+routine. EasyOCaml equips the OCaml system with a new type checker for a
+reasonable subset of the OCaml language and and a adapted parser to make error
+messages more descriptive. Plugins for reporting errors can be loaded at
+runtime, to produce output for different settings. Furthermore, EasyOCaml adds
+language levels and teach packs (similar to DrScheme) to make the language a
+good choice for teaching programming. All this is integrated in the original
+OCaml system. 
+\end{abstract}
+\clearpage{}
+
+\tableofcontents{}
+\clearpage{}
+
+\label{file000}
+
+\section{Objectives and Introduction}
+\label{hd001}
+OCaml (Leroy et al., 2007) is a programming language which unifies 
+functional, imperative and object oriented concepts in a ML-like 
+language with a powerful and sound type system.  Its main implementation 
+(\href{http://caml.inria.fr}{http://caml.inria.fr}) ships 
+with a platform independent byte code compiler and an efficient machine 
+code compiler and there are a lot of existing libraries, which make it a 
+real multi purpose programming language.
+
+But up to now, OCaml is not a language well suited for \emph{teaching 
+programming}: Foremost, it has a complex type system. But type errors, 
+for example, are reported only by a message and a single location in the 
+code without giving any reasons for it (this is mainly due to the 
+utilized algorithm which is very efficient, though).  The objectives of 
+this work are, in large, to make OCaml a programming language better 
+suited for beginners and to teach programming. We achieve this by
+
+\begin{itemize}
+    \item improving OCaml's error messages by providing a modified 
+        parser and a new type checker
+    \item equipping OCaml with an infrastructure to make it 
+        adaptable for teaching programming, in means of restricting the 
+        supported features of the language, or providing code and the 
+        startup environment in a simple way of distribution (language 
+        levels)
+    \item integrating all that into OCaml's original toploop and 
+        compiler system to take advantage of existing libraries and 
+        OCaml's code generation facilities
+\end{itemize}
+The project is hosted at \texttt{http://easyocaml.forge.ocamlcore.org}.
+
+\subsection{Supported Language}
+\label{hd001001}
+EasyOCaml supports a strict subset of OCaml, namely Caml without module 
+declarations (called ``Caml-$m$''). Take a look into the file 
+easyocaml-features.pdf for more details on the supported features. 
+\what
+
+
+\subsection{Similar Projects}
+\label{hd001002}
+There are some projects which heavily influenced our work:
+
+\emph{Haack \& Wells} (2004) have described and implemented a technique 
+to produce more descriptive type error messages in a subset of SML.  
+Their work is seminal for constraint based type checking with attention 
+on good error reporting and builds the foundation for EasyOCaml's type 
+checker.
+
+\emph{Helium} (Heeren et al., 2003) is a system for teaching programming 
+in Haskell. In a similar manner, type checking is done via constraint 
+solving. Furthermore, it features detailed error messages including 
+hints how to fix certain errors based on certain heuristics.
+
+Finally, \emph{DrScheme} (Felleisen et al., 1998) is a programming 
+environment for the Scheme language that is build for teaching 
+programming.  It has introduced the concept of language levels and teach 
+packs to restrict the syntax and broaden functionality especially for 
+exercises. These are included in EasyOCaml.
+
+This report has three targets: Firstly, to present EasyOCaml and the 
+concepts used and developed for it (target audience: the users) through 
+section~\ref{startpart1} --~\ref{endpart1}.  Secondly, it combines these 
+concepts with the actual implementation and describes its architecture 
+in code (target audience: the developers) in section~\ref{impldets}.  
+Thirdly, formal foundations for the type checker are given the appendix 
+(target audience: the interested readers) in section~\ref{sec_rules}.
+
+
+\section{Constraint Based Type Inference}
+\label{hd002}
+\label{startpart1}
+
+The type inference currently used by OCaml has the algorithm by 
+Damas-Milner (1982)$^{*}$\protect\marginpar{$^{*}$\emph{???}} at its 
+core.  Although it is very efficient and broadly extended to OCaml's 
+requirements, it lacks a memory:  For example, type inference for 
+variables works by accumulating (unifying) information on their usages 
+while traversing the AST. Broadly spoken, a type constructor clash is 
+detected as the usage just inspected contradicts the information 
+collected so far.  Therefore, OCaml's type checker cannot report any 
+\emph{reasons} for a type error but reports only the location where the 
+error became obvious to the type checker.  Much work while debugging 
+type errors in OCaml persists of manually searching for other usages of 
+the mis-typed variable in the program which lead to the type constructor 
+clash.
+
+
+\subsection{Haack \& Wells}
+\label{hd002001}
+Haack \& Wells (2004) have described an algorithm which exceeds a 
+Damas-Milner-style type inference (algorithm $W$) in two ways: Firstly, 
+every type error report contains information on exactly those locations 
+in the program which are essential to the error, by means of dropping it 
+would vanish the error.  Secondly, it reports all type errors in a 
+program at once (whilst locations which are involved in several type 
+errors are most notable the source of the errors, by the way).
+
+In a sense, algorithm $T$ does two things at once while traversing the 
+AST: it generates type information on the variables and unifies it with 
+existing type information anon.  Haack \& Wells' algorithm achieves its 
+goals by separating these steps.
+
+During \emph{constraint generation}, every node of the AST gets 
+annotated with a type variable. While traversing the AST, information on 
+those type variables is collected from the usage and context of each 
+node.  The information is stored as a set of constraints on the type 
+variables.
+
+The intention is the following: If \emph{unification} on those 
+constraints succeeds, the resulting substitution represents a valid 
+typing of the program with respect to the type variables of the nodes.
+
+Otherwise, the program has at least one type error. But now, the 
+collected type information is still available as a set of constraints 
+and enables the algorithm to reexamine the errors in a second stage of 
+\emph{error enumeration and minimization}: Error enumeration is 
+basically done by systematically removing constraints grounded at one 
+program location from the constraint set and running unification again 
+on the result. Haack \& Wells also present an iterative version of this 
+algorithm which is implemented in EasyOCaml. Although it avoids 
+recomputation of the same errors over and over again, error enumeration 
+has nevertheless exponential time consumptions. Thus error enumeration 
+delimited to a given time amount which can be specified by the 
+environment variable \texttt{EASYOCAML\_ENUM\_TIMEOUT}.
+
+The result of error enumeration is a set of errors each represented as a 
+complete set of locations whose nodes in the AST have yielded to the 
+error (\emph{complete} in being a superset of the constraints which 
+caused the type error). By application of error minimization on each 
+error, the algorithm guarantees \emph{minimality} of the reported errors 
+in the sense that removing the constraints annotated with a location 
+would vanish the error itself.
+
+In addition to type errors, Haack \& Wells technique also enables the 
+type checker to collect unbound variables in the program while 
+generating. Their types are assumed as a free variable to avoid a type 
+error, but unbound variables are reported with the type errors after 
+error enumeration.
+
+
+\subsection{Extensions for EasyOCaml}
+\label{hd002002}
+Haack \& Wells' description comes with constraint generation rules only 
+for variables, infix operations, functional abstraction, application and 
+local polymorphic variable bindings. Although this is a good starting 
+point to describe the algorithms involved, we had to extend it to the 
+Caml-$m$.
+
+% TODO
+\begin{itemize}
+    \item records \ldots{}
+    \item variants \ldots{}
+    \item type annotations \ldots{}
+\end{itemize}
+\what
+See appendix~\ref{sec_rules} for a complete list of inference rules used 
+in EasyOCaml.
+
+
+\section{Errors and Error Reporting Adaptibility}
+\label{hd003}
+EasyOCaml is essentially build for teaching programming .  Therefore, 
+special attention is paid to the way errors are reported.
+
+Firstly, errors should provide a \emph{right} amount of details, too few 
+information is of course insufficient, but also too much information can 
+be confusing. So, for example in type constructor clashes exactly those 
+locations are reported, which are essential to the error.  Delivering 
+more information on the reasons of type errors is exactly what 
+EasyOCaml's type checker is made for.
+
+Secondly, error reporting should be adaptable: For a beginner, reading 
+errors in a foreign language can distract or even prevent him from 
+fixing an error. Furthermore, the error output should be adaptable in 
+its overall structure to serve as the input for different kinds of 
+presentation, e.g. plain text on command line or HTML for visually 
+display it in a web browser.
+
+The last section has explained the improvements of EasyOCaml to type 
+error messages. The following will describe improvements to the parser.
+
+
+\subsection{New Errors for Camlp4}
+\label{hd003001}
+As mentioned, EasyOCaml parses its input with a Camlp4 parser.  
+Unfortunately, Camlp4's error messages are hard coded in the parser's 
+code in English and never represented in data.  The reason is that 
+Camlp4 is a OCaml stream parser in its core, and this requires parsing 
+errors to be reported as \texttt{Stream.Error~of~string} exceptions.
+
+Nevertheless, we supplied Camlp4 with a new error reporting system, up 
+to now just to make error reporting adaptable, but it should be possible 
+now to augment the information of parse errors by the parser's current 
+state. Now, a parsing error \texttt{ParseError.t} is one of the 
+following:
+
+\begin{description}
+    \item[\texttt{Expected~(entry,~opt\_before,~context)}] is raised 
+        if when the parser stucks while parsing a phrase: \texttt{entry} 
+        describe the categories of the possible, expected subphrases, 
+        \texttt{opt\_before} might describe the category of the entry 
+        just parsed and \texttt{context} denotes the category of the 
+        phrase currently parsed.
+    \item[\texttt{Illegal\_begin~sym}] is raised when the parser is 
+        not able to parse the top categories described by \texttt{sym}.
+    \item[\texttt{Failed}] is raised only in 
+        \texttt{Camlp4.Struct.Grammar.Fold}.
+    \item[\texttt{Specific\_error~err}] Beside the generic parsing 
+        errors just mentioned, it is possible to extend the parsing 
+        errors per language by ``artificial'' errors which are specific 
+        to a language, e.g. \texttt{Currified~constructor} in OCaml, 
+        which is not represented in the grammar but checked in code. 
+        (further errors for EasyOCaml are specified in 
+        \texttt{Camlp4.Sig.OCamlSpecificError}.)
+\end{description}
+
+Now, how are these errors represented in the string information of the 
+\texttt{Stream.Error}?  Not without a hack, which is luckily hidden 
+behind the interface of Camlp4:  Internally, Camlp4 throws 
+\texttt{Stream.Error} exceptions but the string has the following 
+format: ``\texttt{$<$msg$>$\textbackslash{}000$<$mrsh$>$}'' where 
+\texttt{$<$msg$>$} is the usual Camlp4 error message and 
+\texttt{$<$mrsh$>$} is a marshalled parsing error as just described. The 
+string of a \texttt{Stream.Error} is again decomposed in the interface 
+function for parsing (namely 
+\texttt{Camlp4.Struct.Grammar.Entry.action\_parse}), and reported as a 
+\texttt{ParseError.t} to the user.
+
+
+\subsection{Adaptibility}
+\label{hd003002}
+For internationalization of error messages and different structure of 
+error messages for different display settings, EasyOCaml provides 
+adaptability of error messages by a plugin system.  Error reporting 
+plugins should use \texttt{EzyError}`s internationalized functions to 
+output the error's description (\texttt{EzyErrors.print*\_desc}) to keep 
+them uniform but can print it any structure:  Currently, a plain text 
+format is default and a HTML printer which highlights the locations of 
+an error in source code and a XML/Sexp printer for usage in an IDE are 
+delivered with EasyOCaml.
+
+The user can register an error printer via the command line flag 
+\texttt{-easyerrorprinter}.  The module is dynamically linked and 
+registers itself with \texttt{EzyErrors.register} where appropriate 
+functions are overwritten.
+
+The following section describes the tools, EasyOCaml provides 
+specifically for teaching programming.
+
+
+\section{Language Levels and Teachpacks}
+\label{hd004}
+Language levels are a facility to describe the initial state of the 
+EasyOCaml compiler or toplevel system in means of the environment which 
+is accessible to the user and the available syntax.  Language levels are 
+useful for teaching programming, as they can be designed just for 
+specific exercises -- probably providing an easy interface to some 
+advanced API and restrictions on the syntactic elements taught so far, 
+to avoid syntax errors regarding unknown syntactic elements.
+
+Here is in more detail, what language levels can define: The available 
+\emph{syntactic features}.  One can specify the syntactic elements which 
+are allowed for patterns, expressions, structure items and type 
+declarations, in high detail. Currently, most of these restrictions are 
+implemented by deleting the according entries from the grammar (thanks 
+to the power of Camlp4!).  However, some features like mandatory type 
+annotations for toplevel values are checked afterwards while importing 
+the AST to EasyOCaml's AST.
+
+Settings of \emph{path inclusion} and \emph{object loading and opening}.  
+Teach packs can specify the directories which are included for searching 
+objects, just like the \texttt{-I} command line flag.  A teach pack can 
+contain objects itself and the specification which have to be loaded 
+(just like putting them on the command line).  Furthermore, teach packs 
+can specify which modules are opened on startup.
+
+Teach packs can specify the settings for path inclusion and object 
+loading. Whereas only one language level can be loaded, teach packs can 
+extend a possible language level.
+
+The user can specify which language level and teach pack to use by the 
+\texttt{-easylevel} and \texttt{-easyteachpack} command line parameter 
+respectively. EasyOCaml then searches for it in the following 
+directories:
+
+There is a global and a user configuration directory. First, EasyOCaml 
+searches the user then the global configuration directory.  Here's how 
+the global configuration directory is determined (in descending 
+preference):
+
+\begin{enumerate}
+    \item Environment variable EASYOCAML\_GLOBAL\_DIR
+    \item Compile-time option
+\end{enumerate}
+
+Here's how the user configuration directory is determined (in descending 
+preference):
+
+\begin{enumerate}
+    \item Environment variable EASYOCAML\_USER\_DIR
+    \item \$HOME/.easyocaml
+\end{enumerate}
+
+Layout of the easyocaml configuration directory:
+
+\begin{verbatim}
+ language-levels/level-1
+                 level-2
+                 ...
+ teachpacks/tp-1
+            tp-2
+            ...
+\end{verbatim}
+
+Each language level and teach pack contains a module \texttt{LANG\_META} 
+which is loaded into EasyOCaml.
+
+The idea of teach packs and language levels is taken from DrScheme.  See 
+\href{http://docs.plt-scheme.org/drscheme/extending-drscheme.html} 
+for more information.
+
+\label{endpart1}
+
+\subsection{Typing}
+\label{hd005007}
+\begin{description}
+    \item[EzyTyping] Unification of constraint set which yield a 
+        substitution on the variables and error enumeration and 
+        minimization as described by Haack \& Wells.  It furthermore 
+        contains the typing functions for structures which are used in 
+        the compiler and toplevel.
+    \item[EzyEnv] The \texttt{EzyEnv.t} is the typing environment 
+        for EasyOCaml. Information on declared types and types of local 
+        and global variables is hold.  It is build up while constraint 
+        generation (\texttt{EzyGenerate}) in combination with the type 
+        variable substitution resulting from \texttt{EzyTyping.solve}.
+\end{description}
+
+
+\section{Forecast and Conclusion}
+\label{hd007}
+EasyOCaml in version 0.5 is not yet full ready for action. For version 
+1.0, we will add installation procedures for language levels and 
+teachpacks. Furthermore, we will equip the errors with more informations 
+such that error reporting plugins can use certain heuristics to give 
+hints how to fix an error (i.e. one could take a look into the 
+variable environment to check misspellings in unbound variable errors). 
+In a long term, a dynamically typed interpreter and support for module 
+declarations are on our wishlist.
+
+
+\subsection{Acknowledgements}
+\label{hd007001}
+This project was found in the \emph{OCaml Summer Project} 2008. So 
+thanks to Jane Street Capital! I would like to thank Prof. Peter 
+Thiemann and his team, especially Stefan Wehr, for mentoring me, giving 
+invaluable hints and guiding me through EasyOCaml.
+
+\clearpage
+\begin{appendix}
+\section{Details of the Implementation}
+\label{hd005}
+\label{impldets}
+
+
+\subsection{Outline of EasyOCaml's Pipeline}
+\label{hd005001}
+Here is a rough outline of EasyOCaml's pipeline which is quite similar 
+for both the compiler and the toploop:
+
+\begin{enumerate}
+    \item \label{steps} Command line flags are evaluated to check 
+        the ``\texttt{-easy}'' flag and an error printer and possibly 
+        load a teach pack and/or language levels.
+    \item \texttt{EzyCamlgrammar} parses the AST from the input, 
+        possibly respecting restrictions from the language level which 
+        yields an \texttt{EzyAst.imported\_structure}.
+    \item \texttt{EzyGenerate} generates constraints from the AST 
+        (involving type information from the default environment and 
+        modules loaded by command line or teach packs/language levels).  
+        This yields a quadruple 
+        \texttt{generated\_structure~*~AtConstrSet.t~*~PostProcess.t~*~EzyEnv.t} 
+        where
+        \begin{description}
+            \item[\texttt{generated\_structure}] is the AST 
+                annotated with type variables and unique identifiers.
+            \item[\texttt{AtConstrSet.t}] is a set of constraints on 
+                the type variables in the AST.
+            \item[\texttt{PostProcess.t}] is build gradually during 
+                constraint generation and contains sets of different 
+                types of errors (from \texttt{EzyErrors}) as well as 
+                checks which can only processed after constraint 
+                unification (i.e. type annotations)
+            \item[\texttt{EzyEnv.t}] is used to keep track of local 
+                variables and after constraint generation contains 
+                information on the global types and values of the 
+                program.
+        \end{description}
+    \item \texttt{EzyTyping.solve} tries to solve the generated 
+        constrains.  If solving succeeds, the program is typed by a 
+        substitution on the variables in the generated AST and the 
+        environment and contains type errors otherwise.
+    \item The last step, reimporting the 
+        \texttt{EzyEnrichedAst.generated\_structure} with typing 
+        information given by type substitution to OCaml's original typed 
+        tree is not yet done.  We type the code again with OCaml's 
+        original type checker and compare the result to verify its 
+        correctness.
+\end{enumerate}
+
+The goal of this section is to describe roughly the modules implemented 
+for EasyOCaml and locate functions for the EasyOCaml's steps in 
+~\ref{steps}.
+
+
+\subsection{Utilities and Miscellaneous}
+\label{hd005002}
+Two rather independent modules for code used in EasyOCaml
+
+\begin{description}
+    \item[EzyUtils] Functionality which is not specific to 
+        EasyOCaml, but extends the standard library (String, Set, Map). 
+        It contains also code copies from existing Libraries (from Core: 
+        Option, Monad, T2, T3, T4, such that EasyOCaml adds no 
+        dependencies at bootstrap time) and new code for Logging and 
+        some more (lexical comparison, tools on functions).
+    \item[EzyMisc] EasyOCaml-specific code which is used at 
+        different locations in the project.
+    \item[EzyOcamlmodules] Extensions of the modules from the 
+        standard OCaml system (e.g. Location, Path, Longident, Types, 
+        \ldots{}) as well as sets and maps over these.
+\end{description}
+
+The rest of the modules contains the code for the EasyOCaml 
+implementation:
+
+
+\subsection{Error Reporting}
+\label{hd005003}
+EasyOCaml offers sophisticated facilities to represent errors, to allow 
+as detailed error reporting as possible.  Furthermore, new error 
+reporting plugins can be registered.
+
+\begin{description}
+    \item[EzyErrorReportUtils] Code for type error slicing 
+        (described in Haack \& Wells), i.e. slicing an AST to only 
+        contain nodes from locations given in a set, substituting the 
+        rest with ellipses.
+    \item[EzyErrors] Representation (types) of errors which can 
+        occur in EasyOCaml, functions for pretty printing errors as well 
+        as functions for error reporting plugins to register themselves.
+\end{description}
+
+
+\subsection{Teachpacks and Language Levels}
+\label{hd005004}
+\begin{description}
+    \item[EzyConfig] Constants of the teach pack system (e.g. the 
+        name of the module describing the teach pack or language level) 
+        and functions to find a teach pack or language level in the file 
+        system.
+    \item[EzyDynload] Superset of functionality for loading teach 
+        packs and language levels (used by \texttt{EzyLang})
+    \item[EzyLang] Functions for loading language levels and teach 
+        packs (used by \texttt{EzySetup})
+    \item[EzyTeachpack] Shortcut to \texttt{EzyFeatures} and 
+        registering of the teach pack.  Actual teach packs should only 
+        need to link against this module.
+    \item[EzyLangLevel] Shortcut to \texttt{EzyFeatures} and 
+        registering of the language level.  Actual language levels 
+        should only need to link against this module.
+    \item[EzySetup] Process command line flags regarding language 
+        levels and teach packs and provide the actual setup of features, 
+        modules, included directories and object files given by teach 
+        packs and language levels to other parts of EasyOCaml.
+\end{description}
+
+
+\subsection{Abstract Syntax Tree}
+\label{hd005005}
+The following modules contain representation, manipulation, parsing and 
+restrictions on EasyOCaml's AST.
+
+\begin{description}
+    \item[EzyFeatures] In EasyOCaml, the available syntax can be 
+        restricted.  This module contains types to describe these 
+        restrictions and some functions to generate defaults (i.e. 
+        settings where everything is forbidden or allowed).
+    \item[EzyAsttypes] Adaption of Asttypes from the standard OCaml 
+        system.
+    \item[EzyAst] Representation of the AST in EasyOCaml.  Each node 
+        is parametrized on some data it contains.  This is \texttt{unit} 
+        for a parsed tree and typing information (mainly the type 
+        variable) for a parsed tree after constraint generation. 
+        Furthermore, each syntactic category can be some ``dots'' which 
+        is only used in type error slicing.
+    \item[EzyCamlgrammar] The EasyOCaml Parser as a Camlp4 extension 
+        of \texttt{Camlp4OCamlParser}.  It just deletes some entries in 
+        the latter (partially depending on the given features.
+    \item[EzyEnrichedAst] This module directly belongs to 
+        \texttt{EzyAst} but we had to outsource it because of module 
+        dependencies between \texttt{EzyErrors}.  It contains
+        \begin{itemize}
+            \item definitions of the AST after constraint generation 
+                import functions from
+            \item OCaml's standard Parsetree respecting given 
+                restrictions from \texttt{EzyFeatures}
+            \item comparison of two ASTs which is used to compare 
+                OCaml's typing and EasyOCaml's typing afterwards
+        \end{itemize}
+\end{description}
+
+
+\subsection{Type Constraints}
+\label{hd005006}
+\begin{description}
+    \item[EzyTypingCoreTypes] Contains base types for the 
+        constraints and their generation, closely related to the data 
+        described in Haack \& Wells (type variables, types, type 
+        substitutions, intersection types, type environments)
+    \item[EzyConstraints] Here are constraints annotated with only 
+        one location (\texttt{AtConstr.t}) and constraints with sets of 
+        locations (Constr.t) defined, as well as set and maps of those.  
+        Furthermore a derived environment as described in Haack \& Wells 
+        is defined.
+    \item[EzyGenerate] There is a function for every syntactic 
+        category to generate constraints and/or errors.
+\end{description}
+
+
+\section{Typing Rules for EasyOCaml}
+\label{hd006}
+\label{sec_rules}
+This section describes the rules for type inference used in EasyOCaml. The rules have the following form.
+
+\begin{itemize}
+  \item for expressions $\Delta;\ lexp \Downarrow_e \langle ty,\ C,\ u\rangle$
+  \item for structure items $\Delta;\ strit \Downarrow_s \langle \Delta,\ C,\ u\rangle$
+  \item for rules $\Delta;\ pat\ \code{->}\ lexp {\color{Gray}\ |\ rules} \Downarrow_r \langle ty_p,\ ty_e,\ C,\ u\rangle$ (just an auxiliary)
+  \item for patterns $\Delta;\ pat \Downarrow_p \langle ty,\ C,\ b\rangle$ where $b$ maps identifiers to $\langle ty\rangle^l$.
+\end{itemize}
+
+We use the following notations, to keep the rules short: $C$ denotes a set of
+constraints, $a$ a type variable, $ty$ a type, $u$ a set of identifiers and
+$\Delta$ a general environment.  A general environment $\Delta$ encapsulates
+environments for lookup of the
+\begin{itemize}
+  \item type of a variable:
+      \[\Delta\onident(lid) = \langle ty,\, \varpi, C\rangle^l\]
+    where $\varpi \in \{\textsf{mono}, \textsf{poly}\}$ and $lid$ has been bound accordingly.
+  \item types of record fields:
+    \[\Delta\onrecord(f) = \langle ty_r,\ ty_f,\ \mu\rangle\]
+    where $ty'_f$ is the type of field $f$ in record type $ty'_r$ and $ty_f, ty_r$ are fresh variants of $ty'_f, ty'_r$. $\mu \in \{\mutable,\ \immutable\}$
+  \item types of variants
+    \[\Delta\onvar(K) = \langle ty_r,\ [ty_1,\ \dots,\ ty_n]\rangle\]
+    where $ty'_1,\ \dots,\ ty'_n$ are the arguments for variant $k$ of type $ty'_r$ and $ty_1,\ \dots,\ ty_n, ty_r$ are fresh variants of $ty'_1,\ \dots,\ ty'_n, ty'_r$.
+\end{itemize}
+
+$\Delta|_X[x \mapsto y]$ designates the general environment $\Delta$ where $x$ is substituted by $y$ in the encapsulated environment $X$.
+
+$\Delta\onident\left[b,\ C,\ \varpi\right]$ is a shorthand for
+$\Delta\onident\left[ id \mapsto \langle ty,\ \varpi,\ C\rangle^l\ |\ id \mapsto \langle ty\rangle^l \in b\right]$,
+i.e. the substitution of all bindings of $b$ in $\Delta$ with constraints $C$ where $b$ maps identifiers to $\langle ty\rangle^l$.
+
+
+\subsection{Structure items}
+
+\inferrule[Eval]
+  {\etyjudge \Delta {lexp} {ty} C u}
+  {\styjudge \Delta {lexp} \Delta C u}
+
+\vspace{2em}
+
+%\inferrule[Value Decl] {
+%  \ptyjudge \Delta {pat} {ty_0} {C_0} b \\
+%  \etyjudge \Delta {lexp} {ty_1} {C_1} u \\
+%  \varpi := \textsf{poly} \text{ if } value\ lexp \text{ else } \textsf{mono} \\
+%  C = C_0 \cup C_1 \cup \{ ty_0 \xlongequal l ty_1 \} \\
+%} {
+%  \styjudge \Delta {(\code{let } pat \code{ = }lexp)^l} {\Delta\onident[b,\ C,\ \varpi]} C u
+%}
+
+\inferrule[Value decl] {
+  \ptyjudge \Delta {pat_i} {ty_{p,i}} {C_{p,i}} {b_i} \\
+  \etyjudge \Delta {exp_i} {ty_{e,i}} {C_{e,i}} {u_i} \\
+  \varpi_i := \textsf{poly} \text{ if } value\ lexp_i \text{ else } \textsf{mono} \\
+  C_{x,i} := C_{p,i} \cup C_{e,i} \cup \{ty_{p,i} \xlongequal l ty_{e,i}\} \\
+  \Delta' := \Delta\onident[b_i,\ C_{x,i},\ \varpi_i\ |\ i = 1,\dots,n ] \\
+  \dom(b_i) \cap \dom(b_j) = \emptyset \text{ for all } i \neq j \\
+} {
+  \styjudge
+    \Delta {(\code{let } pat_1 \code{ = }lexp_n \code{ and } \dots \code{ and } pat_n \code{ = } lexp_n)^l}
+    {\Delta'} {\bigcup_{i=1}^n C_{x,i}} {\bigcup_{i=1}^n u_i}
+}
+
+\vspace{2em}
+
+%\inferrule[Rec Value Decl] {
+%  \etyjudge {\Delta\onident[x \mapsto \langle a_x,\ \mono,\ \emptyset \rangle^l]} {lexp} {ty} C u \\
+%  \varpi := \textsf{poly} \text{ if } value\ lexp \text{ else } \textsf{mono} \\
+%  \Delta' = \Delta\onident[x \mapsto \langle ty,\ \varpi,\ C\rangle^l] \\
+%  a_x \fresh \\
+%} {
+%  \styjudge \Delta {(\code{let rec } x^l \code{ = }lexp)^l} {\Delta'} C u
+%}
+
+\inferrule[Rec value decl] {
+  \etyjudge {\Delta\onvar[x_j \mapsto \langle a_j,\ \mono,\ \emptyset\rangle^l\ |\ j=1,\dots,n]} {lexp_i} {ty_i} {C_i} {u_i} \\
+  \varpi_i := \textsf{poly} \text{ if } value\ lexp_i \text{ else } \textsf{mono} \\
+  \text{ for i=1,\dots,n} \\
+  \Delta' := \Delta\onvar[x_i \mapsto \langle ty_i,\ \varpi_i,\ C_i \cup \{ty_i \xlongequal l a_i\}\rangle^l\ |\ \text{for } i=1,\dots,n] \\
+  a_1,\ \dots,\ a_n \fresh \\
+  x_i = x_j \text{ iff } i = j \\
+} {
+  \styjudge
+    \Delta {(\code{let rec } x_1 \code{ = }lexp_n \code{ and } \dots \code{ and } x_n \code{ = } lexp_n)^l}
+    {\Delta'} {\bigcup_{i=1}^n C_{x,i}} {\bigcup_{i=1}^n u_i}
+}
+
+%\vspace{2em}
+%
+%\inferrule[Synonym-Decl]
+%{?}
+%{\styjudge \Delta {\code{type}\ t\ \code =\ dt} {\Delta'} \emptyset \emptyset}
+
+\vspace{2em}
+
+\inferrule[Record Decl]
+{\Delta' = \Delta\onrecord[t \mapsto \{ \langle f_1, ty_1\rangle^{l_1}, \dots, \langle f_n, ty_n\rangle^{l_n}\}^l]}
+{\styjudge \Delta {(\code{type}\ t = \{ f_1 \code :^{l_1} ty_1\code ;\ \dots \code ;\ f_n \code :^{l_n} \ ty_n\})^l} {\Delta'} \emptyset \emptyset}
+
+\vspace{2em}
+
+\inferrule[Variant Decl]
+{\Delta' = \Delta\onvar[t \mapsto \{ \langle K_1, ty_1\rangle^{l_1}, \dots, \langle K_n, ty_n\rangle^{l_n}\}^l]}
+{\styjudge \Delta {(\code{type}\ t = K_1\ \code{of}^{l_1}\ ty_1\ \code | \dots \code | K_n\ \code{of}^{l_n}\ ty_n)^l} {\Delta'} \emptyset \emptyset}
+
+\vspace{2em}
+
+
+\inferrule[Sequence] {
+  \styjudge \Delta {strit_1} {\Delta'} {C_1} {u_1} \\
+  \styjudge {\Delta'} {strit_2} {\Delta''} {C_2} {u_2} \\
+} {
+  \styjudge \Delta {strit_1\code{ ;; }strit_2} {\Delta''} {C_1 \cup C_2} {u_1 \cup u_2}
+}
+
+\vspace{2em}
+
+\subsection{Rules}
+
+\vspace{2em}
+
+\inferrule
+{ \ptyjudge \Delta {pat} {ty_p} {C_p} b \\
+  \etyjudge {\Delta\onident[b,\ C_p,\ \mono]} {lexp} {ty_e} {C_e} u \\
+  }
+{\rtyjudge \Delta {pat\ \code{->}\ lexp} {ty_p} {ty_e} {C_p \cup C_e} u}
+
+\vspace{2em}
+
+\inferrule
+{
+  \rtyjudge \Delta {pat\ \code{->}\ lexp} {ty_{p,1}} {ty_{e,1}} {C_1} {u_1} \\
+  \rtyjudge \Delta {rules} {ty_{p,2}} {ty_{e,2}} {C_2} {u_2} \\
+  C = \{ a_p \xlongequal l ty_{p,1},\ a_p \xlongequal l ty_{p,2},\ 
+  a_e \xlongequal l ty_{e,1},\ a_e \xlongequal l ty_{e,2}\} \cup C_1 \cup C_2 \\
+  a_p,\ a_e \text{ fresh}}
+  {\rtyjudge \Delta {(pat\ \code{->}\ lexp)^l\ |\ rules} {a_p} {a_e} C {u_1 \cup u_2}}
+
+%\inferrule
+%{\ptyjudge \Delta {pat} {ty_p} {C_p} b \\
+%\Delta' = \Delta\onident[id \mapsto \langle ty', \textsf{mono}, C'\rangle^l\ |\ id \mapsto \langle ty', C'\rangle^l \in b] \\
+%\etyjudge {\Delta'} {lexp} {ty_e} {C_e} u}
+%{\rtyjudge \Delta {pat\ \code{->}\ lexp} {ty_p} {ty_e} {C_p \cup C_e} u}
+%
+%\vspace{2em}
+%
+%\inferrule
+%{\rtyjudge \Delta {pat_i\ \code{->}\ lexp_i} {ty_{p,i}} {ty_{e,i}} {C_i} {u_i}  \text{ for } i = 1,\dots,n \\
+%C = \{ ty_p \xlongequal {l_i} ty_{p,i},\ ty_e \xlongequal {l_i} ty_{e,i}\ |\ i = 1,\dots,n\} \cup C_1 \cup\ \dots\ \cup C_n \\
+%u = u_1 \cup \dots \cup u_n \\
+%ty_p,\ ty_e \text{ fresh}}
+%{\rtyjudge \Delta {(pat_1\ \code{->}\ lexp_1)^{l_1}\ |\ \dots\ |\ (pat_n\ \code{->}\ lexp_n)^{l_n}} {ty_p} {ty_e} {C_p \cup C_e} u}
+
+\vspace{2em}
+
+
+\subsection{Expressions}
+
+\inferrule[Var-Mono]
+  {\Delta(x) = { \left< ty, \textsf{mono}, C \right> }^{l'} \\ a,\ a_x \text{ fresh}}
+  {\etyjudge {\Delta} {x^l}
+      {a} {C \cup \{a_x \xlongequal{l} a,\ ty \xlongequal{l'} a_x\}} {\emptyset}}
+
+\vspace{2em}
+
+\inferrule[Var-Poly]
+  {\Delta(x) = \langle ty, \textsf{poly}, C\rangle^{l'} \\
+   a,\ a_x \text{ fresh} \\
+   \langle ty', C'\rangle \text{ fresh variant of } \left< ty, C\right>}
+  {\etyjudge {\Delta} {x^l}
+      {a} {\{a_x \xlongequal{l} a,\ ty' \xlongequal{l'} a_x\} \cup C' } {\emptyset}}
+
+\vspace{2em}
+
+\inferrule[Var-Undef]
+  {x \notin \dom(\Delta)\\
+   a \text{ fresh}}
+  {\etyjudge {\Delta} {x^l} {a} {\emptyset} {\{x^l\}}}
+
+\vspace{2em}
+
+\inferrule[Const] {
+  C_0 = \{ ty \xlongequal{l} a\} \\
+  a \text{ fresh} \\
+  ty \text{ type of constant } c
+} {\etyjudge {\Delta} {c^l} {a} {C_0} {\emptyset}}
+
+%\vspace{2em}
+
+%\inferrule[Abstr]
+%  {\etyjudge{\Delta[x \mapsto \left< a_x, \textsf{mono}, \emptyset\right>^l]}
+%           {lexp} {ty} {C} {u}
+%   \\ a, a_x \text{ fresh}}
+%  {\etyjudge{\Delta}{(\code{fun}\ x^l\ \code{->}\ lexp)^{l'}}{a}{C \cup \{a \xlongequal{l'} a_x \rightarrow ty\}}{u}}
+
+\vspace{2em}
+
+\inferrule[Abstr] {
+  \rtyjudge \Delta {rules} {ty_p} {ty_e} {C_0} u \\
+  C_1 = \{ a \xlongequal l ty_p \rightarrow ty_e \} 
+} {
+  \etyjudge \Delta {(\code{function}\ rules)^l} a {C_0 \cup C_1} u
+}
+
+%\vspace{2em}
+
+%\inferrule[App]
+%  {\etyjudge {\Delta} {lexp_1} {ty_1} {C_1} {u_1} \\
+%   \etyjudge {\Delta} {lexp_2} {ty_2} {C_2} {u_2} \\
+%   C_0 = \{ty_1 \xlongequal l a_1 \rightarrow a_2,\ ty_2 \xlongequal l a_1,\ a \xlongequal l a_2\} \\
+%   a, a_1, a_2 \text{ fresh}}
+%  {\etyjudge{\Delta}{(lexp_1\; lexp_2)^l}{a} {C_0 \cup C_1 \cup C_2}{u_1 \cup u_2}}
+
+\vspace{2em}
+
+\inferrule[App] {
+  \etyjudge {\Delta} {lexp_i} {ty_i} {C_i} {u_i} \text{ for }i=0,\dots,n \\
+  C' = \{ a'_{i-1} \xlongequal {l-l_i} a_i \rightarrow a'_i,\ ty_i \xlongequal l a_i\ |\ i=1,\dots,n \} \cup 
+       \{ ty_0 \xlongequal l a'_0,\ a \xlongequal l a'_n \} \\
+   a, a_1, \dots, a_n, a'_0, \dots, a'_n \text{ fresh}
+} {
+\etyjudge {\Delta} {(lexp_0\ lexp_1^{l_1}\ \dots\ lexp_n^{l_n})^l}
+  {a} {C' \cup \bigcup_{i=0}^n C_i} {\bigcup_{i=1}^n u_i}
+}
+
+%\vspace{2em}
+
+%\inferrule[Let]
+%  {\etyjudge \Delta {lexp_1} {ty_1} {C_1} {u_1} \\
+%   \varpi := \textsf{poly} \text{ if value } lexp_1 \text{ else } \textsf{mono} \\
+%   %\varpi := \begin{cases}\textsf{poly} & \text{if value }lexp_1 \\ \textsf{mono} & \text{else}\end{cases} \\
+%   \etyjudge {\Delta[x \mapsto \left<ty_1, \varpi, C_1\right>^l]} {lexp_2} {ty_2} {C_2} {u_2} \\
+%   a \text{ fresh} }
+%{\etyjudge \Delta  {(\code{let}\ x^l\ \code{=}\ lexp_1\ \code{in}\ lexp_2)^{l'}}
+%  {a} {C_1 \cup C_2 \cup \{a \xlongequal{l'} ty_2\}} {u_1 \cup u_2}
+%}
+
+%\vspace{2em}
+
+%\inferrule[Let] {
+%  \ptyjudge \Delta {pat} {ty_0} {C_0} b \\
+%  \etyjudge \Delta {lexp_1} {ty_1} {C_1} {u_1} \\
+%  \varpi := \textsf{poly} \text{ if } value\ lexp_1 \text{ else } \textsf{mono} \\
+%  C_x = C_0 \cup C_1 \cup \{ ty_0 \xlongequal l ty_1 \} \\
+%  \etyjudge {\Delta\onident[b,\ C_x,\ \varpi]} {lexp_2} {ty_2} {C_2} {u_2} \\
+%  C = {C_x \cup C_2 \cup \{a \xlongequal l ty_2\}} \\
+%  a \fresh \\
+%} {
+%  \etyjudge \Delta {(\code{let}\ pat\ \code =\ lexp_1\ \code{in}\ lexp_2)^l} a C {u_1 \cup u_2}
+%}
+
+\vspace{2em}
+
+\inferrule[Let] {
+\ptyjudge \Delta {pat_i} {ty_{p,i}} {C_{p,i}} {b_i} \\
+\etyjudge \Delta {lexp_i} {ty_{e,i}} {C_{e,i}} {u_i} \\
+\varpi_i := \textsf{poly} \text{ if } value\ lexp_i \text{ else } \textsf{mono} \\
+\text{ for }i=1,\dots,n \\
+\Delta' = \Delta\onident[b_i,\ C_{p,i} \cup C_{e,i} \cup \{ty_{p,i} \xlongequal l ty_{e,i}\},\ \varpi_i\ |\ \text{for } i=1,\dots,n] \\
+\etyjudge {\Delta'} {lexp_{n+1}} {ty_{n+1}} {C_{n+1}} {u_{n+1}} \\
+C_0 = \{ a \xlongequal l ty_{n+1} \} \cup \{ ty_{p,i} \xlongequal l ty_{e,i}\ |\ i=1,\dots,n \} \\
+\dom(b_i) \cap \dom(b_j) = \emptyset \text{ for all } i \neq j \\
+a \fresh \\
+} {
+  \etyjudge \Delta {(\code{let } x_1 \code{ = } lexp_1 \code{ and } \dots \code{ and } x_n \code{ = } lexp_n \code{ in } lexp_{n+1})^l}
+    a {\bigcup_{i=0}^{n+1} C_i} {\bigcup_{i=1}^{n+1} u_i}
+}
+
+%\vspace{2em}
+
+%\inferrule[Let rec]
+%{
+%\etyjudge {\Delta\onident\left[ x \mapsto \langle a_x,\ \textsf{mono},\ \emptyset\rangle^{l}\right]} {lexp_1} {ty_1} {C_1} {u_1} \\
+%\varpi := \textsf{poly} \text{ if } value\ lexp_1 \text{ else } \textsf{mono} \\
+%\etyjudge {\Delta\onident\left[ x \mapsto \langle ty_1,\ \varpi,\ C_1\rangle^l\right]} {lexp_2} {ty_2} {C_2} {u_2} \\
+%C = \{ a \xlongequal l ty_2 \} \cup C_1 \cup C_2  \\
+%a,\ a_x \text{ fresh}
+%}
+%{\etyjudge \Delta  {(\code{let rec}\ x\ \code{=}^l\ lexp_1\ \code{in}\ lexp_2)^{l'}} a C {u_1 \cup u_2}}
+
+\vspace{2em}
+
+\inferrule[Let rec] {
+  \etyjudge {\Delta\onident\left[x_j \mapsto \langle a_{j},\ \mono,\ \emptyset\rangle^l\ |\ j=1,\dots,n\right]} {lexp_i} {ty_i} {C_i} {u_i} \\
+  \varpi_i := \poly \text{ if }value\ lexp_i \text{ else } \mono \\
+  \text{ for }i=1,\dots,n \\
+  \Delta' := \Delta\onident[x_j \mapsto \langle ty_j,\ \varpi_j,\ C_j \cup \{a_j \xlongequal ty_j\}\rangle^l\ |\ j=1,\dots,n] \\
+  \etyjudge {\Delta'} {lexp_{n+1}} {ty_{n+1}} {C_{n+1}} {u_{n+1}} \\
+  C_0 = \{ a \xlongequal l ty_{n+1} \}  \\
+  x_i = x_j \text{ iff } i = j \\
+  a,\ a_{1},\ \dots,\ a_{n} \fresh \\
+} {
+\etyjudge \Delta {(\code{let rec } x_1 \code{ = } lexp_1 \code{ and } \dots \code{ and } x_n \code{ = } lexp_n \code{ in } lexp_{n+1})^l}
+a {\bigcup_{i=0}^{n+1} C_i} {\bigcup_{i=1}^{n+1} u_i}
+}
+
+\vspace{2em}
+
+\inferrule[Tuple]
+{\etyjudge \Delta {lexp_i} {ty_i} {C_i} {u_i}  \text{ for }i = 1,\ \dots,\ n\\
+C_0 = \{ a \xlongequal l (ty_1,\ \dots,\ ty_n) \}\\
+a\text{ fresh}}
+{\etyjudge \Delta {(lexp_1\code ,\ \dots\code ,\ lexp_n )^l} a {\bigcup_{i=0}^n C_i} {\bigcup_{i=1}^n u_i}}
+
+\vspace{2em}
+
+\inferrule[Record construction] {
+    \etyjudge \Delta {lexp_i} {ty_i} {C_i} {u_i} \\
+    \Delta\onrecord(f_i) = \langle ty_r,\ ty_{f,i,\ \cdot} \rangle \\
+    \text{ for }i = 1, \dots, n \\
+    C_0 = \{ a \xlongequal l ty_r \} \cup \{ ty_i \xlongequal l ty_{f,i}\ |\ i=1,\dots,n\} \\
+    a \text{ fresh} \\
+    \{ f_i\ |\ i=1,\dots,n\} \text{ are the fields of record } ty_r
+} {
+  \etyjudge \Delta
+    {\{ f_1\ \code =\ lexp_1 \code ;\ \dots \code ;\ f_n\ \code =\ lexp_n \} ^l}
+    a {\bigcup_{i=0}^n C_i} {\bigcup_{i=1}^n u_i}
+}
+\vspace{2em}
+
+\inferrule {
+    \etyjudge \Delta {lexp_i} {ty_i} {C_i} {u_i} \for i 0 n \\
+    \Delta\onrecord(f_i) = \langle ty_r,\ ty_{f,i},\ \cdot \rangle \for i 1 n \\
+    C_0 = \{ a \xlongequal l ty_r,\ ty_0 \xlongequal l ty_r \} \cup \{ ty_{f,i} \xlongequal l ty_i\ |\ i=1,\dots,n \} \\
+    a \fresh
+} {
+    \etyjudge \Delta
+      {\{ lexp_0 \code{ with } f_1\ \code =\ lexp_1 \code ;\ \dots \code ;\ f_n\ \code =\ lexp_n \}^l}
+      a {\bigcup_{i=0}^n C_i} {\bigcup_{i=1}^n u_i}
+}
+
+\vspace{2em}
+
+\inferrule[Record Access]
+{
+ \etyjudge \Delta {lexp} {ty} C u \\
+ \Delta\onrecord(f) = \langle ty_f,\ ty_,\ \cdot \rangle \\
+ C_0 = \{a \xlongequal {l} ty_f,\ ty \xlongequal l ty_r\} \\
+ a \text{ fresh}}
+ {\etyjudge \Delta {(lexp\code{.}f)^l} a {C_0 \cup C} u}
+
+\vspace{2em}
+
+\inferrule[Record field assignment]
+{
+\etyjudge \Delta {lexp_1} {ty_1} {C_1} {u_1} \\
+\etyjudge \Delta {lexp_2} {ty_2} {C_2} {u_2} \\
+\Delta\onrecord(f) = \langle ty_r,\ ty_f, \mutable\rangle \\
+C_0 = \{ a \xlongequal l \underline{unit},\ ty_r \xlongequal l ty_1,\ ty_f \xlongequal l ty_2 \}
+}
+{\etyjudge \Delta {(lexp_1\code . f\ \code {<-}\ lexp_2)^l} a {C_0 \cup C_1 \cup C_2} {u_1 \cup u_2}}
+
+\vspace{2em}
+
+\inferrule[Variant] {
+  \Delta\onvar(K) = \langle ty_r,\ [ty_{a,1},\ \dots,\ ty_{a,n}]\rangle \\
+  \etyjudge \Delta {lexp_i} {ty_i} {C_i} {u_i} \text{ for } i=1,\dots,n \\
+  C_0 = \{a \xlongequal l ty_r \} \cup \{ ty_i \xlongequal l ty_{a,i}\ |\ i=1,\dots,n \} \\
+  a \fresh
+} {
+  \etyjudge \Delta {(K\  lexp_1\ \dots\ lexp_n)^l} a {\bigcup_{i=0}^n C_i} {\bigcup_{i=1}^n u_i}
+}
+NB The distinction between \texttt{$K\ lexp_1\ \dots\ lexp_n$} ($n$ arguments) and
+\texttt{$K\ (lexp_1,\ \dots,\ lexp_n)$} (an $n$-tuple as the single argument) is
+actually made by an \code{explicit\_arity} flag in the AST.
+
+%\vspace{2em}
+%
+%\inferrule {
+%  \etyjudge \Delta {exp} {ty} {C_0} b \\
+%  \Delta\onvar(K) = \langle ty_r,\ [ty_a] \rangle \\
+%  C_1 = \{ a \xlongequal l ty'_r,\ ty'_a \xlongequal l ty \} \\
+%  ty'_r,\ ty'_a \text{ fresh variants of } ty_r,\ ty'_a
+%} {
+%  \etyjudge \Delta {(K\ exp)^l} a {C_0 \cup C_1} b
+%}
+%{\etyjudge \Delta {lexp_i} {ty_i} {C_i} {u_i} \text{ for }i = 1, \dots, n \\
+%   \langle lid,\ [ty'_1,\ \dots,\ ty'_n]\rangle \in \Delta\onvar(ty_t)  \\
+%  C_0 = \{a \xlongequal {l} ty'_t \} \cup \{ty_i \xlongequal l ty'_i\ |\ i = 0, \dots, n\} \\
+%  ty'_t \text{ fresh variant of } ty_t
+%}
+%{\etyjudge \Delta {ctor\ (lexp_1,\ \dots,\ lexp_n)^l} a {\bigcup_{i=0}^n C_i} {\bigcup_{i=1}^n u_i}}
+
+\vspace{2em}
+
+\inferrule[If-then-else]
+{\etyjudge \Delta {lexp_1} {ty_1} {C_1} {u_1} \\
+ \etyjudge \Delta {lexp_2} {ty_2} {C_2} {u_2} \\
+ \etyjudge \Delta {lexp_3} {ty_3} {C_3} {u_3} \\
+ C = \{ ty_1 \xlongequal l \type{bool},\ a \xlongequal l ty_3,\ a \xlongequal l {ty_2} \} \cup C_1 \cup C_2 \cup C_3 \\
+ a \text{ fresh}}
+ {\etyjudge \Delta {(\code{if}\ lexp_1\ \code{then}\ lexp_2\ \code{else}\ lexp_3)^l} a C {u_1 \cup u_2 \cup u_3}}
+
+\vspace{2em}
+
+\inferrule[If-then]
+{\etyjudge \Delta {lexp_1} {ty_1} {C_1} {u_1} \\
+ \etyjudge \Delta {lexp_2} {ty_2} {C_2} {u_2} \\
+ C_0 = \{ ty_1 \xlongequal l \type{bool},\ ty_2 \xlongequal l \type{unit},\ a \xlongequal l \type{unit} \} \\
+ a \text{ fresh}}
+{\etyjudge \Delta {(\code{if}\ lexp_1\ \code{then}\ lexp_2)^l} a C u}
+
+
+\vspace{2em}
+
+\inferrule[Matching]
+{
+\etyjudge \Delta {lexp} {ty_0} {C_0} {u_0} \\
+\rtyjudge \Delta {rules} {ty_p} {ty_e} {C_1} {u_1} \\
+C = \{ ty_0 \xlongequal l ty_p,\ a \xlongequal l ty_e \} \cup C_1 \cup C_2 \\
+u = u_0 \cup u_1 \\
+a \text{ fresh}}
+{\etyjudge \Delta {(\code{match}\ lexp\ \code{with}\ rules)^l} a C u}
+
+\vspace{2em}
+
+\inferrule[Array construction]
+{
+\etyjudge \Delta {lexp_i} {ty_i} {C_i} {u_i} \\
+C_0 = \{ a \xlongequal l b\ \underline{array}\} \cup \{ ty_i \xlongequal l b\ |\ i=1,\dots,n\} \\
+a,\ b \fresh
+}
+{\etyjudge \Delta {(\code {[|} lexp_1 \code ;\ \dots\code ;\ lexp_n \code {|]})^l} a {\bigcup_{i=0}^n C_i} {\bigcup_{i=1}^n u_i}}
+
+\vspace{2em}
+
+\inferrule[Array access]
+{
+\etyjudge \Delta {lexp_1} {ty_1} {C_1} {u_1} \\
+\etyjudge \Delta {lexp_2} {ty_2} {C_2} {u_2} \\
+C_0 = \{ ty_1 \xlongequal l a\ \underline{array},\ ty_2 \xlongequal l \underline{int} \} \\
+a \fresh
+}
+{\etyjudge \Delta {(lexp_1 \code . \code (lexp_2\code ))^l} a {C_0 \cup C_1 \cup C_2} {u_1 \cup u_2}}
+\vspace{2em}
+
+\inferrule[While]
+{\etyjudge \Delta {lexp_i} {ty_i} {C_i} {u_i} \text{ for } i=1,2 \\
+C_0 = \{ ty_1 \xlongequal l \underline{bool},\ ty_2 \xleftrightarrow l \underline{unit},\ a \xlongequal l \underline{unit}\} \\
+a \fresh
+}
+{\etyjudge \Delta {(\code {while}\ lexp_1\ \code {do}\ lexp_2\ \code {done})^l} a {C_0 \cup C_1 \cup C_2} {u_1 \cup u_2}}
+\vspace{2em}
+
+\inferrule[For]
+{
+\etyjudge \Delta {lexp_i} {ty_i} {C_i} {u_i} \text{ for }i=1,2 \\
+\Delta' = \Delta\onident\left[var \mapsto \langle\underline {a_{var}},\ \mono,\ \{a_{var} \xlongequal l \underline{int}\}\rangle^{l}\right] \\
+\etyjudge {\Delta'} {lexp_3} {ty_3} {C_3} {u_3} \\
+C_0 = \{a \xlongequal l \underline{unit},\ ty_1 \xlongequal l int,\ ty_2 \xlongequal l \underline{int},\ ty_3 \xleftrightarrow l \underline{unit}\} \\
+a, a_{var} \fresh
+}
+{\etyjudge \Delta {(\code {for}\ var\ \code =\ lexp_1\ \code {to}/ \code {downto}\ lexp_2\ \code {do}\ lexp_3\ \code {done})^l} a {C_0 \cup C_1 \cup C_2} {u_1 \cup u_2}}
+\vspace{2em}
+
+\inferrule[Sequence] {
+  \etyjudge \Delta {lexp_i} {ty_i} {C_i} {u_i} \text{ for } i=1, 2 \\
+  C_0 = \{ a \xlongequal l ty_2,\ ty_1 \xleftrightarrow l \underline{unit}\}
+}{
+  \etyjudge \Delta {(lexp_1\code ;\ lexp_2)^l} a {C_0 \cup C_1 \cup C_2} {u_1 \cup u_2}
+}
+\vspace{2em}
+
+\inferrule[Raise]
+{
+\etyjudge \Delta {lexp} {ty} C u \\
+a \fresh
+}
+{\etyjudge \Delta {(\code {raise}\ lexp)^l} a {C \cup \{ty \xlongequal l \underline{exc}\}} u}
+\vspace{2em}
+
+\inferrule[Try]
+{
+\etyjudge \Delta {lexp} {ty} {C_1} {u_1} \\
+\rtyjudge \Delta {rules} {ty_p} {ty_e} {C_2} {u_2} \\
+C_0 = \{ ty_p \xlongequal l \underline{exc},\ a \xlongequal l ty,\ a \xlongequal l ty_e \} \\
+a \fresh
+}
+{\etyjudge \Delta {(\code {try}\ lexp\ \code {with}\ rules)^l} a {C_0 \cup C_1 \cup C_2} {u_1 \cup u_2}}
+\vspace{2em}
+
+\inferrule[Assert]
+{
+\etyjudge \Delta {lexp} {ty} {C_1} u \\
+C_2 = \{ ty \xlongequal l \underline{bool},\ a \xlongequal l \underline{unit}\} \\
+a \fresh
+}
+{\etyjudge \Delta {(\code {assert}\ lexp)^l} a \emptyset \emptyset}
+\vspace{2em}
+
+\inferrule
+{\ }
+{\etyjudge \Delta {(\code {assert false})^l} a \emptyset \emptyset}
+
+\vspace{2em}
+
+\inferrule[Type-Annot]{
+  \etyjudge{\Delta}{lexp}{ty}{C_0}{u} \\
+  C_1 = \{a \xlongequal l b,\ b \xlongequal {l'} ty',\ ty \xlongequal l c,\ c \xlongequal {l'} ty',\ a \succcurlyeq^l ct\} \\
+  a,\ b,\ c \text{ fresh} \\
+  ty' \text{ is a fresh instance of } ct \\
+}{
+  \etyjudge{\Delta}{(lexp : ct^{l'})^l}{a} {C_0 \cup C_1}{u}
+}
+
+\vspace{2em}
+
+\subsection{Patterns}
+
+\inferrule[Wildcard]
+{a \text{ fresh}}
+{\ptyjudge \Delta {\code \_} {a} \emptyset \emptyset}
+
+\vspace{2em}
+
+\inferrule[Variable]
+{a \text{ fresh}}
+{\ptyjudge \Delta {x^l} a \emptyset {\{x \mapsto \langle a\rangle^l\}}}
+
+\vspace{2em}
+
+\inferrule[Int]
+{C_0 = \{int \xlongequal l a\} \\ a \text{ fresh}}
+{\ptyjudge \Delta {n^l} a {C_0} \emptyset}
+
+\vspace{2em}
+
+\inferrule[Tuple]
+{
+  \ptyjudge \Delta {pat_i} {ty_i} {C_i} {b_i} \text{ for } i = 1,\dots,n \\
+  C_0 = \{ a \xlongequal l (ty_1, \dots, ty_n) \} \\
+  \dom(b_i) \cap \dom(b_j) = \emptyset \text{ for } i \neq j \\
+  a \text{ fresh}
+  }
+{\ptyjudge \Delta {(pat_1\code ,\ \dots\code ,\ pat_n)^l} a {\bigcup_{i=0}^n C_i} {\bigcup_{i=1}^n b_i}}
+
+\vspace{2em}
+
+\inferrule[Variant] {
+  \Delta\onvar(K) = \langle ty_r,\ [ty_{a,1},\ \dots,\ ty_{a,n}] \\
+  \ptyjudge \Delta {pat_i} {ty_i} {C_i} {b_i} \text{ for } i=1,\dots,n \\
+  C_0 = \{ a \xlongequal l ty_r \} \cup \{ ty_i \xlongequal l ty_{a,i}\ |\ i=1,\dots,n \} \\
+  \dom(b_i) \cap \dom(b_j) = \emptyset \text{ for } i \neq j \\
+} {
+  \ptyjudge \Delta {(K\ pat_1\ \dots\ pat_n)^l} a {\bigcup_{i=0}^n C_i} {\bigcup_{i=1}^n b_i}
+}
+
+
+
+
+\vspace{2em}
+
+\inferrule[Record] {
+  \Delta\onrecord(f_i) = \langle ty_{r,i},\ ty_{f,i}\rangle \\
+  \ptyjudge \Delta {pat_i} {ty_i} {C_i} {b_i} \\
+  \for i 1 n \\
+  C_0 = \{ a \xlongequal l ty_{r,i},\ ty_i \xlongequal l ty_{f,i} \ |\ \for i 1 n \} \\
+  \dom(b_i) \cap \dom(b_j) = \emptyset \text{ for } i \neq j \\
+  a \text{ fresh} \\
+} {
+  \ptyjudge \Delta {\{ f_1 \code = pat_1 \code{; }\dots \code{; }f_n \code = pat_n \}^l} a {\bigcup_{i=0}^n C_i} {\bigcup_{i=1}^n b_i}
+}
+%{
+%\ptyjudge \Delta {pat_i} {ty_i} {C_i} {b_i} \text{ for } i=1, \dots, n \\
+%\{\langle f_1, ty'_1\rangle,\ \dots,\ \langle f_n, ty'_n \rangle\} \subset \Delta\onrecord(ty) \\
+%C_0 = \{ a \xlongequal l ty \} \cup \{ ty_i \xlongequal l ty'_i\ |\ i = 1, \dots, n \} \\
+%\dom(b_i) \cap \dom(b_j) = \emptyset \text{ for } i \neq j \\
+%a \text{ fresh}
+%}
+%{\ptyjudge \Delta {\{ f_1 \code : pat_1 \code ; \dots \code ; f_n \code : pat_n \}^l} a {\bigcup_{i=0}^n C_i} {\bigcup_{i=1}^n b_i}}
+
+
+\vspace{2em}
+
+\inferrule[Or]
+{
+\ptyjudge \Delta {pat_i} {ty_i} {C_i} {b_i} \text{ for }i=1, 2 \\
+\dom(b_1) = \dom(b_2) \\
+b = \{ id \mapsto \langle a_{id} \rangle^l\ |\ id \in \dom(b_1) \} \\
+C_0 = \{ a \xlongequal l ty_1,\ a \xlongequal l ty_2 \} \\
+C'_i = \{ a_{id} \xlongequal {l'} ty\ |\ id \mapsto \langle ty \rangle^{l'} \in b_i \} \cup C_i \text{ for } i = 1, 2 \\
+a,\ a_{id} \text{ fresh for } id \in \dom(b_1)}
+{\ptyjudge \Delta {(pat_1\ \code |\  pat_2)^l} a {C_0 \cup C'_1 \cup C'_2}  b}
+
+\vspace{2em}
+\inferrule[Alias] {
+  \ptyjudge \Delta {pat} {ty} {C} b \\
+  a \fresh \\
+} {
+  \ptyjudge \Delta {(pat \code{ as } x)^l} a {\{a \xlongequal l ty\} \cup C} {b[x \mapsto \langle ty\rangle]}
+}
+
+\vspace{2em}
+\inferrule[Type-Annot] {
+  \ptyjudge \Delta {pat} {ty} {C_0} {b} \\
+  C_1 = \{ a \xlongequal l b,\ b \xlongequal {l'} ty',\ ty \xlongequal {l} c,\ c \xlongequal {l'} ty',\ a \succcurlyeq^l ct \} \\
+  a,\ b,\ c \fresh \\
+  ty' \text{ fresh instance of } ct \\
+} {
+  \ptyjudge \Delta {(pat : ct^{l'})^l} a {C_0 \cup C_1} b
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\pagebreak
+%\subsection{Stefan's Section}
+%\inferrule[Type-Annot]{
+%  ty \text{ is a fresh instance of } tysc\\
+%  a \text{ fresh}\\
+%  \etyjudge{\Delta}{lexp}{ty'}{C}{u}
+%}{
+%\etyjudge{\Delta}{(lexp : tysc)^l}{a}
+%         {\{a \xlongequal l ty, ty' \succcurlyeq tysc\} \cup C}{u}
+%}
+%
+%Notes:
+%\begin{itemize}
+%\item $tysc$ stands for a type scheme of the form 
+%  $\forall \overline{a} . ty$
+%\item We propagate the constraint set $C$ from the premise
+%  to the conclusion to ensure that expression $lexp$ has
+%  a type.
+%\item A fresh instance of a type scheme
+%  $\forall \overline{a} . ty$ is the type $ty$ with
+%  all quantified type variables $\overline a$ replaced by
+%  fresh type variables.
+%\item The unification procedures leaves instantiations constraints of the 
+%  form $ty \succcurlyeq tysc$ untouched. 
+%\item When unification has finished,
+%  we apply the resulting substitution $s$ to all
+%  instantiation constraints $ty \succcurlyeq tysc$ to obtain
+%  $s(ty) \succcurlyeq s(tysc)$. After that, we check
+%  that the resulting instantiation constraints are valid.
+%\item An instantiation constraint 
+%  $ty \succcurlyeq \forall \overline{a} . ty'$ is valid
+%  if and only if 
+%  $\text{free}(ty) \cap \{\overline{a}\} = \emptyset$\footnote{%
+%  We can always fulfill this requirement by $\alpha$-renaming
+%  the quantified type variables $\overline a$.}
+%  and there exists a substitution $s$ with
+%  $\dom(s) \subseteq \text{free}(ty)$ and
+%  $s(ty) = ty'$.
+%  \\
+%  (This notion of validity of an instantiation constraint is 
+%  closely connected to value type enrichment as explained in
+%  Stefan Wehr's diploma thesis on page 15,16)
+%\end{itemize}
+\end{appendix}
+
+\end{document}
+
