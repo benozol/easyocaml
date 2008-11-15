@@ -30,6 +30,7 @@ let _ =
     "Digest", false;
     "Filename", false;
  *)
+    "List", false;
     "Random", false;
 (*     "Sort", false; *)
     "String", false;

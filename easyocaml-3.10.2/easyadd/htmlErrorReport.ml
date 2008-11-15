@@ -90,8 +90,8 @@ let print_error ppf (loc, err) =
           ExtLocationSet.elements err_locs |>
           List.filter_map ~f:filter_to_loc in
         Format.fprintf ppf "new %s(%a, [%a])" class_name
-          (format_list Format.pp_print_string ", ") args
-          (format_list Format.pp_print_string ", ") err_locs'
+          (List.print Format.pp_print_string ", ") args
+          (List.print  Format.pp_print_string ", ") err_locs'
     | _ ->
         Format.fprintf ppf "new LocalError('%a', %s)"
           EzyErrors.print_error_desc err
@@ -156,12 +156,12 @@ let safe_print p ppf x =
 let print_errors' ~program ast ppf errors =
   Format.fprintf ppf (template ())
     print_program_aux (ast, program)
-    (format_list print_error ", ") (ErrorSet.elements errors)
+    (List.print  print_error ", ") (ErrorSet.elements errors)
 
 let print_heavies' ~program ast ppf heavies =
   Format.fprintf ppf (template ())
     print_program_aux (ast, program)
-    (format_list print_heavy ", ") (HeavyErrorSet.elements heavies)
+    (List.print  print_heavy ", ") (HeavyErrorSet.elements heavies)
 
 let print_fatal' ~program loc ppf fatal =
   Format.fprintf ppf (template ())
