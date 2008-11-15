@@ -19,7 +19,7 @@ val minimize :
   EzyEnv.t -> AtConstrSet.t -> ExtLocationSet.t -> ExtLocation.t ->
   type_error * ExtLocationSet.t
 
-(** This variable constrols now long EasyOCaml enumerates errors. It can be
+(** This variable constrols how long EasyOCaml enumerates errors. It can be
   * assigned via the environment variable EASYOCAML_ENUM_TIMEOUT and defaults
   * to 3.0 *)
 val timeout : float
