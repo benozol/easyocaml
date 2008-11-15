@@ -124,6 +124,7 @@ val print_heavy_error_desc : Format.formatter -> heavy_error -> unit
 val print_fatal_error_desc : Format.formatter -> fatal -> unit
 
 open EzyUtils
+open EzyTypingCoreTypes
 
 module Error : PrintableOrderedType with type t = EzyOcamlmodules.Location.t * error
 module ErrorSet : Set.S with type elt = Error.t
@@ -141,6 +142,7 @@ end
   * This may happen in some module which is given to the compiler with flat -easyerrorprinter *)
 val register :
   string ->
+  ?print_valid:(program:string lazy_t -> (Ty.t, Path.t, Ident.t, Ty.t) EzyAst.structure -> Format.formatter -> unit) ->
   (program:string lazy_t -> EzyAst.imported_structure -> Format.formatter -> ErrorSet.t -> unit) ->
   (program:string lazy_t -> EzyAst.imported_structure -> Format.formatter -> HeavyErrorSet.t -> unit) ->
   (program:string lazy_t -> Location.t -> Format.formatter -> fatal -> unit) ->
@@ -186,3 +188,4 @@ val wrap_exception_with_program: string lazy_t -> (unit -> 'a) -> 'a
 val report_annotated_errors: Format.formatter -> annotated_errors -> unit
 val report_fatal: Format.formatter -> fatal_info -> unit
 val report_parse_error: Format.formatter -> EzyOcamlmodules.Location.t -> string lazy_t -> EzyCamlgrammar.ParseError.error -> unit
+val report_valid: Format.formatter -> string lazy_t -> (Ty.t, Path.t, Ident.t, Ty.t) EzyAst.structure -> unit

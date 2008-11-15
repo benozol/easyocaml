@@ -23,6 +23,7 @@ type generated_structure_item = (exp_data, id_data, name_data, pat_data) EzyAst.
 type generated_structure = (exp_data, id_data, name_data, pat_data) EzyAst.structure
 type generated_pattern = (exp_data, id_data, name_data, pat_data) EzyAst.pattern
 type generated_rule = (exp_data, id_data, name_data, pat_data) EzyAst.rule
+type typed_structure = (Ty.t, Path.t, Ident.t, Ty.t) EzyAst.structure
 
 (** {3 Import AST from Parsetree} *)
 
@@ -53,3 +54,4 @@ val import_structure :
 (** {3 Compare EasyOCaml's typed AST with Typedtree} *)
 
 val eq_structure : TyVarSubst.t -> generated_structure_item list -> Typedtree.structure_item list -> string option
+val apply_substitution: TyVarSubst.t -> generated_structure_item list -> (Ty.t, Path.t, Ident.t, Ty.t) EzyAst.structure

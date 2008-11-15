@@ -2,6 +2,7 @@ open EzyAst
 open EzyAsttypes
 open EzyErrors
 open EzyOcamlmodules
+open EzyTypingCoreTypes
 open EzyUtils
 
 
@@ -10,7 +11,7 @@ let logger = new Logger.logger "enr_ast"
 
 type exp_data = 
     {
-      ea_ty: EzyTypingCoreTypes.Ty.t ;
+      ea_ty: Ty.t ;
       ea_env: EzyEnv.t ;
     }
 
@@ -18,7 +19,7 @@ type id_data = Path.t
 
 type pat_data =
     {
-      pa_ty: EzyTypingCoreTypes.Ty.t ;
+      pa_ty: Ty.t ;
       pa_ident: Ident.t ;
       pa_env: EzyEnv.t ;
     }
@@ -30,6 +31,7 @@ type generated_structure_item = (exp_data, id_data, name_data, pat_data) EzyAst.
 type generated_structure = (exp_data, id_data, name_data, pat_data) structure
 type generated_pattern = (exp_data, id_data, name_data, pat_data) pattern
 type generated_rule = (exp_data, id_data, name_data, pat_data) rule
+type typed_structure = (Ty.t, Path.t, Ident.t, Ty.t) EzyAst.structure
 
 
 (******************************************************************************)
@@ -58,8 +60,6 @@ exception Invalid_type_constructor of (Longident.t * int * int)
 exception Unbound_type_constructor of Longident.t
 
 let rec import_core_type creative lookup_ctor tyvarmap ct =
-  let module Ty = EzyTypingCoreTypes.Ty in
-  let module TyVar = EzyTypingCoreTypes.TyVar in
   let label = ExtLocation.Source ct.Parsetree.ptyp_loc in
   match ct.Parsetree.ptyp_desc with
     | Parsetree.Ptyp_any ->
@@ -491,8 +491,8 @@ let import_structure prf str =
   List.map (import_strit prf) str
 
 
-let eap ppf ea = EzyTypingCoreTypes.Ty.print ppf ea.ea_ty
-let pap ppf pa = EzyTypingCoreTypes.Ty.print ppf pa.pa_ty
+let eap ppf ea = Ty.print ppf ea.ea_ty
+let pap ppf pa = Ty.print ppf pa.pa_ty
 
 
 (******************************************************************************)
@@ -501,7 +501,6 @@ let pap ppf pa = EzyTypingCoreTypes.Ty.print ppf pa.pa_ty
 
 module Equality = struct
 
-  open EzyTypingCoreTypes
   open EzyUtils
   open EzyOcamlmodules
   module Tt = Typedtree
@@ -846,3 +845,9 @@ module Equality = struct
       (fun msg st -> Some msg)
 end
 let eq_structure = Equality.structure
+
+let apply_substitution s =
+  List.map 
+    (map_structure_item
+      (fun exp_data -> Ty.type_substitute exp_data.ea_ty s )
+      (fun pat_data -> Ty.type_substitute pat_data.pa_ty s ))
