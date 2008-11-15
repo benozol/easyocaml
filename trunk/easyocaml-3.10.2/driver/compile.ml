@@ -127,8 +127,11 @@ let implementation ppf sourcefile outputprefix =
     let typecheck parse_tree : Typedtree.structure * Typedtree.module_coercion =
       match easy.EzySetup.features with
         | Some fs -> 
-            EzyErrors.wrap_exception_with_program program
-              (fun () -> EzyTyping.type_and_compare_implementation sourcefile outputprefix modulename env parse_tree fs)
+            let res = EzyErrors.wrap_exception_with_program program
+              (fun () -> EzyTyping.type_and_compare_implementation sourcefile outputprefix modulename env parse_tree fs) in
+            if Sys.getenv "EASYOCAML_ONLY_TYPECHECK" = "yes" then
+              exit 0;
+            res
         | None ->
             Typemod.type_implementation sourcefile outputprefix modulename env parse_tree in
 
