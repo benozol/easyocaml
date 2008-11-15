@@ -1,0 +1,16 @@
+#!/bin/sh
+
+start=`pwd`
+
+if [ $# -eq 1 ]
+then
+  for d in lang-*
+  do
+    cd $d
+    echo "compile "$d
+    ocamlc -c -I $1/easyocaml *.ml
+    cd $start
+  done
+else
+  echo "give file to easyocaml _build dir as first arg"
+fi
