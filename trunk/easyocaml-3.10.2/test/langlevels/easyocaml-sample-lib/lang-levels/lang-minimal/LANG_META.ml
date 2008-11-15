@@ -19,7 +19,7 @@ let _ =
   let sf =
     { (all_struct_feats false) with
           s_eval_expr = true;
-          s_annot_mandatory = false;
+          s_annot_optional = true;
           s_let = Some let_feats } in
   let prf = 
     { pr_expr_feats = ef; pr_struct_feats = sf } in
