@@ -129,8 +129,8 @@ let implementation ppf sourcefile outputprefix =
         | Some fs -> 
             let ted_str, res = EzyErrors.wrap_exception_with_program program
               (fun () -> EzyTyping.type_and_compare_implementation sourcefile outputprefix modulename env parse_tree fs) in
-            EzyErrors.report_valid ppf program ted_str;
-            if Sys.getenv "EASYOCAML_ONLY_TYPECHECK" = "yes" then
+            EzyErrors.report_valid Format.err_formatter program ted_str;
+            if try Sys.getenv "EASYOCAML_ONLY_TYPECHECK" = "yes" with Not_found -> false then
               exit 0;
             res
         | None ->

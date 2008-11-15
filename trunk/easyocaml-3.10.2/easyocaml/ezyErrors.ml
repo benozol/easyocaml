@@ -460,7 +460,7 @@ let print_parse_error ppf loc err =
 
 let register name ?print_valid print_errors print_heavies print_fatal =
   logger#info "Loading error reporting plugin %s" name;
-  Option.iter ~f:(fun print_valid -> print_valid_ref := print_valid) print_valid;
+  print_valid_ref := Option.value ~default:(fun ~program _ _ -> ()) print_valid;
   print_errors_ref := print_errors;
   print_heavies_ref := print_heavies;
   print_fatal_ref := print_fatal;
