@@ -3,6 +3,7 @@ open EzyUtils.Infix
 open EzyOcamlmodules
 open EzyTypingCoreTypes
 open EzyErrors
+open Format
 
 let logger = new EzyUtils.Logger.logger "htmlErrorReport"
 
@@ -89,11 +90,11 @@ let print_error ppf (loc, err) =
             | _ -> None in
           ExtLocationSet.elements err_locs |>
           List.filter_map ~f:filter_to_loc in
-        Format.fprintf ppf "new %s(%a, [%a])" class_name
-          (List.print Format.pp_print_string ", ") args
-          (List.print  Format.pp_print_string ", ") err_locs'
+        fprintf ppf "new %s(%a, [%a])" class_name
+          (List.print pp_print_string ", ") args
+          (List.print  pp_print_string ", ") err_locs'
     | _ ->
-        Format.fprintf ppf "new LocalError('%a', %s)"
+        fprintf ppf "new LocalError('%a', %s)"
           EzyErrors.print_error_desc err
           (loc_string loc)
 
@@ -101,12 +102,12 @@ let print_heavy ppf : (Location.t * heavy_error) -> unit = function
   | _, Error_as_heavy (loc, error) ->
       print_error ppf (loc, error)
   | loc, heavy ->
-      Format.fprintf ppf "new LocalError('%a', %s)"
+      fprintf ppf "new LocalError('%a', %s)"
         EzyErrors.print_heavy_error_desc heavy
         (loc_string loc)
 
 let print_fatal ppf (loc, fatal) =
-  Format.fprintf ppf "new LocalError('%a', %s)"
+  fprintf ppf "new LocalError('%a', %s)"
     EzyErrors.print_fatal_error_desc fatal
     (loc_string loc)
   
@@ -126,14 +127,14 @@ let print_program locs ppf code =
     LocationSet.cardinal fitting in
 
   let print_open_tag ppf loc =
-    Format.fprintf ppf "<span name=%s id=%s>" name_string (loc_string loc) in
+    fprintf ppf "<span name=%s id=%s>" name_string (loc_string loc) in
 
   for i = 0 to String.length code - 1 do
     for i = 1 to count_closing_locs i do
-      Format.pp_print_string ppf "</span>" 
+      pp_print_string ppf "</span>" 
     done ;
     List.iter (print_open_tag ppf) (find_open_locs i) ;
-    Format.pp_print_string ppf begin
+    pp_print_string ppf begin
       match code.[i] with
         | ' ' -> "&nbsp;"
         | '&' -> "&amp;"
@@ -154,18 +155,21 @@ let safe_print p ppf x =
   p ppf x
 
 let print_errors' ~program ast ppf errors =
-  Format.fprintf ppf (template ())
+  fprintf ppf (template ())
     print_program_aux (ast, program)
     (List.print  print_error ", ") (ErrorSet.elements errors)
 
 let print_heavies' ~program ast ppf heavies =
-  Format.fprintf ppf (template ())
+  fprintf ppf (template ())
     print_program_aux (ast, program)
     (List.print  print_heavy ", ") (HeavyErrorSet.elements heavies)
 
 let print_fatal' ~program loc ppf fatal =
-  Format.fprintf ppf (template ())
+  fprintf ppf (template ())
     (print_program (LocationSet.singleton loc)) (Lazy.force program)
     (safe_print print_fatal) (loc, fatal)
 
-let () = EzyErrors.register name print_errors' print_heavies' print_fatal'
+let print_valid ~program ted_str ppf =
+  fprintf ppf "<h3>Great! This is a well typed program!</h3>@,<code>%s</code>@." (Lazy.force program)
+
+let () = EzyErrors.register name ~print_valid print_errors' print_heavies' print_fatal'
