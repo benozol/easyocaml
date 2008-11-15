@@ -403,13 +403,14 @@ let type_and_compare_implementation sourcefile outputprefix modulename initial_e
     let str = EzyEnrichedAst.import_structure fs parse_tree in
     logger#debug "@[<2>Ezy imported tree:@ %a@]" (fun ppf -> List.iter (EzyAst.print_structure_item () ppf)) str ;
     type_implementation sourcefile initial_env str in
+  let ted_str = EzyEnrichedAst.apply_substitution s enr_str in
   begin try
     let tt, mc = Typemod.type_implementation sourcefile outputprefix modulename initial_env parse_tree in
     begin match EzyEnrichedAst.eq_structure s enr_str tt with
       | Some msg -> alpha_error msg
       | None -> ()
     end ;
-    tt, mc
+    ted_str, (tt, mc)
   with Typemod.Error (loc, err) ->
     beta_error loc err
   end
@@ -419,6 +420,7 @@ let type_and_compare_top_phrase fs oldenv str =
   let enr_str, s, env =
     let str' = EzyEnrichedAst.import_structure fs str in
     type_structure oldenv str' in
+  let ted_str = EzyEnrichedAst.apply_substitution s enr_str in
   begin try
     Typecore.reset_delayed_checks ();
     let (str, sg, newenv) = Typemod.type_structure oldenv str in
@@ -427,7 +429,7 @@ let type_and_compare_top_phrase fs oldenv str =
       | Some msg -> alpha_error msg
       | None -> ()
     end ;
-    str, sg, newenv
+    ted_str, (str, sg, newenv)
   with Typemod.Error (loc, err) ->
     beta_error loc err
   end ;

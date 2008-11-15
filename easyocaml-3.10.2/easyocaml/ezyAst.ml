@@ -414,8 +414,10 @@ let print_pat, print_expr, print_structure_item =
       fprintf ppf "%a%a"
         print_expr_desc expr.pexp_desc
         (print_wrap eap) expr.pexp_data
+
     and print_rule ppf (pat, exp) =
         fprintf ppf "@[%a ->@ %a@]" print_pat pat print_expr exp
+
     and print_rules ppf rules =
       fprintf ppf "@[<2>%a@]" (List.print print_rule "@ | ") rules
 
@@ -553,3 +555,93 @@ module CollectLocs = struct
   let structure s = big_union (List.map strit s)
 end
 
+module MapAstData = struct
+  let rec dot_item map_expr_data map_pattern_data = function
+    | Dot_pat p -> Dot_pat (pattern map_expr_data map_pattern_data p)
+    | Dot_exp e -> Dot_exp (expression map_expr_data map_pattern_data e)
+    | Dot_str s -> Dot_str (structure_item map_expr_data map_pattern_data s)
+  and pattern map_expr_data map_pattern_data pat =
+    let pat_aux = pattern map_expr_data map_pattern_data in
+    let desc' = match pat.ppat_desc with
+      | Ppat_any 
+      | Ppat_var _
+      | Ppat_constant _ as desc -> desc
+      | Ppat_tuple pats ->
+          Ppat_tuple (List.map pat_aux pats)
+      | Ppat_construct (lid, opt_pat, x) ->
+          Ppat_construct (lid, Option.map ~f:pat_aux opt_pat, x)
+      | Ppat_record fs ->
+          Ppat_record (List.map (fun (fld, p) -> fld, pat_aux p) fs)
+      | Ppat_or (p1, p2) ->
+          Ppat_or (pat_aux p1, pat_aux p2)
+      | Ppat_constraint (p, ct) ->
+          Ppat_constraint (pat_aux p, ct)
+      | Ppat_alias (p, nm) ->
+          Ppat_alias (pat_aux p, nm)
+      | Ppat_dots its ->
+          Ppat_dots (List.map (dot_item map_expr_data map_pattern_data) its) in
+    { pat with ppat_desc = desc'; ppat_data = map_pattern_data pat.ppat_data }
+  and expression map_expr_data map_pattern_data expr =
+    let exp_aux = expression map_expr_data map_pattern_data in
+    let pat_aux = pattern map_expr_data map_pattern_data in
+    let rls_aux rs = List.map (fun (p, e) -> pat_aux p, exp_aux e) rs in
+    let desc' = match expr.pexp_desc with
+      | Pexp_ident _ 
+      | Pexp_assertfalse 
+      | Pexp_constant _ as desc -> desc
+      | Pexp_let (bindings, body) ->
+          Pexp_let (rls_aux bindings, exp_aux body)
+      | Pexp_letrec (bindings, body) ->
+          Pexp_letrec (List.map (fun (nm, e) -> nm, exp_aux e) bindings, exp_aux body)
+      | Pexp_function rules ->
+          Pexp_function (rls_aux rules)
+      | Pexp_apply (e1, e2) ->
+          Pexp_apply (exp_aux e1, exp_aux e2)
+      | Pexp_match (e, rs) ->
+          Pexp_match (exp_aux e, rls_aux rs)
+      | Pexp_try (e, rs) ->
+          Pexp_try (exp_aux e, rls_aux rs)
+      | Pexp_tuple es ->
+          Pexp_tuple (List.map exp_aux es)
+      | Pexp_construct (lid, opt_e, x) ->
+          Pexp_construct (lid, Option.map ~f:exp_aux opt_e, x)
+      | Pexp_record (flds, opt_e) ->
+          Pexp_record (List.map (fun (lid, e) -> lid, exp_aux e) flds, Option.map ~f:exp_aux opt_e)
+      | Pexp_field (e, lid) ->
+          Pexp_field (exp_aux e, lid)
+      | Pexp_setfield (e1, lid, e2) ->
+          Pexp_setfield (exp_aux e2, lid, exp_aux e2)
+      | Pexp_ifthenelse (e1, e2, opt_e3) ->
+          Pexp_ifthenelse (exp_aux e1, exp_aux e2, Option.map ~f:exp_aux opt_e3)
+      | Pexp_sequence (e1, e2) ->
+          Pexp_sequence (exp_aux e1, exp_aux e2)
+      | Pexp_while (e1, e2) ->
+          Pexp_while (exp_aux e1, exp_aux e2)
+      | Pexp_for (nm, e1, e2, d, e3) ->
+          Pexp_for (nm, exp_aux e1, exp_aux e2, d, exp_aux e3)
+      | Pexp_assert e ->
+          Pexp_assert (exp_aux e)
+      | Pexp_constraint (e, ct) ->
+          Pexp_constraint (exp_aux e, ct)
+      | Pexp_dots its ->
+          Pexp_dots (List.map (dot_item map_expr_data map_pattern_data) its) in
+    { expr with pexp_desc = desc'; pexp_data = map_expr_data expr.pexp_data }
+  and structure_item map_expr_data map_pattern_data str_it =
+    let exp_aux = expression map_expr_data map_pattern_data in
+    let pat_aux = pattern map_expr_data map_pattern_data in
+    let desc' = match str_it.pstr_desc with
+      | Pstr_type _
+      | Pstr_exception _
+      | Pstr_open _ as desc ->
+          desc
+      | Pstr_eval e ->
+          Pstr_eval (exp_aux e)
+      | Pstr_value bindings ->
+          Pstr_value (List.map (fun (p, e) -> pat_aux p, exp_aux e) bindings)
+      | Pstr_rec_value bindings ->
+          Pstr_rec_value (List.map (fun (nm, e) -> nm, exp_aux e) bindings)
+      | Pstr_dots its ->
+          Pstr_dots (List.map (dot_item map_expr_data map_pattern_data) its) in
+    { str_it with pstr_desc = desc' }
+end
+let map_structure_item = MapAstData.structure_item 

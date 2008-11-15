@@ -443,10 +443,13 @@ let print_fatal_default ~program loc ppf fatal =
   fprintf ppf "%a@]@." print_fatal_error_desc fatal
 
 
+let print_valid_ref: (program:(string lazy_t) -> (Ty.t, Path.t, Ident.t, Ty.t) EzyAst.structure -> Format.formatter -> unit) ref =
+  ref (fun ~program _ _ -> ())
 let print_errors_ref = ref print_errors_default
 let print_heavies_ref = ref print_heavies_default
 let print_fatal_ref = ref print_fatal_default
 
+let print_valid () = !print_valid_ref
 let print_errors () = !print_errors_ref
 let print_heavies () = !print_heavies_ref
 let print_fatal () = !print_fatal_ref
@@ -455,11 +458,12 @@ let print_parse_error ppf loc err =
   let program = lazy (failwith "program for print_parse_error not implemented") in
   print_fatal () ~program (EzyCamlgrammar.import_loc loc) ppf (Parse_error err)
 
-let register name print_errors print_heavies print_fatal =
-  logger#info "Loading error reporting plugin %s" name ;
-  print_errors_ref := print_errors ;
-  print_heavies_ref := print_heavies ;
-  print_fatal_ref := print_fatal ;
+let register name ?print_valid print_errors print_heavies print_fatal =
+  logger#info "Loading error reporting plugin %s" name;
+  Option.iter ~f:(fun print_valid -> print_valid_ref := print_valid) print_valid;
+  print_errors_ref := print_errors;
+  print_heavies_ref := print_heavies;
+  print_fatal_ref := print_fatal;
               
 type some_errors =
   | Errors of ErrorSet.t
@@ -510,3 +514,7 @@ let report_fatal ppf { opt_loc = opt_loc; error = fatal; fat_program = program }
 let report_parse_error ppf loc program err =
   Format.pp_print_flush ppf () ;
   print_fatal () ~program loc ppf (Parse_error err)
+
+let report_valid ppf program structure =
+  Format.pp_print_flush ppf () ;
+  print_valid () ~program structure ppf
