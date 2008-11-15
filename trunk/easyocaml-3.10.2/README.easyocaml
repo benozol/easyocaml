@@ -1,12 +1,17 @@
 
 Prerequisites for EasyOCaml are the same like for OCaml (see INSTALL)
 
-Steps:
+Steps for building:
 
- $ ./configure [-prefix <path/to/install/dir>]
- $ ./build/smallworld.sh
- $ ./build/install.sh
+  $ ./configure [-prefix <path/to/install/dir>]
+  $ ./build/smallworld.sh
+  $ ./build/install.sh
 and optional
- $ ./boot/ocamlrun boot/myocamlbuild easyadd/htmlErrorReport.cmo easyadd/structuredErrorReport.cmo
-to use HTML output suitable for easyadd/htmlreport/easyocaml.js or structured output for some future OCaml IDE
- $ ocaml/c -easy -easyerrorreport _build/easyadd/htmlErrorReport.cmo # or _build/easyadd/structuredErrorReport.cmo
+  $ ./boot/ocamlrun boot/myocamlbuild easyadd/htmlErrorReport.cmo easyadd/structuredErrorReport.cmo
+to use HTML output suitable for easyadd/htmlreport/easyocaml.(js|css) or structured output for some future OCaml IDE
+  $ /path/to/install/dir/bin/ecaml(c) -easyerrorreport _build/easyadd/htmlErrorReport.cmo # or _build/easyadd/structuredErrorReport.cmo
+
+
+Debugging details are controlled with the environment variable
+EASYOCAML_LOGLEVEL, which can have values "error", "warn", "info", "debug" or
+"trace".

@@ -264,12 +264,6 @@ let rec get_expr_args a al =
 let print_pat, print_expr, print_structure_item = 
   let aux ?eap ?iap ?nap ?pap () =
 
-    let splint_singletons li =
-      let rec aux acc = function
-        | [x] :: rem -> aux (x :: acc) rem
-        | li -> List.rev acc, li in
-      aux [] li in
-
     let rec print_dots ppf dot =   
       match dot with
         | Dot_pat ps ->

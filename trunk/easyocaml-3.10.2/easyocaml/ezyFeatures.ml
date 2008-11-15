@@ -66,13 +66,13 @@ type expr_feats = {
 type type_feats = {
   t_synonym : bool;
   t_variant : bool;
-  t_record : bool;
+  t_record : bool option; (* [None] means no record definitions. [Some x] allows record definitions with [x=true] or without [x=false] mutable fields. *)
   t_polymorphic : bool;    (* are type parameters allowed? *)
   t_and : bool;
 }
 
 type struct_feats = {
-  s_annot_mandatory : bool;             (* every toplevel definition has a type annotation. TODO *)
+  s_annot_optional : bool;             (* every toplevel definition has a type annotation. TODO *)
   s_eval_expr : bool;                   (* e;; OR let _ = e;; *)
   s_let : let_feats option;             (* let x = e OR let f x ... = e *)
   s_let_rec : letrec_feats option;
@@ -144,12 +144,12 @@ let print_expr_feats ppf ef =
   ef.e_type_annotation
 
 let print_type_feats ppf tf =
-  Format.fprintf ppf "{@[synonym: %b@ variant: %b@ record: %b@ polymorphic: %b and: %b@]}"
-    tf.t_synonym tf.t_variant tf.t_record tf.t_polymorphic tf.t_and
+  Format.fprintf ppf "{@[synonym: %b@ variant: %b@ record: %a@ polymorphic: %b and: %b@]}"
+    tf.t_synonym tf.t_variant (Option.print (fun ppf -> Format.fprintf ppf "%b")) tf.t_record tf.t_polymorphic tf.t_and
 
 let print_struct_feats ppf sf =
-  Format.fprintf ppf "{@[annot mand: %b@ eval: %b@ let: %a@ let rec: %a@ type: %a@ exception: %b@ open: %b@ semi semi optional: %b@]}"
-    sf.s_annot_mandatory sf.s_eval_expr (opt_print print_let_feats) sf.s_let (opt_print print_letrec_feats) sf.s_let_rec (opt_print print_type_feats) sf.s_type sf.s_exception sf.s_open sf.s_semisemi_optional
+  Format.fprintf ppf "{@[annot optional: %b@ eval: %b@ let: %a@ let rec: %a@ type: %a@ exception: %b@ open: %b@ semi semi optional: %b@]}"
+    sf.s_annot_optional sf.s_eval_expr (opt_print print_let_feats) sf.s_let (opt_print print_letrec_feats) sf.s_let_rec (opt_print print_type_feats) sf.s_type sf.s_exception sf.s_open sf.s_semisemi_optional
 
 let print_program_feats ppf pf =
   Format.fprintf ppf "{@[expr: %a@ structure items: %a@]}"
@@ -222,13 +222,13 @@ let all_expr_feats b = {
 let all_type_feats b = {
   t_synonym = b ;
   t_variant = b ;
-  t_record = b ;
+  t_record = if b then Some true else None;
   t_polymorphic = b ;
   t_and = b;
 }
 
 let all_struct_feats b = {
-  s_annot_mandatory = not b ;
+  s_annot_optional = b ;
   s_eval_expr = b ;
   s_let = if b then Some (all_let_feats b) else None ;
   s_let_rec = if b then Some (all_letrec_feats b) else None ;

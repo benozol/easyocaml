@@ -405,13 +405,13 @@ let import_strit prf strit =
     | Parsetree.Pstr_value (Asttypes.Nonrecursive, bindings) ->
         begin match prf.F.pr_struct_feats.F.s_let with
           | Some lf ->
-              if not prf.F.pr_struct_feats.F.s_annot_mandatory || List.for_all explicitly_typed bindings then
+              if prf.F.pr_struct_feats.F.s_annot_optional || List.for_all explicitly_typed bindings then
                 if lf.F.l_and || (match bindings with [_] -> true | _ -> false) then
                   build_strit (Pstr_value (import_rules lf.F.l_pattern prf.F.pr_expr_feats bindings))
                 else
                   strit_import_error "s_let.l_and"
               else
-                strit_import_error "s_annot_mandatory"
+                strit_import_error "s_annot_optional"
           | None ->
               strit_import_error "s_let"
         end
@@ -419,13 +419,13 @@ let import_strit prf strit =
     | Parsetree.Pstr_value (Asttypes.Recursive, bindings) ->
         begin match prf.F.pr_struct_feats.F.s_let_rec with
           | Some lrf ->
-              if not prf.F.pr_struct_feats.F.s_annot_mandatory || List.for_all explicitly_typed bindings then
+              if prf.F.pr_struct_feats.F.s_annot_optional || List.for_all explicitly_typed bindings then
                 if lrf.F.lr_and || (match bindings with [_] -> true | _ -> false) then
                   build_strit (Pstr_rec_value (List.map (import_var_binding prf.F.pr_expr_feats loc) bindings))
                 else
                   strit_import_error "s_let_rec.l_and"
               else
-                strit_import_error "s_annot_mandatory"
+                strit_import_error "s_annot_optional"
           | None ->
               strit_import_error "s_let_rec"
         end
@@ -445,8 +445,11 @@ let import_strit prf strit =
                               Synonym td
                           | Parsetree.Ptype_variant (ctors, Asttypes.Public), None, { F.t_variant = true } ->
                               Variant ctors
-                          | Parsetree.Ptype_record (fls, Asttypes.Public), None, { F.t_record = true } ->
-                              Record fls
+                          | Parsetree.Ptype_record (fls, Asttypes.Public), None, { F.t_record = Some mutable_allowed } ->
+                              if mutable_allowed || List.for_all (fun (_, m, _, _) -> m = Asttypes.Mutable) fls then
+                                Record fls
+                              else
+                                strit_import_error "t_record mutability"
                           | _ ->
                               raise (import_error td.Parsetree.ptype_loc (EzyErrors.Not_supported_type_declaration td)) in
                       let name' = { nm_name = name; nm_loc = Location.none; nm_data = ()} in

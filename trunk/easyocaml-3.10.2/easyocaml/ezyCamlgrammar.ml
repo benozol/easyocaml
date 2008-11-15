@@ -172,7 +172,7 @@ module Restrict (Spec: sig value spec : EzyFeatures.program_feats; end) (Syntax:
       DELETE_RULE Gram binding: SELF; "and"; SELF END;
     } else ();
     let never_args = match (let_spec, letrec_spec) with [ (Some { l_args = True }, _) | (_, Some { lr_args = True }) -> False | _ -> True ];
-    if str_spec.s_annot_mandatory then do {
+    if str_spec.s_annot_optional then do {
        (* it would need *a lot* of reworking of the grammar to express here, that
         * type annotations of the form "let f : ctyp = expr (in expr)" are mandatory
         * only for structure item let bindings. So this is solves in EzyEnrichedAst.import_strit
@@ -288,10 +288,14 @@ module Restrict (Spec: sig value spec : EzyFeatures.program_feats; end) (Syntax:
             DELETE_RULE Gram type_kind: ctyp; "="; "private"; SELF END;
             DELETE_RULE Gram type_kind: ctyp; "="; "{"; label_declaration; "}" END;
             DELETE_RULE Gram type_kind: ctyp; "="; OPT "|"; constructor_declarations END;
-
-            if not type_spec.t_record then do {
-              DELETE_RULE Gram type_kind: "{"; label_declaration; "}" END;
-            } else ();
+            (* DELETE_RULE Gram poly_type: test_typevar_list_dot; typevars; "."; ctyp END; *)
+            match type_spec.t_record with
+              [ None -> 
+                  DELETE_RULE Gram type_kind: "{"; label_declaration; "}" END
+              | Some mutable_allowed ->
+                  if not mutable_allowed then
+                    DELETE_RULE Gram label_declaration: "mutable"; a_LIDENT; ":"; poly_type END
+                  else () ];
             (* if not type_spec.t_variant then do {
               DELETE_RULE Gram type_kind: test_constr_decl; OPT "|"; constructor_declarations END;
             } else ();*)
