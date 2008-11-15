@@ -198,8 +198,6 @@ let rec variables_in_pattern p =
 (*                                  PRINTER                                   *)
 (******************************************************************************)
 
-(** The string between function and argument. *)
-let app_str = "•" 
 
 open Format
 
@@ -266,6 +264,12 @@ let rec get_expr_args a al =
 let print_pat, print_expr, print_structure_item = 
   let aux ?eap ?iap ?nap ?pap () =
 
+    let splint_singletons li =
+      let rec aux acc = function
+        | [x] :: rem -> aux (x :: acc) rem
+        | li -> List.rev acc, li in
+      aux [] li in
+
     let rec print_dots ppf dot =   
       match dot with
         | Dot_pat ps ->
@@ -320,11 +324,11 @@ let print_pat, print_expr, print_structure_item =
             let print_binding ppf (pat, expr) =
               let pats, expr = collect_funs [pat] expr in
               fprintf ppf "@[<2>%a =@ %a@]" (List.print print_pat "@ ") pats print_expr expr in
-            fprintf ppf "@[<2>let %a in@ %a@]" (List.print print_binding "@ and ") bindings print_expr body
+            fprintf ppf "@[let %a in@[<2>@ %a@]@]" (List.print print_binding "@ and ") bindings print_expr body
         | Pexp_letrec (bindings, body) ->
             let print_binding ppf (var, expr) =
               fprintf ppf "@[<2>%s =@ %a@]" var.nm_name print_expr expr in
-              fprintf ppf "@[<2>let rec %a in@ %a@]" (List.print print_binding "@ and ") bindings print_expr body
+              fprintf ppf "@[let rec %a in@[<2>@ %a@]@]" (List.print print_binding "@ and ") bindings print_expr body
         | Pexp_function rules ->
             fprintf ppf "@[<2>function@ %a@]" print_rules rules
         | Pexp_apply ({ pexp_desc = Pexp_apply ({ pexp_desc = Pexp_ident {lid_name = Longident.Lident nm}}, exp1)}, exp2)
@@ -332,7 +336,7 @@ let print_pat, print_expr, print_structure_item =
             fprintf ppf "@[<2>%a %s@ %a@]" print_expr exp1 nm print_expr exp2
         | Pexp_apply (exp1, exp2) ->
             let a, al = get_expr_args exp1 [exp2] in
-            fprintf ppf "@[<2>%a%s%a@]" print_expr a app_str (List.print print_expr "@ ") al
+            fprintf ppf "@[<2>%a•%a@]" print_expr a (List.print print_expr "•") al
         | Pexp_match (exp, rules) ->
             fprintf ppf "@[<2>match %a with@ %a@]"
               print_expr exp
