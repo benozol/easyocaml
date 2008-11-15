@@ -29,19 +29,19 @@
 
 \begin{document}
 
-\title{EasyOCaml\footnote{http://easyocaml.forge.ocamlcore.org}: Concepts, Implementation and Teachnicalities}
-\author{Benus Becker\protect\footnote{Institut fur Informatik, Abteilung Programmiersprachen, Uni Freiburg}}
+\title{EasyOCaml\footnote{\href{http://easyocaml.forge.ocamlcore.org}{http://easyocaml.forge.ocamlcore.org}}: Concepts, Implementation and Technicalities}
+\author{Benus Becker\protect\footnote{Institut f\"ur Informatik, Abteilung Programmiersprachen, Universit\"at Freiburg}}
 \date{Summer 2008}
 
 \maketitle
 \begin{abstract}
 OCaml is not a language well suited for beginners or teaching programming,
-because error messages are sometimes hard to understand without some
-routine. EasyOCaml equips the OCaml system with a new type checker for a
-reasonable subset of the OCaml language and and a adapted parser to make error
-messages more descriptive. Plugins for reporting errors can be loaded at
-runtime, to produce output for different settings. Furthermore, EasyOCaml adds
-language levels and teach packs (similar to DrScheme) to make the language a
+because error messages are sometimes hard to understand without some routine.
+EasyOCaml equips the OCaml system with a new type checker for a reasonable
+subset of the OCaml language and and an adapted parser to make error messages
+more descriptive. Plugins for reporting errors can be loaded at runtime, to
+produce output for different settings. Furthermore, EasyOCaml adds language
+levels and teach packs (similar to those of DrScheme) to make the language a
 good choice for teaching programming. All this is integrated in the original
 OCaml system. 
 \end{abstract}
@@ -82,7 +82,8 @@ suited for beginners and to teach programming. We achieve this by
         compiler system to take advantage of existing libraries and 
         OCaml's code generation facilities
 \end{itemize}
-The project is hosted at \texttt{http://easyocaml.forge.ocamlcore.org}.
+The project is hosted at
+\href{http://easyocaml.forge.ocamlcore.org}{http://easyocaml.forge.ocamlcore.org}.
 
 \subsection{Supported Language}
 \label{hd001001}
@@ -372,25 +373,10 @@ Each language level and teach pack contains a module \texttt{LANG\_META}
 which is loaded into EasyOCaml.
 
 The idea of teach packs and language levels is taken from DrScheme.  See 
-\href{http://docs.plt-scheme.org/drscheme/extending-drscheme.html} 
+\href{http://docs.plt-scheme.org/drscheme/extending-drscheme.html}{http://docs.plt-scheme.org/drscheme/extending-drscheme.html}
 for more information.
 
 \label{endpart1}
-
-\subsection{Typing}
-\label{hd005007}
-\begin{description}
-    \item[EzyTyping] Unification of constraint set which yield a 
-        substitution on the variables and error enumeration and 
-        minimization as described by Haack \& Wells.  It furthermore 
-        contains the typing functions for structures which are used in 
-        the compiler and toplevel.
-    \item[EzyEnv] The \texttt{EzyEnv.t} is the typing environment 
-        for EasyOCaml. Information on declared types and types of local 
-        and global variables is hold.  It is build up while constraint 
-        generation (\texttt{EzyGenerate}) in combination with the type 
-        variable substitution resulting from \texttt{EzyTyping.solve}.
-\end{description}
 
 
 \section{Forecast and Conclusion}
@@ -401,16 +387,18 @@ teachpacks. Furthermore, we will equip the errors with more informations
 such that error reporting plugins can use certain heuristics to give 
 hints how to fix an error (i.e. one could take a look into the 
 variable environment to check misspellings in unbound variable errors). 
-In a long term, a dynamically typed interpreter and support for module 
-declarations are on our wishlist.
+In a long term, a dynamically typed interpreter would be great for the very
+first lessons in programming without the need to think about types as well as
+support for module declarations to make EasyOCaml ready for application in our
+daily programming.
 
 
 \subsection{Acknowledgements}
 \label{hd007001}
-This project was found in the \emph{OCaml Summer Project} 2008. So 
-thanks to Jane Street Capital! I would like to thank Prof. Peter 
-Thiemann and his team, especially Stefan Wehr, for mentoring me, giving 
-invaluable hints and guiding me through EasyOCaml.
+This project was found in the \emph{OCaml Summer Project 2008}. So 
+thanks to the people at Jane Street Capital for this initiative! I would like
+to thank Prof. Peter Thiemann and his team, especially Stefan Wehr, very much
+for mentoring me, giving invaluable hints and guiding me through EasyOCaml.
 
 \clearpage
 \begin{appendix}
@@ -581,6 +569,21 @@ restrictions on EasyOCaml's AST.
         is defined.
     \item[EzyGenerate] There is a function for every syntactic 
         category to generate constraints and/or errors.
+\end{description}
+
+\subsection{Typing}
+\label{hd005007}
+\begin{description}
+    \item[EzyTyping] Unification of constraint set which yield a 
+        substitution on the variables and error enumeration and 
+        minimization as described by Haack \& Wells.  It furthermore 
+        contains the typing functions for structures which are used in 
+        the compiler and toplevel.
+    \item[EzyEnv] The \texttt{EzyEnv.t} is the typing environment 
+        for EasyOCaml. Information on declared types and types of local 
+        and global variables is hold.  It is build up while constraint 
+        generation (\texttt{EzyGenerate}) in combination with the type 
+        variable substitution resulting from \texttt{EzyTyping.solve}.
 \end{description}
 
 

@@ -63,8 +63,7 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
 <body>
 
 
-<center>
-<table border="0" width="60%" cellspacing="0" cellpadding="0">
+<table align="center" border="0" width="60%" cellspacing="0" cellpadding="0">
 
 	<tr>
 		<td>&nbsp;</td>
@@ -105,7 +104,6 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
 	<!-- whole page table -->
 <table width="100%" cellpadding="5" cellspacing="0" border="0">
 <tr><td width="65%" valign="top">
-
 <h1>EasyOCaml</h1>
 <h3>More Descriptive Error Messages and a Didactical Infrastructure for OCaml</h3>
 
@@ -121,15 +119,15 @@ teach programming. We try to achieve this by
   facilities</li>
 </ul>
 
-Follow the links on the right side for documentation, tar-balls and svn access..
+Please follow the links in the project's summary for documentation, tar-balls and svn access ...
 
 <h2>Demo</h2>
 
-Just try it out <a href="demo.php">online</a>.
+Just try EasyOCaml <a href="demo.php">online</a>.
 <br />
 <br />
 		<table cellspacing="0" cellpadding="1" width="100%" border="0" bgcolor="#d5d5d7">
-		<tr><td>
+		<tr><td width="47%">
 			<table cellspacing="0" cellpadding="2" width="100%" border="0" bgcolor="#eaecef">
 				<tr style="background-color:#d5d5d7" align="center">
 					<td colspan="2"><span class="titlebar">Project Summary</span></td>
@@ -150,9 +148,9 @@ echo $contents; } ?>
 					</td>
 				</tr>
 			</table>
-		</td></tr>
-		</table>
-<br />
+        </td>
+<td bgcolor="white" width="5%"></td>
+<td>
 <?php if ($handle=fopen('http://'.$domain.'/export/projnews.php?group_name='.$group_name,'r')){
 $contents = '';
 while (!feof($handle)) {
@@ -161,6 +159,10 @@ while (!feof($handle)) {
 fclose($handle);
 $contents=str_replace('href="/','href="http://'.$domain.'/',$contents);
 echo $contents; } ?>
+</td>
+</tr>
+		</table>
+<br />
 
 </td>
 <p>&nbsp;</p>
