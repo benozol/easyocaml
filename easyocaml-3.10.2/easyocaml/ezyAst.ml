@@ -198,63 +198,64 @@ let rec variables_in_pattern p =
 (*                                  PRINTER                                   *)
 (******************************************************************************)
 
+(** The string between function and argument. *)
+let app_str = "•" 
+
+open Format
 
 let rec print_core_type ppf ct =
   match ct.ptyp_desc with
-    | Ptyp_any -> Format.pp_print_string ppf "_"
-    | Ptyp_var v -> Format.fprintf ppf "'%s" v
+    | Ptyp_any ->
+        pp_print_string ppf "_"
+    | Ptyp_var v -> fprintf ppf "'%s" v
     | Ptyp_arrow  ("", ct1, ct2) ->
-        Format.fprintf ppf "@[(%a -> %a)@]" print_core_type ct1 print_core_type ct2
+        fprintf ppf "@[<2>(%a -> %a)@]" print_core_type ct1 print_core_type ct2
     | Ptyp_tuple cts ->
-        Format.fprintf ppf "@[(%a)@]" (List.print print_core_type ",@ ") cts
+        fprintf ppf "@[<2>(%a)@]" (List.print print_core_type ",@ ") cts
     | Ptyp_constr (k, cts) ->
         let aux ppf =
           match cts with
             | [] -> ()
-            | [ct] -> Format.fprintf ppf "%a " print_core_type ct
-            | cts -> Format.fprintf ppf "(%a) " (List.print print_core_type ",@ ") cts in
-        Format.fprintf ppf "%t%a" aux Longident.print k
+            | [ct] -> fprintf ppf "%a@ " print_core_type ct
+            | cts -> fprintf ppf "@[<2>(%a)@]@ " (List.print print_core_type ",@ ") cts in
+        fprintf ppf "%t%a" aux Longident.print k
     | Ptyp_poly ([], ct) ->
         print_core_type ppf ct
-    | Ptyp_poly _
-    | Ptyp_arrow _
-    | Ptyp_object _
-    | Ptyp_class _
-    | Ptyp_alias _ 
-    | Ptyp_variant _
+    | Ptyp_poly  _ | Ptyp_arrow _ | Ptyp_object  _
+    | Ptyp_class _ | Ptyp_alias _ | Ptyp_variant _
       -> invalid_arg "print_core_type"
 
 let print_type_kind ppf = function
-  | Abstract -> Format.pp_print_string ppf "<abstr>"
+  | Abstract -> pp_print_string ppf "<abstr>"
   | Synonym ct ->
       Printast.core_type 0 ppf ct
   | Variant vs ->
       let p ppf (k, tys, _) =
         let aux ppf = function
           | [] -> ()
-          | tys -> Format.fprintf ppf " of %a" (List.print print_core_type " * ") tys in
-        Format.fprintf ppf "%s%a" k aux tys in
-      List.print p " | " ppf vs
+          | tys -> fprintf ppf "<2> of@ %a" (List.print print_core_type "@ * ") tys in
+        fprintf ppf "@[<2>%s%a@]" k aux tys in
+      fprintf ppf "@[<2>%a@]" (List.print p "@ | ") vs
   | Record fls ->
       let aux ppf (f, m, ty, _) =
         let m' = if m = Mutable then "mutable " else "" in
-        Format.fprintf ppf "%s : %s%a" f m' print_core_type ty in
-      Format.fprintf ppf "{%a}" (List.print aux "; ") fls
+        fprintf ppf "@[<2>%s :@ %s%a@]" f m' print_core_type ty in
+      fprintf ppf "@[<2>{%a}@]" (List.print aux ";@ ") fls
 
 let print_type_declaration ppf td =
   let f1 ppf =
     if td.type_params = []
     then ()
-    else List.print (fun ppf name -> Format.fprintf ppf "'%s" name.nm_name) ", " ppf td.type_params in
-  Format.fprintf ppf "%t . %a" f1 print_type_kind td.type_kind
+    else List.print (fun ppf name -> fprintf ppf "'%s" name.nm_name) ",@ " ppf td.type_params in
+  fprintf ppf "%t@ .@ %a" f1 print_type_kind td.type_kind
 
 
 let print_wrap = function
-  | Some pp -> (fun ppf x -> Format.fprintf ppf "@@%a" pp x)
+  | Some pp -> (fun ppf x -> fprintf ppf "@@%a" pp x)
   | None -> (fun _ _ -> ())
 
 let print_name ?nap () ppf name =
-  Format.pp_print_string ppf name.nm_name
+  pp_print_string ppf name.nm_name
 
 let rec get_expr_args a al =
   match a.pexp_desc with
@@ -264,44 +265,45 @@ let rec get_expr_args a al =
 
 let print_pat, print_expr, print_structure_item = 
   let aux ?eap ?iap ?nap ?pap () =
+
     let rec print_dots ppf dot =   
       match dot with
         | Dot_pat ps ->
-            Format.fprintf ppf "%a" print_pat ps
+            fprintf ppf "%a" print_pat ps
         | Dot_exp es ->
-            Format.fprintf ppf "%a" print_expr es
+            fprintf ppf "%a" print_expr es
         | Dot_str ss ->
-            Format.fprintf ppf "%a" print_structure_item ss
+            fprintf ppf "%a" print_structure_item ss
               
     and print_dots_list ppf  = function
-      | [] -> Format.fprintf ppf ".." 
-      | dots -> Format.fprintf ppf "@[(.. %a ..)@]" (List.print print_dots " .. ") dots
+      | [] -> fprintf ppf ".." 
+      | dots -> fprintf ppf "@[<2>..@ %a@ ..@]" (List.print print_dots " .. ") dots
         
     and print_pat ppf pat =
       match pat.ppat_desc with
         | Ppat_any ->
-            Format.pp_print_string ppf "_"
+            pp_print_string ppf "_"
         | Ppat_var { nm_name = v } ->
-            Format.pp_print_string ppf v
+            pp_print_string ppf v
         | Ppat_constant c ->
             print_constant ppf c
         | Ppat_tuple ps ->
-            Format.fprintf ppf "(%a)" (List.print print_pat ", ") ps
+            fprintf ppf "@[<2>(%a)@]" (List.print print_pat ", ") ps
         | Ppat_construct ({ lid_name = lid }, opt_pat, _) ->
             let p ppf = function None -> () | Some pat -> print_pat ppf pat in
-              Format.fprintf ppf "%s %a" (String.concat "." (Longident.flatten lid)) p opt_pat
+              fprintf ppf "@[<2>%a@ %a@]" Longident.print lid p opt_pat
         | Ppat_record fs ->
             let print_field ppf ({ lid_name = field }, pat) =
-              Format.fprintf ppf "%s = %a" (String.concat "." (Longident.flatten field)) print_pat pat in
-              Format.fprintf ppf "{%a}" (List.print print_field "; ") fs
+              fprintf ppf "@[<2>%a =@ %a@]" Longident.print field print_pat pat in
+              fprintf ppf "@[<2>{%a}@]" (List.print print_field "; ") fs
         | Ppat_or (p1, p2) ->
-            Format.fprintf ppf "(%a | %a)" print_pat p1 print_pat p2
+            fprintf ppf "@[<2>%a@ | %a@]" print_pat p1 print_pat p2
         | Ppat_constraint (p, ct) ->
-            Format.fprintf ppf "%a : %a" print_pat p print_core_type ct
+            fprintf ppf "@[<2>%a@ : %a@]" print_pat p print_core_type ct
         | Ppat_alias (p, nm) ->
-            Format.fprintf ppf "%a as %s" print_pat p nm.nm_name
+            fprintf ppf "@[<2>%a as %s@]" print_pat p nm.nm_name
         | Ppat_dots ps ->
-            Format.fprintf ppf "%a" print_dots_list ps
+            fprintf ppf "%a" print_dots_list ps
 
                 
     and print_expr ppf expr =
@@ -317,37 +319,36 @@ let print_pat, print_expr, print_structure_item =
               | exp -> List.rev sofar, exp in
             let print_binding ppf (pat, expr) =
               let pats, expr = collect_funs [pat] expr in
-              Format.fprintf ppf "@[%a =@ %a@]" (List.print print_pat " ") pats print_expr expr in
-            Format.fprintf ppf "@[let %a in@ %a@]" (List.print print_binding " and ") bindings print_expr body
+              fprintf ppf "@[<2>%a =@ %a@]" (List.print print_pat "@ ") pats print_expr expr in
+            fprintf ppf "@[<2>let %a in@ %a@]" (List.print print_binding "@ and ") bindings print_expr body
         | Pexp_letrec (bindings, body) ->
             let print_binding ppf (var, expr) =
-              Format.fprintf ppf "@[%s = %a@]" var.nm_name print_expr expr in
-              Format.fprintf ppf "@[let rec %a in@ %a@]" (List.print print_binding " and ") bindings print_expr body
+              fprintf ppf "@[<2>%s =@ %a@]" var.nm_name print_expr expr in
+              fprintf ppf "@[<2>let rec %a in@ %a@]" (List.print print_binding "@ and ") bindings print_expr body
         | Pexp_function rules ->
-            Format.fprintf ppf "@[function@ %a@]" print_rules rules
+            fprintf ppf "@[<2>function@ %a@]" print_rules rules
         | Pexp_apply ({ pexp_desc = Pexp_apply ({ pexp_desc = Pexp_ident {lid_name = Longident.Lident nm}}, exp1)}, exp2)
             when is_infix nm ->
-            Format.fprintf ppf "@[<2>%a %s@ %a@]" print_expr exp1 nm print_expr exp2
+            fprintf ppf "@[<2>%a %s@ %a@]" print_expr exp1 nm print_expr exp2
         | Pexp_apply (exp1, exp2) ->
             let a, al = get_expr_args exp1 [exp2] in
-            let str = "" in
-            Format.fprintf ppf "@[<2>%a%s@ %a@]" print_expr a str (List.print print_expr "@ ") al
+            fprintf ppf "@[<2>%a%s%a@]" print_expr a app_str (List.print print_expr "@ ") al
         | Pexp_match (exp, rules) ->
-            Format.fprintf ppf "@[match %a with@ %a@]"
+            fprintf ppf "@[<2>match %a with@ %a@]"
               print_expr exp
               print_rules rules
         | Pexp_try (exp, rules) ->
-            Format.fprintf ppf "@[try@ %a with@ %a@]"
+            fprintf ppf "@[try@[<2>@ %a@]@ with@[<2>@ %a@]@]"
               print_expr exp
               print_rules rules
         | Pexp_tuple exps ->
-            Format.fprintf ppf "@[(%a)@]"
+            fprintf ppf "@[<2>(%a)@]"
               (List.print print_expr ",@ ") exps
         | Pexp_construct ({ lid_name = lid }, opt_exp, _) ->
             begin match lid with
               | Longident.Lident "::" ->
                   let print_proper_list ppf =
-                    Format.fprintf ppf "[%a]" (List.print print_expr ";@ ") in
+                    fprintf ppf "@[<2>[%a]@]" (List.print print_expr ";@ ") in
                   let rec print_list ppf sofar expr =
                     match expr.pexp_desc with
                       | Pexp_construct ({lid_name = Longident.Lident "[]"}, None, _) ->
@@ -363,85 +364,87 @@ let print_pat, print_expr, print_structure_item =
               | _ ->
                   let p ppf = function
                     | Some exps ->
-                        Format.fprintf ppf "@ %a"
+                        fprintf ppf "@ %a"
                           print_expr exps
                     | None -> () in
-                  Format.fprintf ppf "@[%s%a@]"
+                  fprintf ppf "@[<2>%s%a@]"
                     (String.concat "." (Longident.flatten lid))
                     p opt_exp
             end
         | Pexp_constraint (exp, ty) ->
-            Format.fprintf ppf "@[(%a : %a)@]" print_expr exp print_core_type ty 
+            fprintf ppf "@[<2>(%a :@ %a)@]" print_expr exp print_core_type ty 
         | Pexp_sequence (exp1, exp2) ->
-            Format.fprintf ppf "@[%a;@ %a@]" print_expr exp1 print_expr exp2
+            fprintf ppf "@[<2>%a;@ %a@]" print_expr exp1 print_expr exp2
         | Pexp_assertfalse ->
-            Format.pp_print_string ppf "assert false"
+            pp_print_string ppf "assert false"
         | Pexp_assert exp ->
-            Format.fprintf ppf "@[assert %a@]" print_expr exp
+            fprintf ppf "@[<2>assert %a@]" print_expr exp
         | Pexp_ifthenelse (exp1, exp2, opt_exp3) ->
             let aux ppf = function
-              | Some exp3 -> Format.fprintf ppf "@ else %a" print_expr exp3
+              | Some exp3 -> fprintf ppf "@ else@[<2>@ %a@]" print_expr exp3
               | None -> () in
-              Format.fprintf ppf "@[if %a then@ %a%a@]" print_expr exp1 print_expr exp2 aux opt_exp3
+              fprintf ppf "@[if %a then@[<2>@ %a@]%a@]" print_expr exp1 print_expr exp2 aux opt_exp3
         | Pexp_field (exp, fl) ->
-            Format.fprintf ppf "@[%a.%a@]" print_expr exp Longident.print fl.lid_name
+            fprintf ppf "@[%a.%a@]" print_expr exp Longident.print fl.lid_name
         | Pexp_for (nm, expr1, expr2, dir, expr3) ->
             let string_of_dir_flag = function
               | Upto -> "to"
               | Downto -> "downto" in
-            Format.fprintf ppf "@[for %s from @[%a@] %s @[%a@] do@[@ %a@ done@]@]"
+            fprintf ppf "@[for %s from @[%a@] %s @[%a@] do@[<2>@ %a@ done@]@]"
               nm.nm_name
               print_expr expr1
               (string_of_dir_flag dir)
               print_expr expr2
               print_expr expr3
         | Pexp_while (expr1, expr2) ->
-            Format.fprintf ppf "@[while @[%a@] do@ @[%a@]@ done@]"
+            fprintf ppf "@[while @[<2>%a@] do@[<2>@ %a@]@ done@]"
               print_expr expr1 print_expr expr2
         | Pexp_setfield (expr1, lid, expr2) ->
-            Format.fprintf ppf "@[(%a).%a <-@ %a@]" print_expr expr1 Longident.print lid.lid_name print_expr expr2
+            fprintf ppf "@[<2>(%a).%a <-@ %a@]" print_expr expr1 Longident.print lid.lid_name print_expr expr2
         | Pexp_record (fs, head) ->
             let print_head ppf =
               match head with
                 | None -> ()
-                | Some expr -> Format.fprintf ppf "%a with@ " print_expr expr in
+                | Some expr -> fprintf ppf "%a with@ " print_expr expr in
             let print_fields ppf =
-              let aux ppf (lid,expr) = Format.fprintf ppf "@[%a =@ %a;@]@ " Longident.print lid.lid_name print_expr expr in
-              Format.fprintf ppf "@[%a@]" (List.print aux ":@]@ @[") fs in
-            Format.fprintf ppf "@[{%t%t}@]" print_head print_fields
+              let aux ppf (lid,expr) = fprintf ppf "@[%a =@ %a;@]@ " Longident.print lid.lid_name print_expr expr in
+              fprintf ppf "@[%a@]" (List.print aux ":@]@ @[") fs in
+            fprintf ppf "@[<2>{%t%t}@]" print_head print_fields
         | Pexp_dots ps ->
-            print_dots_list ppf ps
+           print_dots_list ppf ps
       in
-      Format.fprintf ppf "%a%a"
+      fprintf ppf "%a%a"
         print_expr_desc expr.pexp_desc
         (print_wrap eap) expr.pexp_data
     and print_rule ppf (pat, exp) =
-        Format.fprintf ppf "@[%a ->@ %a@]" print_pat pat print_expr exp
+        fprintf ppf "@[%a ->@ %a@]" print_pat pat print_expr exp
     and print_rules ppf rules =
-      Format.fprintf ppf "@[%a@]" (List.print print_rule "@ | ") rules
+      fprintf ppf "@[<2>%a@]" (List.print print_rule "@ | ") rules
 
           
         
     and print_structure_item ppf strit =
+      let print_binding p ppf (n, expr) =
+        match expr.pexp_desc with
+          | Pexp_constraint (expr, ctyp) ->
+              fprintf ppf "@[%a :@ %a =@ %a@]" p n print_core_type ctyp print_expr expr
+          | _ ->
+              fprintf ppf "@[%a =@ %a@]" p n print_expr expr in
       match strit.pstr_desc with
         | Pstr_eval expr ->
             print_expr ppf expr
         | Pstr_value bindings ->
-            let print_binding ppf (pat, expr) =
-              Format.fprintf ppf "@[%a =@ %a@]" print_pat pat print_expr expr in
-            Format.fprintf ppf "@[<2>let %a@]" (List.print print_binding "@ and ") bindings
+            fprintf ppf "@[<2>let %a@]" (List.print (print_binding print_pat) "@ and ") bindings
         | Pstr_rec_value bindings ->
-            let print_binding ppf (name, expr) =
-              Format.fprintf ppf "@[%s = %a@]" name.nm_name print_expr expr in
-              Format.fprintf ppf "@[<2>let rec %a@]" (List.print print_binding "@ and ") bindings
+            fprintf ppf "@[<2>let rec %a@]" (List.print (print_binding (fun ppf nm -> pp_print_string ppf nm.nm_name)) "@ and ") bindings
         | Pstr_type ds ->
             let p ppf (name, td) =
-              Format.fprintf ppf "@[%s = %a@]" name.nm_name print_type_declaration td in
-              Format.fprintf ppf "@[<2>type %a@]" (List.print p "@ and ") ds
+              fprintf ppf "@[%s =@ %a@]" name.nm_name print_type_declaration td in
+              fprintf ppf "@[<2>type %a@]" (List.print p "@ and") ds
         | Pstr_exception (name, tys) ->
-            Format.fprintf ppf "@[exception %s = @[%a@]@]" name.nm_name (List.print print_core_type "@ * ") tys
+            fprintf ppf "@[<2>exception %s =@[@ %a@]@]" name.nm_name (List.print print_core_type " *@ ") tys
         | Pstr_open lid ->
-            Format.fprintf ppf "@[open %a@]" Longident.print lid.lid_name
+            fprintf ppf "@[<2>open %a@]" Longident.print lid.lid_name
         | Pstr_dots dl ->
             print_dots_list ppf dl
     in
