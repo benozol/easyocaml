@@ -170,6 +170,6 @@ let print_fatal' ~program loc ppf fatal =
     (safe_print print_fatal) (loc, fatal)
 
 let print_valid ~program ted_str ppf =
-  fprintf ppf "<h3>Great! This is a well typed program!</h3>@,<code>%s</code>@." (Lazy.force program)
+  fprintf ppf "<h3>Great! This is a well typed program!</h3>@,<code>%s</code><br />@." (Lazy.force program)
 
 let () = EzyErrors.register name ~print_valid print_errors' print_heavies' print_fatal'

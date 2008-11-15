@@ -64,7 +64,8 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
 <body>
 
 
-<table border="0" width="100%" cellspacing="0" cellpadding="0">
+<center>
+<table border="0" width="60%" cellspacing="0" cellpadding="0">
 
 	<tr>
 		<td>&nbsp;</td>
@@ -107,13 +108,14 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
 <tr><td width="65%" valign="top">
 
 <h1>EasyOCaml - Demo</h1>
+This is a live demo for <a href="..">EasyOCaml</a>.  Choose the language for the error messages, your language level and type a program:
     <form action="http://www.benozol.de/easyocaml/" enctype="multipart/form-data" method="post">
-      <p>Human language:        <br /><span><input type="radio" name="language" value="english" />english<br /></span><span><input type="radio" name="language" value="française" />française<br /></span><span><input type="radio" name="language" value="deutsch" />deutsch<br /></span>
+      <p><h4>Error message language</h4><span><input type="radio" name="language" value="english" />english<br /></span><span><input type="radio" name="language" value="française" />française<br /></span><span><input type="radio" name="language" value="deutsch" />deutsch<br /></span>
       </p>
-      <p>Language level (hover for informations):         <br /><select name="level"><option selected="selected" value="" title="No language level. Full EasyOCaml."></option><option value="lang-minimal" title="Available functions: cons, iter, map, fold from List and +, -, *, /, succ, pred form Pervasives. Hard restrictions on the syntax.">lang-minimal</option><option value="lang-advanced" title="Access to the modules Pervasives (preopened), Char, Random, String. No imperative language features and mandatory type annotations for toplevel values.">lang-advanced</option></select>
+      <p><h4>Language level (hover for informations)</h4><select name="level"><option selected="selected" value="" title="No language level. Full EasyOCaml.">None</option><option value="lang-minimal" title="Available functions: cons, iter, map, fold from List and +, -, *, /, succ, pred form Pervasives. Hard restrictions on the syntax.">minimal</option><option value="lang-advanced" title="Access to the modules Pervasives (preopened), Char, Random, String. No imperative language features and mandatory type annotations for toplevel values.">advanced</option></select>
 
       </p>
-      <p>Program code:        <br /><textarea rows="20" cols="80" name="program"></textarea>
+      <p><h4>Program code</h4><textarea rows="12" cols="60" name="program"></textarea>
       </p>
       <p>        <input type="submit" value="type check" />
       </p>

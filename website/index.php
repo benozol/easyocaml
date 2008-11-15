@@ -63,7 +63,8 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
 <body>
 
 
-<table border="0" width="100%" cellspacing="0" cellpadding="0">
+<center>
+<table border="0" width="60%" cellspacing="0" cellpadding="0">
 
 	<tr>
 		<td>&nbsp;</td>
@@ -125,20 +126,8 @@ Follow the links on the right side for documentation, tar-balls and svn access..
 <h2>Demo</h2>
 
 Just try it out <a href="demo.php">online</a>.
-
-<?php if ($handle=fopen('http://'.$domain.'/export/projnews.php?group_name='.$group_name,'r')){
-$contents = '';
-while (!feof($handle)) {
-	$contents .= fread($handle, 8192);
-}
-fclose($handle);
-$contents=str_replace('href="/','href="http://'.$domain.'/',$contents);
-echo $contents; } ?>
-
-</td>
-
-<td width="20%" valign="top">
-
+<br />
+<br />
 		<table cellspacing="0" cellpadding="1" width="100%" border="0" bgcolor="#d5d5d7">
 		<tr><td>
 			<table cellspacing="0" cellpadding="2" width="100%" border="0" bgcolor="#eaecef">
@@ -162,8 +151,20 @@ echo $contents; } ?>
 				</tr>
 			</table>
 		</td></tr>
-		</table><p>&nbsp;</p>
-</td></tr></table>
+		</table>
+<br />
+<?php if ($handle=fopen('http://'.$domain.'/export/projnews.php?group_name='.$group_name,'r')){
+$contents = '';
+while (!feof($handle)) {
+	$contents .= fread($handle, 8192);
+}
+fclose($handle);
+$contents=str_replace('href="/','href="http://'.$domain.'/',$contents);
+echo $contents; } ?>
+
+</td>
+<p>&nbsp;</p>
+</tr></table>
 			&nbsp;<p>
 			<!-- end main body row -->
 

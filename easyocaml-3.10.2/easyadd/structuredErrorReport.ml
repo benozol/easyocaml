@@ -75,7 +75,7 @@ end = struct
               print_contents children name
       | Leaf str -> Format.pp_print_string ppf str
     and print_contents ppf contents =
-      Format.fprintf ppf "@[%a@]" (format_list print_content "@,") contents in
+      Format.fprintf ppf "@[%a@]" (List.print print_content "@,") contents in
 
     print_content
 end
@@ -203,18 +203,18 @@ open ErrorToStructured
 let register output_type =
   let name = "StructuredErrorReport" in
 
-  let print_errors ?program ast ppf errs =
+  let print_errors ~program ast ppf errs =
     let errors = List.map (fun loc_err -> `Normal loc_err) (EzyErrors.ErrorSet.elements errs) in
     print_document' output_type ppf (compile_result (`Errors errors)) in
 
-  let print_heavies ?program ast ppf heavies =
+  let print_heavies ~program ast ppf heavies =
     let mapper = function
       | (_, EzyErrors.Error_as_heavy loc_err) -> `Normal loc_err
       | (loc, err) -> `Heavy (loc, err) in
     let errors = List.map mapper (EzyErrors.HeavyErrorSet.elements heavies) in
     print_document' output_type ppf (compile_result (`Errors errors)) in
 
-  let print_fatal ?program loc ppf fatal =
+  let print_fatal ~program loc ppf fatal =
     print_document' output_type ppf (compile_result (`Fatal_error (loc, fatal))) in
 
   EzyErrors.register name print_errors print_heavies print_fatal
