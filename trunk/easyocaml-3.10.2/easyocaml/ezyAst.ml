@@ -330,7 +330,7 @@ let print_pat, print_expr, print_structure_item =
             fprintf ppf "@[<2>%a %s@ %a@]" print_expr exp1 nm print_expr exp2
         | Pexp_apply (exp1, exp2) ->
             let a, al = get_expr_args exp1 [exp2] in
-            fprintf ppf "@[<2>%a•%a@]" print_expr a (List.print print_expr "•") al
+            fprintf ppf "@[<2>%a~%a@]" print_expr a (List.print print_expr "~") al
         | Pexp_match (exp, rules) ->
             fprintf ppf "@[<2>match %a with@ %a@]"
               print_expr exp
