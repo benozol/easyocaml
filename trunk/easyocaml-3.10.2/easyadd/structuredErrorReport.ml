@@ -153,7 +153,7 @@ module ErrorToStructured = struct
             | EzyErrors.CircularType (ty1, ty2) ->
                 let aux x = try [EzyTypingCoreTypes.Ty.get_label x] with _ -> [] in
                 aux ty1 @ aux ty2 in
-        type_error (format_str "%a" EzyErrors.print_type_error_desc te)
+        type_error (format_str "%a" (EzyErrors.print_type_error_desc ~w:None) te)
           (List.map (fun eloc -> List.mem eloc endpoints, eloc) (ExtLocationSet.elements elocs))
     | `Normal (loc, err)
     | `Heavy (_, EzyErrors.Error_as_heavy (loc, err)) ->

@@ -7,16 +7,19 @@
   <body> 
     <div class='all'>
 
-<span id='reset' onclick='javascript:reset()' class='othererror'>reset</span>
-<p class='errorlistparagraph'>
-  <ul id='errorlist'></ul>
-</p>
-<p>
-  <div class='code'><div class='currenterror'><span name='codeitem' id='null'>
-<span name='codeitem' id='1;0-32'>let&nbsp;<span name='codeitem' id='1;4-5'>f</span>&nbsp;<span name='codeitem' id='1;6-19'>(<span name='codeitem' id='1;7-8'>x</span><span name='codeitem' id='1;8-10'>,<span name='codeitem' id='1;9-10'>y</span></span>)&nbsp;=&nbsp;<span name='codeitem' id='1;14-15'>x</span><span name='codeitem' id='1;15-16'>&nbsp;</span><span name='codeitem' id='1;16-19'><span name='codeitem' id='1;16-17'>+</span>&nbsp;<span name='codeitem' id='1;18-19'>y</span></span></span>&nbsp;in&nbsp;<span name='codeitem' id='1;23-31'><span name='codeitem' id='1;23-24'>f</span>&nbsp;(<span name='codeitem' id='1;26-27'>1</span><span name='codeitem' id='1;27-31'>,<span name='codeitem' id='1;28-29'>2</span>,<span name='codeitem' id='1;30-31'>3</span></span></span>)</span><br />
-  </div>
-</p>
+<div>
+  <span id='reset' onclick='javascript:reset()' class='othererror'>reset</span>
+  <p class='errorlistparagraph'>
+    <ul id='errorlist'></ul>
+  </p>
+</div>
+<br />
+<div>
+  <div class='code'><div class='currenterror'><span name='codeitem' id='null' />
+<span name='codeitem' id='1;0-11'>let&nbsp;_&nbsp;=&nbsp;<span name='codeitem' id='1;8-11'><span name='codeitem' id='1;8-9'>1</span>&nbsp;<span name='codeitem' id='1;10-11'>x</span></span></span>&nbsp;;;<br />
+  </div></div>
+</div></div>
 <script type='text/javascript'>
-  init([new ArityClash(3, 2, '1;27-31', '1;8-10', ['1;0-32', '1;4-5', '1;6-19', '1;8-10', '1;23-24', '1;23-31', '1;27-31'])]);
+  init([new Clash('<span>Type constructor clash between <span class=\'endpoint1\'>int</span> and <span class=\'endpoint2\'>function</span></span>', '1;8-9', '1;8-11', ['1;8-9', '1;8-11']), new LocalError('The variable x is unbound', '1;10-11')]);
 </script>
 
