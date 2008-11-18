@@ -9,20 +9,20 @@ body {
 ul#errorlist, a#reset {
   font-size: small;
 }
-code . span {
+/*code . span {
   margin: 1px;
-}
+}*/
 div.code {
   font-family: monospace;
   color: #ccc;
   font-size: medium;
 }
 span.othererror {
-  color: black ! important ;
+  color: black;
   cursor: pointer;
 }
 span.currenterror {
-  color: #50bbff ! important ;
+  color: #50bbff;
 }
 span.standard {
   color: gray; /*#ccc*/
@@ -33,17 +33,17 @@ span.error {
   color: black;
   font-weight: bold;
 }
-.currenterror * span.endpoint1 {
+.currenterror span.endpoint1 {
   color: black;
   background-color: #08c;
   font-weight: bold;
 }
-.currenterror * span.endpoint2 {
+.currenterror span.endpoint2 {
   color: black;
   background-color: #d4d;
   font-weight: bold;
 }
-.currenterror * span.unboundvar {
+.currenterror span.unboundvar {
   color: red;
   font-weight: bold;
   font-weight: bold;

@@ -13,6 +13,7 @@ var errorListId = 'errorlist';
 var errorId = 'error';
 var resetId = 'reset';
 
+var parser=new DOMParser();
 var errors = new Array();
 var codeItems = new Object();
 
@@ -30,60 +31,21 @@ function createTextNodeWithClass(className, text) {
   return span;
 }
 
-function Clash() {
+function Clash(msg, endpoint1, endpoint2, errorlocs) {
+  this.msg = msg;
+  this.endpoint1 = endpoint1;
+  this.endpoint2 = endpoint2;
+  this.errorlocs = errorlocs;
+  this.message = function() {
+    var s = document.createElement("span");
+    s.innerHTML = msg;
+    return s;
+  }
   this.display = function() {
     for(var i in this.errorlocs)
       setClass(this.errorlocs[i], errorClass)
     setClass(this.endpoint1, endpoint1Class);
     setClass(this.endpoint2, endpoint2Class);
-  }
-}
-
-function ConstructorClash(ty1, ty2, endpoint1, endpoint2, errorlocs) {
-  this.ty1 = ty1;
-  this.ty2 = ty2;
-  this.endpoint1 = endpoint1;
-  this.endpoint2 = endpoint2;
-  this.errorlocs = errorlocs;
-  this.message = function() {
-    var span = document.createElement('span');
-    span.appendChild(document.createTextNode("Type constructor clash: "));
-    span.appendChild(createTextNodeWithClass(endpoint1Class, this.ty1));
-    span.appendChild(document.createTextNode(" versus "));
-    span.appendChild(createTextNodeWithClass(endpoint2Class, this.ty2));
-    return span;
-  }
-}
-ConstructorClash.prototype = new Clash;
-
-function ArityClash(ar1, ar2, endpoint1, endpoint2, errorlocs) {
-  this.ar1 = ar1;
-  this.ar2 = ar2;
-  this.endpoint1 = endpoint1;
-  this.endpoint2 = endpoint2;
-  this.errorlocs = errorlocs;
-  this.message = function() {
-    var span = document.createElement('span');
-    span.appendChild(document.createTextNode("Arity clash: "));
-    span.appendChild(createTextNodeWithClass(endpoint1Class, this.ar1));
-    span.appendChild(document.createTextNode(" versus "));
-    span.appendChild(createTextNodeWithClass(endpoint2Class, this.ar2));
-    return span;
-  }
-}
-ArityClash.prototype = new Clash;
-
-function UnboundVar(varName, varLoc) {
-  this.varName = varName;
-  this.varLoc = varLoc;
-  this.message = function() {
-    var span = document.createElement('span');
-    span.appendChild(document.createTextNode("Unbound variable: "));
-    span.appendChild(createTextNodeWithClass(unboundvarClass, this.varName));
-    return span;
-  }
-  this.display = function() {
-	setClass(this.varLoc, unboundvarClass);
   }
 }
 
@@ -96,31 +58,7 @@ function LocalError(desc, loc) {
     return span;
   }
   this.display = function() {
-    setClass(this.loc, errorClass);
-  }
-}
-
-function CircularType(ty1, ty2, opt_endpoint1, opt_endpoint2, errorlocs) {
-  this.ty1 = ty1;
-  this.ty2 = ty2;
-  this.opt_endpoint1 = opt_endpoint1;
-  this.opt_endpoint2 = opt_endpoint2;
-  this.errorlocs = errorlocs;
-  this.message = function() {
-    var span = document.createElement('span');
-    span.appendChild(document.createTextNode("Circular type: "));
-    span.appendChild(createTextNodeWithClass(opt_endpoint1 != null ? endpoint1Class : '', this.ty1));
-    span.appendChild(document.createTextNode(" and "));
-    span.appendChild(createTextNodeWithClass(opt_endpoint2 != null ? endpoint2Class : '', this.ty2));
-    return span;
-  }
-  this.display = function() {
-    for(var i in errorlocs)
-      setClass(errorlocs[i], errorClass)
-    if(opt_endpoint1 != null)
-      setClass(opt_endpoint1, endpoint1Class);
-    if(opt_endpoint2 != null)
-      setClass(opt_endpoint2, endpoint2Class);
+    setClass(this.loc, unboundvarClass);
   }
 }
 
