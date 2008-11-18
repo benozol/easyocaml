@@ -8,15 +8,18 @@ open Format
 let logger = new EzyUtils.Logger.logger "htmlErrorReport"
 
 let template () = format_of_string "
-<span id='reset' onclick='javascript:reset()' class='othererror'>reset</span>
-<p class='errorlistparagraph'>
-  <ul id='errorlist'></ul>
-</p>
-<p>
-  <div class='code'><div class='currenterror'><span name='codeitem' id='null'>
+<div>
+  <span id='reset' onclick='javascript:reset()' class='othererror'>reset</span>
+  <p class='errorlistparagraph'>
+    <ul id='errorlist'></ul>
+  </p>
+</div>
+<br />
+<div>
+  <div class='code'><div class='currenterror'><span name='codeitem' id='null' />
 %a
-  </div>
-</p>
+  </div></div>
+</div></div>
 <script type='text/javascript'>
   init([%a]);
 </script>
@@ -41,74 +44,71 @@ let escape_quote char str =
         Buffer.contents buf in
   aux 0
 
-let type_to_str ty =
-  let pre = format_str "%a" Ty.print ty in
-  "'" ^ escape_quote '\'' pre ^ "'"
+let escape_char char p ppf x =
+  let ppf' =
+    let out str ofs len =
+      for i = ofs to ofs + len - 1 do
+        match str.[i] with
+          | '\\' -> pp_print_string ppf "\\\\"
+          | c ->
+              if c = char then
+                pp_print_char ppf '\\';
+              pp_print_char ppf c
+      done in
+    make_formatter out ignore in
+  p ppf' x;
+  pp_print_flush ppf' ()
 
 let loc_string loc = 
-  format_str "'%a'" Location.print loc
+  format_str "'%a'" (escape_char '\'' Location.print) loc
 
-let for_type_error =
-  let force_source = function ExtLocation.Source loc -> loc | _ -> invalid_arg "force_source" in
-  let loc_string_for_ty ?(default="null") ty =
-    Option.value ~default
-      (Option.map ~f:loc_string
-         (Option.for_exn (force_source << Ty.get_label) ty)) in
-  function
-  | ConstructorClash (tx, ty) ->
-      let args = [
-        type_to_str tx ;
-        type_to_str ty ;
-        loc_string_for_ty tx ;
-        loc_string_for_ty ty ;
-      ] in
-      "ConstructorClash", args
-  | ArityClash (tx, ty, arx, ary) ->
-      let args = [
-        string_of_int arx ;
-        string_of_int ary ;
-        loc_string_for_ty tx ;
-        loc_string_for_ty ty ;
-      ] in
-      "ArityClash", args
-  | CircularType (tx, ty) ->
-      let args = [
-        type_to_str tx ;
-        type_to_str ty ;
-        loc_string_for_ty tx ;
-        loc_string_for_ty ty ;
-      ] in
-      "CircularType", args
+let force_source = function ExtLocation.Source loc -> loc | _ -> invalid_arg "force_source"
 
-let print_error ppf (loc, err) =
-  match err with
-    | Type_error (terr, err_locs) ->
-        let class_name, args = for_type_error terr in
-        let err_locs' =
-          let filter_to_loc = function
-            | ExtLocation.Source loc -> Some (loc_string loc)
-            | _ -> None in
-          ExtLocationSet.elements err_locs |>
-          List.filter_map ~f:filter_to_loc in
-        fprintf ppf "new %s(%a, [%a])" class_name
-          (List.print pp_print_string ", ") args
-          (List.print  pp_print_string ", ") err_locs'
-    | _ ->
-        fprintf ppf "new LocalError('%a', %s)"
-          EzyErrors.print_error_desc err
-          (loc_string loc)
+let loc_string_for_ty ?(default="null") ty =
+  Option.value ~default
+    (Option.map ~f:loc_string
+       (Option.for_exn (force_source << Ty.get_label) ty))
+
+
+let print_error =
+  let w = Some {
+    wrap_endpoint1 = (fun p ppf -> fprintf ppf "<span class='endpoint1'>%a</span>" p);
+    wrap_endpoint2 = (fun p ppf -> fprintf ppf "<span class='endpoint2'>%a</span>" p);
+  } in
+  fun ppf (loc, err) ->
+    pp_set_margin ppf (pp_get_max_indent ppf ());
+    match err with
+      | Type_error (terr, err_locs) ->
+          let ConstructorClash (ty1, ty2) | ArityClash (ty1, ty2, _, _) | CircularType (ty1, ty2) = terr in
+          let err_locs' =
+            let filter_to_loc = function
+              | ExtLocation.Source loc -> Some (loc_string loc)
+              | _ -> None in
+            ExtLocationSet.elements err_locs |>
+            List.filter_map ~f:filter_to_loc in
+          fprintf ppf "new Clash('<span>%a</span>', %s, %s, [%a])"
+            (escape_char '\'' (print_type_error_desc ~w)) terr
+            (loc_string_for_ty ty1)
+            (loc_string_for_ty ty2)
+            (List.print pp_print_string ", ") err_locs'
+      | _ ->
+          fprintf ppf "new LocalError('%a', %s)"
+            (escape_char '\'' EzyErrors.print_error_desc) err
+            (loc_string loc)
 
 let print_heavy ppf : (Location.t * heavy_error) -> unit = function
   | _, Error_as_heavy (loc, error) ->
       print_error ppf (loc, error)
   | loc, heavy ->
+      pp_set_margin ppf (pp_get_max_indent ppf ());
       fprintf ppf "new LocalError('%a', %s)"
-        EzyErrors.print_heavy_error_desc heavy
+        (escape_char '\'' EzyErrors.print_heavy_error_desc) heavy
         (loc_string loc)
 
 let print_fatal ppf (loc, fatal) =
+  pp_set_margin ppf (pp_get_max_indent ppf ());
   fprintf ppf "new LocalError('%a', %s)"
-    EzyErrors.print_fatal_error_desc fatal
+    (escape_char '\'' EzyErrors.print_fatal_error_desc) fatal
     (loc_string loc)
   
 

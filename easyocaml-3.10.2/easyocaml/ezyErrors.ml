@@ -117,11 +117,11 @@ let rough_ty_print =
         | Ty.Var _  as ty ->
             Ty.print ppf ty
         | Ty.Tuple (label, _) ->
-            fprintf ppf "@[tuple@]"
+            fprintf ppf "tuple"
         | Ty.Arrow (label, _, _) ->
-            fprintf ppf "@[function@]"
+            fprintf ppf "function"
         | Ty.Constr (label, path, args) ->
-            fprintf ppf "@[%s@]" (Path.name path)
+            fprintf ppf "%s" (Path.name path)
       end 
     | `Fr -> not_implemented "EzyErrors.rough_ty_print (french)" 
     | `De -> begin fun ppf -> function
