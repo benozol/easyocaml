@@ -173,8 +173,14 @@ let similar_types = function
   | Ty.Arrow _, Ty.Arrow _ ->
       true
   | _ -> false
-          
-let print_type_error_desc =
+
+type endpoint_wrapper = {
+  wrap_endpoint1 : 'a . (Format.formatter -> 'a -> unit) -> Format.formatter -> 'a -> unit ;
+  wrap_endpoint2 : 'a . (Format.formatter -> 'a -> unit) -> Format.formatter -> 'a -> unit ;
+}
+
+let print_type_error_desc ~w =
+  let w = Option.value ~default:{wrap_endpoint1 = id; wrap_endpoint2 = id} w in
   match lang with
     | `En -> begin fun ppf -> function
         | ConstructorClash (ty1, ty2) (* when similar_types (ty1, ty2) ->
@@ -182,28 +188,31 @@ let print_type_error_desc =
               Ty.print ty1 Ty.print ty2
         | ConstructorClash (ty1, ty2) *) ->
             fprintf ppf "Type constructor clash between %a and %a"
-              rough_ty_print ty1 rough_ty_print ty2
+              (w.wrap_endpoint1 rough_ty_print) ty1
+              (w.wrap_endpoint2 rough_ty_print) ty2
         | ArityClash (ty1, ty2, ar1, ar2) ->
             fprintf ppf "Arity clash, %a vs. %a"
-              print_tuple ar1 print_tuple ar2
+              (w.wrap_endpoint1 print_tuple) ar1
+              (w.wrap_endpoint2 print_tuple) ar2
         | CircularType (ty1, ty2) ->
             fprintf ppf "Circular type, %a vs. %a"
-              Ty.print ty1 Ty.print ty2 
+              (w.wrap_endpoint1 Ty.print) ty1
+              (w.wrap_endpoint2 Ty.print) ty2
       end
     | `Fr -> not_implemented "EzyErrors.print_type_error_desc (french)"
     | `De -> begin fun ppf -> function
         | ConstructorClash (ty1, ty2) when similar_types (ty1, ty2) ->
             fprintf ppf "Kollision zwischen Werten der Typen %a und %a"
-              Ty.print ty1 Ty.print ty2
+              (w.wrap_endpoint1 Ty.print) ty1 (w.wrap_endpoint2 Ty.print) ty2
         | ConstructorClash (ty1, ty2) ->
             fprintf ppf "Kollision zwischen Werten der Typen %a und %a"
-              rough_ty_print ty1 rough_ty_print ty2
+              (w.wrap_endpoint1 rough_ty_print) ty1 (w.wrap_endpoint2 rough_ty_print) ty2
         | ArityClash (ty1, ty2, ar1, ar2) ->
             fprintf ppf "Ein %a anstatt eines %a"
-              print_tuple ar1 print_tuple ar2
+              (w.wrap_endpoint1 print_tuple) ar1 (w.wrap_endpoint2 print_tuple) ar2
         | CircularType (ty1, ty2) ->
             fprintf ppf "Zirkulaerer typ: %a vs. %a"
-              Ty.print ty1 Ty.print ty2 
+              (w.wrap_endpoint1 Ty.print) ty1 (w.wrap_endpoint2 Ty.print) ty2 
       end
 
 let print_error_desc =
@@ -254,7 +263,7 @@ let print_error ~program ast ppf (loc, error) =
         let sliced_ast = EzyErrorReportUtils.create_slices ast locs in
         fprintf ppf "@[<3> * %a: %a@\n%t:@ %a@]"
           print_error_desc error
-          print_type_error_desc err
+          (print_type_error_desc ~w:None) err
           slice
           (fun ppf -> List.iter (EzyAst.print_structure_item () ppf)) sliced_ast
     | _ ->

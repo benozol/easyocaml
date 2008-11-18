@@ -23,6 +23,8 @@
   * have uniform descriptions.
   *)
 
+open EzyUtils
+
 type lang = [ `En | `Fr | `De ]
 val lang : lang
 
@@ -117,8 +119,17 @@ type fatal =
   | Other_fatal of string
     (** Different errors which should not occur in a correctly configured system. *)
 
-(** Some i18n'ed error printing code as a simple default. *)
-val print_type_error_desc : Format.formatter -> type_error -> unit
+(** Values of this record are used to modify the output for endpoints in type
+  * errors. The wrapper functions are given in a record to prevent the
+  * monomophicity of arguments.
+  *)
+type endpoint_wrapper = {
+  wrap_endpoint1 : 'a . (Format.formatter -> 'a -> unit) endomorph ;
+  wrap_endpoint2 : 'a . (Format.formatter -> 'a -> unit) endomorph ;
+}
+
+(** Some i18n'ed error printing code as a default. Should be used to keep messages consistent. *)
+val print_type_error_desc : w:(endpoint_wrapper option) -> Format.formatter -> type_error -> unit
 val print_error_desc : Format.formatter -> error -> unit
 val print_heavy_error_desc : Format.formatter -> heavy_error -> unit
 val print_fatal_error_desc : Format.formatter -> fatal -> unit

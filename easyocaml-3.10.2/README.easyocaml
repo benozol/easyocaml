@@ -1,15 +1,35 @@
 
+
 ** Prerequisites for EasyOCaml are the same like for OCaml (see INSTALL)
 
-** Steps for building:
 
-  $ ./configure [-prefix <path/to/install/dir>]
-  $ ./build/smallworld.sh
-and optional
-  $ ./boot/ocamlrun boot/myocamlbuild easyadd/htmlErrorReport.cmo easyadd/structuredErrorReport.cmo
-to use HTML output suitable for easyadd/htmlreport/easyocaml.(js|css) or structured output for some future OCaml IDE
-  $ ./build/install.sh
-  $ /path/to/install/dir/bin/ecaml(c) -easyerrorreport _build/easyadd/htmlErrorReport.cmo # or _build/easyadd/structuredErrorReport.cmo
+** Steps for building, installing, and running EasyOCaml:
+
+  1. Configure the system:
+     $ ./configure [-prefix <path/to/install/dir>]
+
+  2. Build the system:
+     $ ./build/smallworld.sh
+
+  3. Build custom error reporters (optional):
+     $ ./boot/ocamlrun boot/myocamlbuild easyadd/htmlErrorReport.cmo \
+                                         easyadd/structuredErrorReport.cmo
+     (This allows you to use HTML output suitable for 
+      easyadd/htmlreport/easyocaml.(js|css)
+      or structured output for some future OCaml IDE.)
+
+  4. Install the system:
+     $ ./build/install.sh
+
+  5. Run the system:
+     $ /path/to/install/dir/bin/ecaml        # starts EasyOCaml's toplevel 
+     $ /path/to/install/dir/bin/ecamlc FILES  # runs EasyOCaml's compiler
+
+     To use custom error reporters (optional), you need to supply
+     the option
+       -easyerrorprinter /path/to/build/dir/_build/easyadd/htmlErrorReport.cmo
+     on the commandline. (Replace htmlErrorReport.cmo with 
+     structuredErrorReport.cmo for structured output.)
 
 
 ** Guide to the environment variables in EasyOCaml
