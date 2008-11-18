@@ -111,15 +111,21 @@ The objective of EasyOCaml is to make OCaml a language better suited for beginne
 teach programming. We try to achieve this by
 <ul>
   <li>improving OCaml’s error messages by providing a modiﬁed parser and
-  a new type checker</li>
+  a new type checker.</li>
   <li>equiping OCaml with an infrastructure to make it adaptable for teaching 
-  programming. This is done by Language Levels and specifications of the available syntax</li>
+  programming. This is done by Language Levels and specifications of the available syntax.</li>
   <li>integrating all that into OCaml’s original toplevel loop and compiler system
   to take advantage of existing libraries and OCaml’s code generation
-  facilities</li>
+  facilities.</li>
 </ul>
 
 Please follow the links in the project's summary for documentation, tar-balls and svn access ...
+
+<h2>Supported Language</h2>
+EasyOCaml supports the OCaml language without objects, polymorphic variants and 
+creation of modules.
+Type annotations, as well as declarations of variants, records 
+and synonyms and their usage including pattern matching are supported.
 
 <h2>Demo</h2>
 

@@ -112,8 +112,12 @@ This is a live demo for <a href="..">EasyOCaml</a>.  Choose the language for the
     <form action="http://www.benozol.de/easyocaml/" enctype="multipart/form-data" method="post">
       <p><h4>Error message language</h4><span><input type="radio" name="language" value="english" />english<br /></span><span><input type="radio" name="language" value="française" />française<br /></span><span><input type="radio" name="language" value="deutsch" />deutsch<br /></span>
       </p>
-      <p><h4>Language level (hover for informations)</h4><select name="level"><option selected="selected" value="" title="No language level. Full EasyOCaml.">None</option><option value="lang-minimal" title="Available functions: cons, iter, map, fold from List and +, -, *, /, succ, pred form Pervasives. Hard restrictions on the syntax.">minimal</option><option value="lang-advanced" title="Access to the modules Pervasives (preopened), Char, Random, String. No imperative language features and mandatory type annotations for toplevel values.">advanced</option></select>
-
+      <p><h4>Language level (hover for informations)</h4>
+<select name="level">
+  <option selected="selected" value="" title="No language level. Full EasyOCaml.">Full EasyOCaml</option>
+  <option value="lang-advanced" title="Access to the modules Pervasives (opened), Char, Random, List and String. No imperative language features but mandatory type annotations for toplevel values.">advanced</option>
+  <option value="lang-minimal" title="Available functions: cons, iter, map and fold from module List and +, -, *, /, succ, pred from module Pervasives. Hard restrictions on the syntax.">minimal</option>
+</select>
       </p>
       <p><h4>Program code</h4><textarea rows="12" cols="60" name="program"></textarea>
       </p>
