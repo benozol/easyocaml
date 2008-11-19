@@ -493,20 +493,23 @@ type fatal_info = {
 }
 exception Fatal of fatal_info
 
+exception PreAnnotatedError of some_errors * EzyAst.imported_structure
+exception PreFatal of fatal * EzyOcamlmodules.Location.t option
+
 let raise_annotated_error errors ast =
-  raise (AnnotatedError {errors = errors; ast = ast; ann_program = lazy (assert false)})
+  raise (PreAnnotatedError (errors, ast))
 
 let raise_fatal ?loc s =
-  raise (Fatal {opt_loc = loc; fat_program = lazy (assert false); error = s})
+  raise (PreFatal (s, loc))
 
 let wrap_exception_with_program program f =
   try
     f ()
   with
-    | AnnotatedError ann_errs ->
-        raise (AnnotatedError {ann_errs with ann_program = program})
-    | Fatal fat_info ->
-        raise (Fatal {fat_info with fat_program = program})
+    | PreAnnotatedError (errs, ast) ->
+        raise (AnnotatedError {errors = errs; ast = ast; ann_program = program})
+    | PreFatal (err, opt_loc) ->
+        raise (Fatal {error = err; opt_loc = opt_loc; fat_program = program})
 
 let report_annotated_errors ppf { errors = errors; ast = ast; ann_program = program } =
   Format.pp_print_flush ppf () ;

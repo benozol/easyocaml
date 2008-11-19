@@ -432,4 +432,4 @@ let type_and_compare_top_phrase fs oldenv str =
     ted_str, (str, sg, newenv)
   with Typemod.Error (loc, err) ->
     beta_error loc err
-  end ;
+  end
