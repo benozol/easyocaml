@@ -205,6 +205,22 @@ module Typedtree = struct
       | Tpat_record _ -> Format.pp_print_string ppf "Record"
       | Tpat_array _ -> Format.pp_print_string ppf "Array"
       | Tpat_or _ -> Format.pp_print_string ppf "or"
+  let print_rough_strit ppf strit =
+    Format.pp_print_string ppf begin match strit with
+      | Tstr_eval _ -> "Tstr_eval"
+      | Tstr_value _ -> "Tstr_value"
+      | Tstr_primitive _ -> "Tstr_primitive"
+      | Tstr_type _ -> "Tstr_type"
+      | Tstr_exception _ -> "Tstr_exception"
+      | Tstr_exn_rebind _ -> "Tstr_exn_rebind"
+      | Tstr_module _ -> "Tstr_module"
+      | Tstr_recmodule _ -> "Tstr_recmodule"
+      | Tstr_modtype _ -> "Tstr_modtype"
+      | Tstr_open _ -> "Tstr_open"
+      | Tstr_class _ -> "Tstr_class"
+      | Tstr_cltype _ -> "Tstr_cltype"
+      | Tstr_include _ -> "Tstr_include"
+    end
 end
 
 module ExtLocationSet = struct 

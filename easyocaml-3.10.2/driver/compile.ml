@@ -33,6 +33,7 @@ let init_path () =
   let exp_dirs =
     List.map (expand_directory Config.standard_library) dirs in
   load_path := "" :: List.rev_append exp_dirs (Clflags.std_include_dir ());
+  (* Printf.eprintf "Compile.init_path: after load_path = [%s]\n%!" (String.concat ", " !load_path); *)
   Env.reset_cache ()
 
 (* Return the initial environment in which compilation proceeds. *)
@@ -94,8 +95,8 @@ let print_if ppf flag printer arg =
 let (++) x f = f x
 
 let implementation ppf sourcefile outputprefix =
+  init_path ();
   let easy = EzySetup.setup () in
-  let _ = init_path () in
   let modulename =
     String.capitalize(Filename.basename(chop_extension_if_any sourcefile)) in
   Env.set_unit_name modulename;
