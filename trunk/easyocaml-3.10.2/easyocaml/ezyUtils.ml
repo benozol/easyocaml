@@ -573,7 +573,7 @@ module Logger = struct
       match !layers with None -> true | Some ls -> List.mem layer ls  in
     if level_matches && layer_matches then (
       Format.fprintf ppf "@[<2>[%s %s%s] " prefix "" layer ;
-      Format.kfprintf (fun ppf -> Format.fprintf ppf "@]\n") ppf
+      Format.kfprintf (fun ppf -> Format.fprintf ppf "@]@.") ppf
     ) else
       Format.ifprintf ppf
 
