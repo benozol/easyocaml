@@ -108,7 +108,7 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
 <tr><td width="65%" valign="top">
 
 <h1>EasyOCaml - Demo</h1>
-This is a live demo for <a href="..">EasyOCaml</a>.  Choose the language for the error messages, your language level and type a program:
+This is a live demo for <a href="..">EasyOCaml</a>.  Choose the language for the error messages, your language level and type a program (or <a href="">copy-paste</a> one):
     <form action="http://www.benozol.de/easyocaml/" enctype="multipart/form-data" method="post">
       <p><h4>Error message language</h4><span><input type="radio" name="language" value="english" />english<br /></span><span><input type="radio" name="language" value="française" />française<br /></span><span><input type="radio" name="language" value="deutsch" />deutsch<br /></span>
       </p>

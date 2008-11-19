@@ -320,6 +320,11 @@ let lookup proj lid (env:t) =
         Path.Pdot (path, name, 0), x
     | Longident.Lapply _ ->
         invalid_arg "EzyEnv.lookup"
+let lookup proj lid env =
+  try lookup proj lid env
+  with Not_found as exn ->
+    logger#debug "Could not find %a in %a" Longident.print lid (List.print Ident.print ", ") (Ident.keys (proj env));
+    raise exn
 
 let lookup_value = lookup (fun env -> env.values)
 let lookup_type = lookup (fun env -> env.types)

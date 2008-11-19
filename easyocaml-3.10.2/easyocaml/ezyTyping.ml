@@ -367,7 +367,7 @@ let type_implementation :
       | _ -> () in
   List.iter check_polymorphy enr_str ;
   logger#info "checked polymorphy" ;
-  logger#info "@[<2>Succeeded typing implementation@ %awith substitution@ %a@ and env enriched by@ %a@]"
+  logger#info "Succeeded typing implementation@ %awith substitution@ %a@ and env enriched by@ %a"
     (print_strs_info s env) enr_str
     TyVarSubst.print s
     (EzyEnv.print ~s false) env ;
@@ -378,7 +378,7 @@ let type_structure ?program env sstr =
   let enr_str, s, env as res =
     (* logger#atime "Type structure" $ *)
       type_structure ?program env $ sstr in
-  logger#info "@[<2>Succeeded typing structure@ %awith substitution@ %a@ and env enriched by@ %a@]"
+  logger#info "Succeeded typing structure@ %awith substitution@ %a@ and env enriched by@ %a"
     (print_strs_info s env) enr_str
     TyVarSubst.print s
     (EzyEnv.print ~s false) env ;
