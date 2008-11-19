@@ -474,6 +474,7 @@ let import_strit prf strit =
           build_strit (Pstr_exception (name', ct))
         else
           strit_import_error "s_exception"
+(*
     | Parsetree.Pstr_open lid ->
         if prf.F.pr_struct_feats.F.s_open then
           let lid' = {
@@ -483,6 +484,7 @@ let import_strit prf strit =
           build_strit (Pstr_open lid')
         else
           strit_import_error "s_open"
+ *)
     | desc -> raise (import_error loc (EzyErrors.Not_supported_structure_item desc))
 
 let import_structure prf str =
@@ -827,7 +829,8 @@ module Equality = struct
       | estrit :: erem, ostrit :: orem ->
           m_eq_structure_item s estrit ostrit >>= fun b ->
           if b then aux (erem, orem) else aux (erem, ostrit :: orem)
-      | _ -> M.fail "Equality.structure" in
+      | [], x :: _ -> M.failf "Equality.structure [] %a" Typedtree.print_rough_strit x
+      | x :: _, [] -> M.failf "Equality.structure %a []" (EzyAst.print_structure_item ()) x in
     M.between
       (aux (estr, ostr))
       (fun st ->
