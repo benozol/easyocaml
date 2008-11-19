@@ -14,9 +14,9 @@
   3. Build custom error reporters (optional):
      $ ./boot/ocamlrun boot/myocamlbuild easyadd/htmlErrorReport.cmo \
                                          easyadd/structuredErrorReport.cmo
-     (This allows you to use HTML output suitable for 
-      easyadd/htmlreport/easyocaml.(js|css)
-      or structured output for some future OCaml IDE.)
+     This allows you to use HTML output suitable for
+     easyadd/htmlreport/easyocaml.(js|css) or structured output for some future
+     OCaml IDE. Note, that will not be installed by step 4 by now.
 
   4. Install the system:
      $ ./build/install.sh

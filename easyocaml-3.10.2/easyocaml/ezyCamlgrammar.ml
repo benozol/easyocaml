@@ -129,13 +129,14 @@ module Restrict (Spec: sig value spec : EzyFeatures.program_feats; end) (Syntax:
 
     if not expr_spec.e_sequence then do {
       DELETE_RULE Gram expr: SELF; ";"; SELF END;
-      DELETE_RULE Gram expr: SELF; ";" END;
+      (* DELETE_RULE Gram expr: SELF; ";" END; *)
       DELETE_RULE Gram expr: "("; SELF; ";"; sequence; ")" END;
       DELETE_RULE Gram expr: "begin"; sequence; "end" END;
-      DELETE_RULE Gram expr: "begin"; "end" END;
+      (* DELETE_RULE Gram expr: "begin"; "end" END; *)
     } else ();
     if Option.is_none expr_spec.e_let_in && Option.is_none expr_spec.e_let_rec_in then do {
       DELETE_RULE Gram expr: "let"; opt_rec; binding; "in"; expr LEVEL ";" END;
+      DELETE_RULE Gram str_item: "let"; opt_rec; binding; "in"; expr END;
     } else ();
     if Option.is_none expr_spec.e_function then do {
       DELETE_RULE Gram expr: "function"; match_case END;
@@ -172,7 +173,7 @@ module Restrict (Spec: sig value spec : EzyFeatures.program_feats; end) (Syntax:
       DELETE_RULE Gram binding: SELF; "and"; SELF END;
     } else ();
     let never_args = match (let_spec, letrec_spec) with [ (Some { l_args = True }, _) | (_, Some { lr_args = True }) -> False | _ -> True ];
-    if str_spec.s_annot_optional then do {
+    if not str_spec.s_annot_optional then do {
        (* it would need *a lot* of reworking of the grammar to express here, that
         * type annotations of the form "let f : ctyp = expr (in expr)" are mandatory
         * only for structure item let bindings. So this is solves in EzyEnrichedAst.import_strit
@@ -486,4 +487,6 @@ value restrict_and_parse_implem : EzyFeatures.program_feats -> string -> string 
         (fun () -> close_in ic)
       with
         [ ParseError.E (loc, err) ->
-            raise (E (import_loc loc, program, err)) ];
+            raise (E (import_loc loc, program, err))
+        | Syntax.Loc.Exc_located (loc, exn) ->
+            raise exn ];
