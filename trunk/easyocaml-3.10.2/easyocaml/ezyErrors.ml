@@ -128,11 +128,11 @@ let rough_ty_print =
         | Ty.Var _ as ty ->
             Ty.print ppf ty
         | Ty.Tuple (label, _) ->
-            fprintf ppf "@[Tupel@]" 
+            fprintf ppf "Tupel" 
         | Ty.Arrow (label, _, _) ->
-            fprintf ppf "@[Funktion@]" 
+            fprintf ppf "Funktion" 
         | Ty.Constr (label, path, args) ->
-            fprintf ppf "@[%s@]" (Path.name path)
+            fprintf ppf "%s" (Path.name path)
       end
 
 let slice ppf =
@@ -391,10 +391,10 @@ let print_parse_error_desc =
 let print_fatal_error_desc =
   match lang with
     | `En | `Fr -> begin fun ppf -> function
-        | Import_error (err, feat_opt) ->
-            fprintf ppf
-              "This feature is not supported by EasyOcaml (%s)"
-              (match feat_opt with Some feat -> "conflicts " ^ feat | None -> "never")
+        | Import_error (err, None) ->
+            fprintf ppf "This feature is not supported by EasyOcaml"
+        | Import_error (err, Some feat) ->
+            fprintf ppf "This feature is not supported in this language level (%s)" feat
         | Module_not_found lid ->
             fprintf ppf "Module %a not found" Longident.print lid
         | Parse_error err ->
@@ -403,10 +403,10 @@ let print_fatal_error_desc =
             pp_print_string ppf msg
         end
     | `De -> begin fun ppf -> function
-        | Import_error (err, feat_opt) ->
-            fprintf ppf
-              "Das syntaktische Konstrukt ist (%s) nicht unterstuetzt"
-              (match feat_opt with Some feat -> "entgegen " ^ feat | None -> "nie")
+        | Import_error (err, None) ->
+            fprintf ppf "Das syntaktische Konstrukt ist nicht unterstuetzt in EasyOcaml"
+        | Import_error (err, Some feat) ->
+            fprintf ppf "Das syntaktische Konstrukt ist in diesem Sprachlevel nicht unterstuetzt (%s)" feat
         | Module_not_found lid ->
             fprintf ppf "Das Modul %a konnte nicht gefunden werden" Longident.print lid
         | Parse_error err ->
