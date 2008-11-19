@@ -54,7 +54,7 @@ let easy_initial_env easy =
         let open_mod m env = 
           try Env.open_pers_signature m env 
           with Not_found ->
-            EzyErrors.raise_fatal (EzyErrors.Module_not_found (Longident.Lident m))
+            fatal_error ("Module not found: " ^ m)
         in
           EzyEnv.allow_modules (List.map fst ms);
           List.fold_left (fun env (m,o) -> if o then open_mod m env else env) Env.initial ms
