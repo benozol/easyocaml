@@ -23,6 +23,8 @@ open Types
 open Typedtree
 open Format
 
+let log = new EzyUtils.Logger.logger "typemod"
+
 type error =
     Unbound_module of Longident.t
   | Unbound_modtype of Longident.t
@@ -856,8 +858,8 @@ and simplify_signature sg =
     simplif StringSet.empty StringSet.empty [] (List.rev sg)
 
 (* Typecheck an implementation file *)
-
 let type_implementation sourcefile outputprefix modulename initial_env ast =
+  log#debug "Conf.load_path: [%a]" (EzyUtils.List.print Format.pp_print_string ", ") (!Config.load_path);
   Typecore.reset_delayed_checks ();
   let (str, sg, finalenv) =
     Misc.try_finally (fun () -> type_structure initial_env ast)

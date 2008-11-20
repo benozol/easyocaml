@@ -63,7 +63,7 @@ and cmxa_magic_number = "Caml1999Z010"
 and ast_impl_magic_number = "Caml1999M011"
 and ast_intf_magic_number = "Caml1999N010"
 
-let load_path = ref ([standard_library] : string list)
+let load_path = ref ([""; standard_library] : string list)
 (* FIXME putting standard_library in load_path by default is a horrible
 workaround: It might necessary because of the code doubling in Camlp4_import.
 It is ok to remove this, if the test against the result of Typemod is not used

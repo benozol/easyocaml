@@ -1,7 +1,5 @@
 #!/bin/sh
 
-start=`pwd`
-
 if [ $# -eq 1 ]
 then
   for d in `dirname $0`/lang-*
