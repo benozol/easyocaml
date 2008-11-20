@@ -3,7 +3,7 @@ open EzyLangLevel
 let _ =
   let min_patt = { (all_pattern_feats false) with p_var = true } in
   let ff = 
-    { f_fun = true; f_pattern = min_patt } in
+    { f_fun = false; f_pattern = min_patt } in
   let let_feats = { (all_let_feats false) with l_pattern = min_patt } in
   let ef =
     { (all_expr_feats false) with
