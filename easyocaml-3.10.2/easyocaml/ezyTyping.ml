@@ -394,8 +394,8 @@ let alpha_error msg =
   logger#error "@[EasyOcaml did not type well:@ %s@]" msg ;
   exit 100 (* NOTE this exit value is recognized by the `runtests' script *)
 
-let beta_error loc err =
-  logger#error "@[Douh, EasyCaml missed an error!:@ Location: %a@ %a@]" Location.print loc Typemod.report_error err ;
+let beta_error loc p err =
+  logger#error "@[Douh, EasyCaml missed an error!:@ Location: %a@ %a@]" Location.print loc p err ;
   exit 101 (* NOTE this exit value is recognized by the `runtests' script *)
 
 let type_and_compare_implementation sourcefile outputprefix modulename initial_env parse_tree fs =
@@ -411,8 +411,11 @@ let type_and_compare_implementation sourcefile outputprefix modulename initial_e
       | None -> ()
     end ;
     ted_str, (tt, mc)
-  with Typemod.Error (loc, err) ->
-    beta_error loc err
+  with
+    | Typemod.Error (loc, err) ->
+        beta_error loc Typemod.report_error err
+    | Typecore.Error (loc, err) ->
+        beta_error loc Typecore.report_error err
   end
 
 
@@ -430,6 +433,9 @@ let type_and_compare_top_phrase fs oldenv str =
       | None -> ()
     end ;
     ted_str, (str, sg, newenv)
-  with Typemod.Error (loc, err) ->
-    beta_error loc err
+  with
+    | Typemod.Error (loc, err) ->
+        beta_error loc Typemod.report_error err
+    | Typecore.Error (loc, err) ->
+        beta_error loc Typecore.report_error err
   end
