@@ -19,6 +19,8 @@ open Config
 open Format
 open Typedtree
 
+let log = new EzyUtils.Logger.logger "compile"
+
 (* Initialize the search path.
    The current directory is always searched first,
    then the directories specified with the -I option (in command-line order),
@@ -54,6 +56,7 @@ let easy_initial_env easy =
         let open_mod m env = 
           try Env.open_pers_signature m env 
           with Not_found ->
+            log#error "Could not find module %s in load_path %a" m (EzyUtils.List.print pp_print_string ", ") !Config.load_path;
             fatal_error ("Module not found: " ^ m)
         in
           EzyEnv.allow_modules (List.map fst ms);
