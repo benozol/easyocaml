@@ -277,7 +277,7 @@ Pathname.define_context "camlp4/Camlp4Top" ["camlp4"; "stdlib"];;
 Pathname.define_context "parsing" ["parsing"; "utils"; "stdlib"];;
 Pathname.define_context "typing" ["typing"; "parsing"; "utils"; "stdlib"];;
 Pathname.define_context "easyocaml" ["easyocaml"; "typing"; "parsing"; "utils"; "camlp4"; "camlp4/Camlp4Parsers"; (*"stdlib"*)];;
-Pathname.define_context "easyadd" ["easyocaml"; "typing"; "parsing"; "utils"; (*"stdlib"*)];;
+Pathname.define_context "easyocaml-additional" ["easyocaml"; "typing"; "parsing"; "utils"; (*"stdlib"*)];;
 Pathname.define_context "ocamldoc" ["typing"; "parsing"; "utils"; "tools"; "bytecomp"; (*"stdlib"*)];;
 Pathname.define_context "bytecomp" ["bytecomp"; "parsing"; "typing"; "easyocaml"; "utils"; (*"stdlib"*)];;
 Pathname.define_context "tools" ["tools"; (* "toplevel"; *) "parsing"; "utils"; "driver"; "bytecomp"; "asmcomp"; "typing"; (*"stdlib"*)];;

@@ -474,7 +474,6 @@ let import_strit prf strit =
           build_strit (Pstr_exception (name', ct))
         else
           strit_import_error "s_exception"
-(*
     | Parsetree.Pstr_open lid ->
         if prf.F.pr_struct_feats.F.s_open then
           let lid' = {
@@ -484,7 +483,6 @@ let import_strit prf strit =
           build_strit (Pstr_open lid')
         else
           strit_import_error "s_open"
- *)
     | desc -> raise (import_error loc (EzyErrors.Not_supported_structure_item desc))
 
 let import_structure prf str =
