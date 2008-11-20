@@ -1,6 +1,8 @@
 
 
-** Prerequisites for EasyOCaml are the same like for OCaml (see INSTALL)
+** Prerequisites for EasyOCaml
+
+   ... are the same like for OCaml (see INSTALL)
 
 
 ** Steps for building, installing, and running EasyOCaml:

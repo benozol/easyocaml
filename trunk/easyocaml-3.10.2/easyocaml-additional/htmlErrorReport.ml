@@ -111,6 +111,16 @@ let print_fatal ppf (loc, fatal) =
     (escape_char '\'' EzyErrors.print_fatal_error_desc) fatal
     (loc_string loc)
   
+let pp_print_html_safe_char ppf c =
+  pp_print_string ppf begin
+    match c with
+      | ' ' -> "&nbsp;"
+      | '&' -> "&amp;"
+      | '>' -> "&gt;"
+      | '<' -> "&lt;"
+      | '\n' -> "<br />"
+      | _ -> String.make 1 c
+  end
 
 exception Found of Location.t
 let name_string = "'codeitem'"
@@ -134,15 +144,7 @@ let print_program locs ppf code =
       pp_print_string ppf "</span>" 
     done ;
     List.iter (print_open_tag ppf) (find_open_locs i) ;
-    pp_print_string ppf begin
-      match code.[i] with
-        | ' ' -> "&nbsp;"
-        | '&' -> "&amp;"
-        | '>' -> "&gt;"
-        | '<' -> "&lt;"
-        | '\n' -> "<br />"
-        | c -> String.make 1 c
-    end ;
+    pp_print_html_safe_char ppf code.[i]
   done
 
 let name = "Html error reporting"
@@ -170,6 +172,8 @@ let print_fatal' ~program loc ppf fatal =
     (safe_print print_fatal) (loc, fatal)
 
 let print_valid ~program ted_str ppf =
-  fprintf ppf "<h3>Great! This is a well typed program!</h3>@,<code>%s</code><br />@." (Lazy.force program)
+  let print_program ppf =
+    String.iter (pp_print_html_safe_char ppf) (Lazy.force program) in
+  fprintf ppf "<h3>Great! This is a well typed program!</h3>@,<code>%t</code><br />@." print_program
 
 let () = EzyErrors.register name ~print_valid print_errors' print_heavies' print_fatal'
