@@ -44,20 +44,21 @@ let escape_quote char str =
         Buffer.contents buf in
   aux 0
 
-let escape_char char p ppf x =
+let print_wrap f p ppf x =
   let ppf' =
     let out str ofs len =
       for i = ofs to ofs + len - 1 do
-        match str.[i] with
-          | '\\' -> pp_print_string ppf "\\\\"
-          | c ->
-              if c = char then
-                pp_print_char ppf '\\';
-              pp_print_char ppf c
+        f ppf str.[i]
       done in
     make_formatter out ignore in
   p ppf' x;
   pp_print_flush ppf' ()
+
+let escape_char char =
+  print_wrap (fun ppf -> function '\\' -> pp_print_string ppf "\\\\" | c -> if c = char then pp_print_char ppf '\\'; pp_print_char ppf c)
+
+let dont_newline p =
+  print_wrap (fun ppf -> function '\n' -> () | c -> pp_print_char ppf c) p
 
 let loc_string loc = 
   format_str "'%a'" (escape_char '\'' Location.print) loc
@@ -152,24 +153,20 @@ let name = "Html error reporting"
 let print_program_aux ppf (ast, program) =
   print_program (EzyAst.CollectLocs.structure ast) ppf (Lazy.force program)
 
-let safe_print p ppf x =
-(*   let str = print_to_to_string p x in *)
-  p ppf x
-
 let print_errors' ~program ast ppf errors =
   fprintf ppf (template ())
     print_program_aux (ast, program)
-    (List.print  print_error ", ") (ErrorSet.elements errors)
+    (List.print  (dont_newline print_error) ", ") (ErrorSet.elements errors)
 
 let print_heavies' ~program ast ppf heavies =
   fprintf ppf (template ())
     print_program_aux (ast, program)
-    (List.print  print_heavy ", ") (HeavyErrorSet.elements heavies)
+    (List.print  (dont_newline print_heavy) ", ") (HeavyErrorSet.elements heavies)
 
 let print_fatal' ~program loc ppf fatal =
   fprintf ppf (template ())
     (print_program (LocationSet.singleton loc)) (Lazy.force program)
-    (safe_print print_fatal) (loc, fatal)
+    (dont_newline print_fatal) (loc, fatal)
 
 let print_valid ~program ted_str ppf =
   let print_program ppf =
