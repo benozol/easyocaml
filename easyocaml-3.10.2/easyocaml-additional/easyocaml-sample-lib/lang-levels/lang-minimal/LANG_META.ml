@@ -23,4 +23,4 @@ let _ =
           s_let = Some let_feats } in
   let prf = 
     { pr_expr_feats = ef; pr_struct_feats = sf } in
-  configure prf ["Mylist", true; "Mypervasives", true] ["mylist.cmo"; "mypervasives.cmo"]
+  configure prf ["List", true; "Pervasives", true] []
