@@ -549,7 +549,7 @@ module Logger = struct
       | Error -> "ERR" | Trace -> "TRC"
   let level = ref (try level_of_string (Sys.getenv "EASYOCAML_LOGLEVEL") with Not_found -> Warn)
   let layers = ref (try Some (Misc.rev_split_words (Sys.getenv "EASYOCAML_LOGLAYERS")) with Not_found -> None)
-  let time_level = ref (try int_of_string (Sys.getenv "TEASYOCAML_TIMELEVEL") with _ -> 0)
+  let time_level = ref (try int_of_string (Sys.getenv "EASYOCAML_TIMELEVEL") with _ -> 0)
   let ppf = Format.std_formatter
   let null_ppf = Format.make_formatter (fun _ _ _ -> ()) (fun _ -> ())
 
@@ -577,8 +577,7 @@ module Logger = struct
     ) else
       Format.ifprintf ppf
 
-(*
-  let _time : 'a -> 'b =
+(*let _time : 'a -> 'b =
     let last_times = Array.create 10 0.0 in
     fun level ->
       let current = Unix.gettimeofday () in
@@ -587,10 +586,9 @@ module Logger = struct
         else current -. last_times.(level) in
       last_times.(level) <- current ;
       if !atime_level < !time_level then 
-        Format.fprintf ppf "[TME] %2.4f %s %s" diff (String.make (2 * !atime_level) '-') msg ;
- *)
+        Format.fprintf ppf "[TME] %2.4f %s %s" diff (String.make (2 * !atime_level) '-') msg ; *)
 
-  (* let _atime : string -> ('a -> 'b) -> 'a -> 'b =
+(*let _atime : string -> ('a -> 'b) -> 'a -> 'b =
     let atime_level = ref 1 in
     fun msg f x ->
       let start = Unix.gettimeofday () in

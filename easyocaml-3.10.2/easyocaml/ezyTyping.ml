@@ -399,6 +399,7 @@ let beta_error loc p err =
   exit 101 (* NOTE this exit value is recognized by the `runtests' script *)
 
 let type_and_compare_implementation sourcefile outputprefix modulename initial_env parse_tree fs =
+  logger#debug "Conf.load_path: [%a]" (EzyUtils.List.print Format.pp_print_string ", ") (!Config.load_path);
   let enr_str, s, _ =
     let str = EzyEnrichedAst.import_structure fs parse_tree in
     logger#debug "@[<2>Ezy imported tree:@ %a@]" (fun ppf -> List.iter (EzyAst.print_structure_item () ppf)) str ;
@@ -420,6 +421,7 @@ let type_and_compare_implementation sourcefile outputprefix modulename initial_e
 
 
 let type_and_compare_top_phrase fs oldenv str =
+  logger#debug "Conf.load_path: [%a]" (EzyUtils.List.print Format.pp_print_string ", ") (!Config.load_path);
   let enr_str, s, env =
     let str' = EzyEnrichedAst.import_structure fs str in
     type_structure oldenv str' in
