@@ -1,0 +1,90 @@
+
+\section{Errors and Error Reporting Adaptibility}
+\label{hd003}
+EasyOCaml is essentially build for teaching programming .  Therefore, 
+special attention is paid to the way errors are reported.
+
+Firstly, errors should provide a \emph{right} amount of details, too few 
+information is of course insufficient, but also too much information can 
+be confusing. So, for example in type constructor clashes exactly those 
+locations are reported, which are essential to the error.  Delivering 
+more information on the reasons of type errors is exactly what 
+EasyOCaml's type checker is made for.
+
+Secondly, error reporting should be adaptable: For a beginner, reading 
+errors in a foreign language can distract or even prevent him from 
+fixing an error. Furthermore, the error output should be adaptable in 
+its overall structure to serve as the input for different kinds of 
+presentation, e.g. plain text on command line or HTML for visually 
+display it in a web browser.
+
+The last section has explained the improvements of EasyOCaml to type 
+error messages. The following will describe improvements to the parser.
+
+
+\subsection{New Errors for Camlp4}
+\label{hd003001}
+As mentioned, EasyOCaml parses its input with a Camlp4 parser.  
+Unfortunately, Camlp4's error messages are hard coded in the parser's 
+code in English and never represented in data.  The reason is that 
+Camlp4 is a OCaml stream parser in its core, and this requires parsing 
+errors to be reported as \texttt{Stream.Error~of~string} exceptions.
+
+Nevertheless, we supplied Camlp4 with a new error reporting system, up 
+to now just to make error reporting adaptable, but it should be possible 
+now to augment the information of parse errors by the parser's current 
+state. Now, a parsing error \texttt{ParseError.t} is one of the 
+following:
+
+\begin{description}
+    \item[\texttt{Expected~(entry,~opt\_before,~context)}] is raised 
+        if when the parser stucks while parsing a phrase: \texttt{entry} 
+        describe the categories of the possible, expected subphrases, 
+        \texttt{opt\_before} might describe the category of the entry 
+        just parsed and \texttt{context} denotes the category of the 
+        phrase currently parsed.
+    \item[\texttt{Illegal\_begin~sym}] is raised when the parser is 
+        not able to parse the top categories described by \texttt{sym}.
+    \item[\texttt{Failed}] is raised only in 
+        \texttt{Camlp4.Struct.Grammar.Fold}.
+    \item[\texttt{Specific\_error~err}] Beside the generic parsing 
+        errors just mentioned, it is possible to extend the parsing 
+        errors per language by ``artificial'' errors which are specific 
+        to a language, e.g. \texttt{Currified~constructor} in OCaml, 
+        which is not represented in the grammar but checked in code. 
+        (further errors for EasyOCaml are specified in 
+        \texttt{Camlp4.Sig.OCamlSpecificError}.)
+\end{description}
+
+Now, how are these errors represented in the string information of the 
+\texttt{Stream.Error}?  Not without a hack, which is luckily hidden 
+behind the interface of Camlp4:  Internally, Camlp4 throws 
+\texttt{Stream.Error} exceptions but the string has the following 
+format: ``\texttt{$<$msg$>$\textbackslash{}000$<$mrsh$>$}'' where 
+\texttt{$<$msg$>$} is the usual Camlp4 error message and 
+\texttt{$<$mrsh$>$} is a marshalled parsing error as just described. The 
+string of a \texttt{Stream.Error} is again decomposed in the interface 
+function for parsing (namely 
+\texttt{Camlp4.Struct.Grammar.Entry.action\_parse}), and reported as a 
+\texttt{ParseError.t} to the user.
+
+
+\subsection{Adaptibility}
+\label{hd003002}
+For internationalization of error messages and different structure of 
+error messages for different display settings, EasyOCaml provides 
+adaptability of error messages by a plugin system.  Error reporting 
+plugins should use \texttt{EzyError}`s internationalized functions to 
+output the error's description (\texttt{EzyErrors.print*\_desc}) to keep 
+them uniform but can print it any structure:  Currently, a plain text 
+format is default and a HTML printer which highlights the locations of 
+an error in source code and a XML/Sexp printer for usage in an IDE are 
+delivered with EasyOCaml.
+
+The user can register an error printer via the command line flag 
+\texttt{-easyerrorprinter}.  The module is dynamically linked and 
+registers itself with \texttt{EzyErrors.register} where appropriate 
+functions are overwritten.
+
+The following section describes the tools, EasyOCaml provides 
+specifically for teaching programming.

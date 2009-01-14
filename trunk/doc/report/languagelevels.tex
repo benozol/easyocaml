@@ -1,0 +1,75 @@
+
+\section{Language Levels and Teachpacks}
+\label{hd004}
+Language levels are a facility to describe the initial state of the 
+EasyOCaml compiler or toplevel system in means of the environment which 
+is accessible to the user and the available syntax.  Language levels are 
+useful for teaching programming, as they can be designed just for 
+specific exercises -- probably providing an easy interface to some 
+advanced API and restrictions on the syntactic elements taught so far, 
+to avoid syntax errors regarding unknown syntactic elements.
+
+Here is in more detail, what language levels can define: The available 
+\emph{syntactic features}.  One can specify the syntactic elements which 
+are allowed for patterns, expressions, structure items and type 
+declarations, in high detail. Currently, most of these restrictions are 
+implemented by deleting the according entries from the grammar (thanks 
+to the power of Camlp4!).  However, some features like mandatory type 
+annotations for toplevel values are checked afterwards while importing 
+the AST to EasyOCaml's AST.
+
+Settings of \emph{path inclusion} and \emph{object loading and opening}.  
+Teach packs can specify the directories which are included for searching 
+objects, just like the \texttt{-I} command line flag.  A teach pack can 
+contain objects itself and the specification which have to be loaded 
+(just like putting them on the command line).  Furthermore, teach packs 
+can specify which modules are opened on startup.
+
+Teach packs can specify the settings for path inclusion and object 
+loading. Whereas only one language level can be loaded, teach packs can 
+extend a possible language level.
+
+The user can specify which language level and teach pack to use by the 
+\texttt{-easylevel} and \texttt{-easyteachpack} command line parameter 
+respectively. EasyOCaml then searches for it in the following 
+directories:
+
+There is a global and a user configuration directory. First, EasyOCaml 
+searches the user then the global configuration directory.  Here's how 
+the global configuration directory is determined (in descending 
+preference):
+
+\begin{enumerate}
+    \item Environment variable EASYOCAML\_GLOBAL\_DIR
+    \item Compile-time option
+\end{enumerate}
+
+Here's how the user configuration directory is determined (in descending 
+preference):
+
+\begin{enumerate}
+    \item Environment variable EASYOCAML\_USER\_DIR
+    \item \$HOME/.easyocaml
+\end{enumerate}
+
+Layout of the easyocaml configuration directory:
+
+\begin{verbatim}
+ language-levels/level-1
+                 level-2
+                 ...
+ teachpacks/tp-1
+            tp-2
+            ...
+\end{verbatim}
+
+Each language level and teach pack contains a module \texttt{LANG\_META} 
+which is loaded into EasyOCaml.
+
+The idea of teach packs and language levels is taken from DrScheme.  See 
+\href{http://docs.plt-scheme.org/drscheme/extending-drscheme.html}{http://docs.plt-scheme.org/drscheme/extending-drscheme.html}
+for more information.
+
+\label{endpart1}
+
+
