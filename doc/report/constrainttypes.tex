@@ -1,0 +1,90 @@
+
+\section{Constraint Based Type Inference}
+\label{hd002}
+\label{startpart1}
+
+The type inference currently used by OCaml has the algorithm by 
+Damas-Milner (1982)$^{*}$\protect\marginpar{$^{*}$\emph{???}} at its 
+core.  Although it is very efficient and broadly extended to OCaml's 
+requirements, it lacks a memory:  For example, type inference for 
+variables works by accumulating (unifying) information on their usages 
+while traversing the AST. Broadly spoken, a type constructor clash is 
+detected as the usage just inspected contradicts the information 
+collected so far.  Therefore, OCaml's type checker cannot report any 
+\emph{reasons} for a type error but reports only the location where the 
+error became obvious to the type checker.  Much work while debugging 
+type errors in OCaml persists of manually searching for other usages of 
+the mis-typed variable in the program which lead to the type constructor 
+clash.
+
+
+\subsection{Haack \& Wells}
+\label{hd002001}
+Haack \& Wells (2004) have described an algorithm which exceeds a 
+Damas-Milner-style type inference (algorithm $W$) in two ways: Firstly, 
+every type error report contains information on exactly those locations 
+in the program which are essential to the error, by means of dropping it 
+would vanish the error.  Secondly, it reports all type errors in a 
+program at once (whilst locations which are involved in several type 
+errors are most notable the source of the errors, by the way).
+
+In a sense, algorithm $T$ does two things at once while traversing the 
+AST: it generates type information on the variables and unifies it with 
+existing type information anon.  Haack \& Wells' algorithm achieves its 
+goals by separating these steps.
+
+During \emph{constraint generation}, every node of the AST gets 
+annotated with a type variable. While traversing the AST, information on 
+those type variables is collected from the usage and context of each 
+node.  The information is stored as a set of constraints on the type 
+variables.
+
+The intention is the following: If \emph{unification} on those 
+constraints succeeds, the resulting substitution represents a valid 
+typing of the program with respect to the type variables of the nodes.
+
+Otherwise, the program has at least one type error. But now, the 
+collected type information is still available as a set of constraints 
+and enables the algorithm to reexamine the errors in a second stage of 
+\emph{error enumeration and minimization}: Error enumeration is 
+basically done by systematically removing constraints grounded at one 
+program location from the constraint set and running unification again 
+on the result. Haack \& Wells also present an iterative version of this 
+algorithm which is implemented in EasyOCaml. Although it avoids 
+recomputation of the same errors over and over again, error enumeration 
+has nevertheless exponential time consumptions. Thus error enumeration 
+delimited to a given time amount which can be specified by the 
+environment variable \texttt{EASYOCAML\_ENUM\_TIMEOUT}.
+
+The result of error enumeration is a set of errors each represented as a 
+complete set of locations whose nodes in the AST have yielded to the 
+error (\emph{complete} in being a superset of the constraints which 
+caused the type error). By application of error minimization on each 
+error, the algorithm guarantees \emph{minimality} of the reported errors 
+in the sense that removing the constraints annotated with a location 
+would vanish the error itself.
+
+In addition to type errors, Haack \& Wells technique also enables the 
+type checker to collect unbound variables in the program while 
+generating. Their types are assumed as a free variable to avoid a type 
+error, but unbound variables are reported with the type errors after 
+error enumeration.
+
+
+\subsection{Extensions for EasyOCaml}
+\label{hd002002}
+Haack \& Wells' description comes with constraint generation rules only 
+for variables, infix operations, functional abstraction, application and 
+local polymorphic variable bindings. Although this is a good starting 
+point to describe the algorithms involved, we had to extend it to the 
+Caml-$m$.
+
+% TODO
+\begin{itemize}
+    \item records \ldots{}
+    \item variants \ldots{}
+    \item type annotations \ldots{}
+\end{itemize}
+\what
+See appendix~\ref{sec_rules} for a complete list of inference rules used 
+in EasyOCaml.
