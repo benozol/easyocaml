@@ -1,5 +1,7 @@
 
 \section{Objectives and Introduction}
+\label{sec:intro}
+
 \label{hd001}
 \emph{Objective Caml} \citep{leroy2008} is a programming language which unifies 
 functional, imperative and object oriented concepts in a ML-like 
@@ -35,13 +37,11 @@ achieve this by
 The project is hosted at
 \href{http://easyocaml.forge.ocamlcore.org}{http://easyocaml.forge.ocamlcore.org}.
 
-\subsection{Supported Language}
-
 \subsection{Similar Projects}
 \label{hd001002}
 There are some projects which heavily influenced our work:
 
-\citet{Haack_abstracttype} have described and implemented a technique 
+\citet{haackwells04} have described and implemented a technique 
 to produce more descriptive type error messages in a subset of SML.  
 Their work is seminal for constraint based type checking with attention 
 on good error reporting and builds the foundation for EasyOCaml's type 
@@ -58,14 +58,18 @@ programming.  It has introduced the concept of language levels and teach
 packs to restrict the syntax and broaden functionality especially for 
 exercises. These are included in EasyOCaml, too.
 
-This report has three goals: Firstly, to present EasyOCaml and the 
-concepts used and developed for it (target audience: the users) through 
-section~\ref{startpart1} --~\ref{endpart1}.
-Secondly, formal foundations for the type checker are given the appendix (target
-audience: the interested readers) in section~\ref{sec_rules}.
-Thirdly, it combines these concepts with the actual implementation and
+This report has three goals:
+Firstly to present EasyOCaml and the concepts used and developed for it (target
+audience: the users) through section~2--4.
+Then it describes the usage of the programs \texttt{ecaml} and \texttt{ecamlc} for usaga in appendix~\ref{sec:manual}.
+Afterwards it combines these concepts with the actual implementation and
 describes its architecture in code (target audience: the developers) in
 section~\ref{impldets}.
+Finally formal foundations for the type checker are given the appendix (target
+audience: the interested readers) in section~\ref{s:rules}.
+
+
+\subsection{Supported Language}
 
 \label{hd001001}
 EasyOCaml supports a strict subset of OCaml, namely Caml without module 

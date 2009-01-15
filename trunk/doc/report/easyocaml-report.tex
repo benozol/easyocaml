@@ -1,35 +1,29 @@
-\documentclass[11pt,a4paper,english]{report}
+\documentclass[11pt,titlepage,abstracton]{scrartcl} % remove draft for hyperlinks
 
-\usepackage[utf8]{inputenc}
-\usepackage{hyperref}
-%\usepackage{deplate}
-\usepackage{amsmath, amsfonts, amssymb}
-\usepackage{mathpartir}
-\usepackage{extarrows}
-\usepackage{multicol}
-\usepackage[usenames,dvipsnames]{color}
-\usepackage{natbib}
-
+\usepackage{mystyle}
 \usepackage{myrules}
+\usepackage{myheadings}
 
-\newcommand\what{$^{*}$\protect\marginpar{$^{*}$\emph{+++}}}
 
 \title{EasyOCaml: Concepts, Implementation and Technicalities}
-\author{Benus Becker\protect\footnote{Institut f\"ur Informatik, Abteilung Programmiersprachen, Universit\"at Freiburg}}
+\author{Benus Becker}
+\titlehead{Institut für Informatik \\ Abteilung Programmiersprachen \\ Universität Freiburg}
 \date{Summer 2008}
+\subject{Studienarbeit}
 
 \begin{document}
-\include{start}
-\include{intro}
-\include{constrainttypes}
-\include{errorreporting}
-\include{languagelevels}
-\include{conclusion}
+\input{start}
+\input{intro}
+\input{constrainttypes}
+\input{errorreporting}
+\input{languagelevels}
+\input{conclusion}
 \begin{appendix}
-  \include{implementation}
-  \include{rules}
+  \clearpage\input{manual}
+  \clearpage\input{implementation}
+  \clearpage\input{rules}
   \bibliographystyle{apalike}
-  \bibliography{easyocaml}
+  \clearpage\bibliography{easyocaml}
 \end{appendix}
 \end{document}
 

@@ -1,9 +1,10 @@
 
 \section{Details of the Implementation}
+
 \label{impldets}
 
 \subsection{Outline of EasyOCaml's Pipeline}
-\label{hd005001}
+
 Here is a rough outline of EasyOCaml's pipeline which is quite similar 
 for both the compiler and the toploop:
 
@@ -53,7 +54,7 @@ for EasyOCaml and locate functions for the EasyOCaml's steps in
 
 
 \subsection{Utilities and Miscellaneous}
-\label{hd005002}
+
 Two rather independent modules for code used in EasyOCaml
 
 \begin{description}
@@ -92,7 +93,7 @@ reporting plugins can be registered.
 
 
 \subsection{Teachpacks and Language Levels}
-\label{hd005004}
+
 \begin{description}
     \item[EzyConfig] Constants of the teach pack system (e.g. the 
         name of the module describing the teach pack or language level) 
@@ -116,7 +117,7 @@ reporting plugins can be registered.
 
 
 \subsection{Abstract Syntax Tree}
-\label{hd005005}
+
 The following modules contain representation, manipulation, parsing and 
 restrictions on EasyOCaml's AST.
 
@@ -151,7 +152,7 @@ restrictions on EasyOCaml's AST.
 
 
 \subsection{Type Constraints}
-\label{hd005006}
+
 \begin{description}
     \item[EzyTypingCoreTypes] Contains base types for the 
         constraints and their generation, closely related to the data 
@@ -167,7 +168,7 @@ restrictions on EasyOCaml's AST.
 \end{description}
 
 \subsection{Typing}
-\label{hd005007}
+
 \begin{description}
     \item[EzyTyping] Unification of constraint set which yield a 
         substitution on the variables and error enumeration and 
@@ -181,3 +182,9 @@ restrictions on EasyOCaml's AST.
         variable substitution resulting from \texttt{EzyTyping.solve}.
 \end{description}
 
+
+\subsection{Camlp4}
+\begin{description}
+  \item[OcamlSpecificErrors]
+    \label{mod:ocamlspecificerrors}
+\end{description}
