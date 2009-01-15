@@ -1,0 +1,30 @@
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  Move numbers of section headings left into the margin
+%
+% Re-define \chapterformat only if it is defined and not
+% \relax without making it \relax if it is not defined:
+\begingroup
+\expandafter\expandafter\expandafter\endgroup
+\expandafter\ifx\csname chapterformat\endcsname\relax\else
+  \renewcommand*{\chapterformat}{%
+    \llap{%
+      % Following line is the original definition
+      \chapappifchapterprefix{\ }\thechapter\autodot\enskip
+    }%
+  }
+\fi
+ 
+% Re-define \othersectionlevelsformat
+\renewcommand*{\othersectionlevelsformat}[1]{%
+  \llap{%
+    % Following line is the original definition
+    \csname the#1\endcsname\autodot\enskip
+  }%
+}
+ 
+%
+%  End of redefining format makros
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
