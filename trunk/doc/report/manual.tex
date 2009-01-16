@@ -1,4 +1,66 @@
 
-\section{\texttt{ecaml} and \texttt{ecamlc}'s manual}
+\section{The user interface (manual)}
 \label{sec:manual}
-...
+
+This section describe the extensions of the \texttt{ocaml} and \texttt{ocamlc} programs.
+
+\subsection{Command line parameters}
+\label{sec:commandlineflags}
+
+There are some command line flags to control \easyocaml:
+
+\begin{description}
+  \item[\texttt{-easy}] This flag enables \easyocaml\ and is obligatory for
+    usage of all other command line flags desribed here.
+    It enables an alternative type checking algorithm wich gives more
+    information on the type errors.
+  \item[\texttt{-easyteachpack <teachpack>}] Enables a teachpack named \texttt{<teachpack>}.
+\end{description}
+
+\subsection{Environment variables}
+
+\begin{description}
+  \item[\texttt{EASYOCAML\_ENUM\_TIMEOUT}] \label{man:timeout}
+    The real value controls the maximal amount of
+    time \easyocaml\ may use to enumerate type errors (note, that the underlying algorithm
+    has exponential time consumptions).
+\end{description}
+
+
+\subsection{The EasyOCaml directory}
+
+\easyocaml\ searches for language levels and teachpacks in a designated
+configuration directory.
+
+There is a global and a user configuration directory. First, EasyOCaml 
+searches the user then the global configuration directory.  Here's how 
+the global configuration directory is determined (in descending 
+preference):
+
+\begin{enumerate}
+    \item Environment variable EASYOCAML\_GLOBAL\_DIR
+    \item Compile-time option
+\end{enumerate}
+
+Here's how the user configuration directory is determined (in descending 
+preference):
+
+\begin{enumerate}
+    \item Environment variable EASYOCAML\_USER\_DIR
+    \item \$HOME/.easyocaml
+\end{enumerate}
+
+\easyocaml's configuration directory must have the following structure:
+
+\begin{verbatim}
+ language-levels/level-1
+                 level-2
+                 ...
+ teachpacks/tp-1
+            tp-2
+            ...
+\end{verbatim}
+
+Each language level and teach pack contains a module \texttt{LANG\_META} 
+which is loaded into EasyOCaml.
+

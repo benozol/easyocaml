@@ -1,6 +1,6 @@
 
 \section{Constraint Based Type Inference}
-\lable{sec:typeinfer}
+\label{sec:typeinfer}
 
 The type inference currently used by OCaml has the algorithm $\mathcal W$ by
 \citet{milner78} at its core.
@@ -19,7 +19,7 @@ to the type constructor clash.
 
 
 \subsection{Haack \& Wells}
-\label{hd002001}
+
 \citet{haackwells04} describe an algorithm which exceeds the algorithm
 $\mathcal W$ in two ways:
 Firstly, every type error report contains information on exactly those
@@ -53,7 +53,7 @@ program location from the constraint set and running unification again.
 is implemented in EasyOCaml. Although it avoids recomputation of the same
 errors over and over again, error enumeration has nevertheless exponential time
 consumptions. Thus error enumeration delimited to a given time amount which can
-be specified by the environment variable \texttt{EASYOCAML\_ENUM\_TIMEOUT}.
+be specified by a environment variable (see \ref{man:timeout}).
 
 The result of error enumeration is a set of errors, each represented as a
 complete set of locations whose nodes in the AST have to the error
@@ -70,15 +70,42 @@ error, but unbound variables are reported with the type errors after
 error enumeration.
 
 
-\subsection{Extensions for \easyocaml}
-\label{hd002002}
-\citet{haackwells04} comes with constraint generation rules only for variables,
-infix operations, functional abstraction, application and local polymorphic
-variable bindings. This is a good starting point to describe the algorithms
-involved, but we had to extend it to the \emph{Caml}$_{-m}$.
+\subsection{Extensions for EasyOCaml}
+\label{sec:extending}
 
-\new \easyocaml\ features a much richer type system, because it facilitates the
-declaration of record types, variant types and type synonyms.
+\citet{haackwells04} comes with constraint generation rules only for
+\textsl{MiniML}, i.e. variables, infix operations, functional abstraction,
+application and local polymorphic variable bindings.
+This is good to describe the algorithms involved, but we had to extend it to
+the language \camlm\ as loosely described in section \ref{sec:language} and more
+formally in section \ref{sec:grammar}. I will describe the constraint
+generation rules for \easyocaml\ by example here, take a look into section
+\ref{sec:rules} for the complete set of rules.
+
+In the following, $\Delta$ always denotes an environment for variables, record
+fields and variant constructors, with access by $\Delta\onident$,
+$\Delta\onvar$, $\Delta\onrecord$ and $\Delta\onvar$ respectively.
+%\easyocaml\ features a much richer type system, because it facilitates the
+%declaration of values, record types, variant types and type synonyms.
+To capture the possibility to \emph{declare} values and types, constraint
+generation rules for structure items have the form
+
+\[ \Delta;\ strit \Downarrow_s \langle \Delta',\ C,\ u\rangle.\]
+
+$\Delta$ denotes the environent which contains declarations in the program so
+far, $strit$ denotes the current structure item. $\Delta'$ denotes the
+environment $\Delta$ extended by declarations in $strit$ and $C$ is a set of
+constraints collected in $strit$. Finally, $u$ is a set of errors in $strit$
+which are desribed in \ref{sec:easyerrors}.
+
+This is the rule for the declaration of a variant type:
+
+\centerline{\inferrule[Variant Decl]
+{\Delta' = \Delta\onvar[t \mapsto \{ \langle K_1, ty_1\rangle^{l_1}, \dots, \langle K_n, ty_n\rangle^{l_n}\}^l]}
+{\styjudge \Delta {(\code{type}\ t = K_1\ \code{of}^{l_1}\ ty_1\ \code | \dots \code | K_n\ \code{of}^{l_n}\ ty_n)^l} {\Delta'} \emptyset \emptyset}}
+
+It just extends the current environment $\Delta$ with the variant constructors
+$K_1$ to $K_n$ with the given types.
 
 \dots
 
@@ -106,5 +133,5 @@ proving that the annotated type is a subtype of the inferred type.
     \item references \ldots{}
 \end{itemize}
 
-See appendix~\ref{s:rules} for a complete list of inference rules used 
-in EasyOCaml.
+See section~\ref{sec:rules} for a complete list of inference rules used in
+EasyOCaml.

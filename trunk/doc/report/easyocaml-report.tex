@@ -4,26 +4,31 @@
 \usepackage{myrules}
 \usepackage{myheadings}
 
+\newcommand\ocaml{\textsl{OCaml}}
+\newcommand\easyocaml{\textsl{EasyOCaml}}
+\newcommand\camlpf{\textsl{Camlp4}}
+\newcommand\camlm{\textsl{Caml}$_{-m}$}
 
 \title{EasyOCaml: Concepts, Implementation and Technicalities}
 \author{Benus Becker}
 \titlehead{Institut für Informatik \\ Abteilung Programmiersprachen \\ Universität Freiburg}
-\date{Summer 2008}
+\date{Summer 2008, ff.}
 \subject{Studienarbeit}
 
 \begin{document}
 \input{start}
 \input{intro}
+\clearpage \part{Concepts and design} \label{part:concepts}
 \input{constrainttypes}
 \input{errorreporting}
 \input{languagelevels}
 \input{conclusion}
-\begin{appendix}
-  \clearpage\input{manual}
-  \clearpage\input{implementation}
-  \clearpage\input{rules}
-  \bibliographystyle{apalike}
-  \clearpage\bibliography{easyocaml}
-\end{appendix}
+\clearpage \part{Manual, formalities and implementation} \label{part:implem}
+\input{manual}
+\clearpage\input{grammar}
+\clearpage\input{implementation}
+\clearpage\input{rules}
+\bibliographystyle{apalike}
+\clearpage\bibliography{easyocaml}
 \end{document}
 
