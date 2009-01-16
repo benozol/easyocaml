@@ -6,17 +6,18 @@
 \emph{Objective Caml} \citep{leroy2008} is a programming language which unifies 
 functional, imperative and object oriented concepts in a ML-like 
 language with a powerful and sound type system.  Its main implementation 
-(\href{http://caml.inria.fr}{http://caml.inria.fr}) ships 
-with a platform independent byte code compiler and an efficient machine 
-code compiler and there are a lot of existing libraries, which make it a 
-real multi purpose programming language.
+(\url{http://caml.inria.fr}) ships with a platform independent byte code
+compiler and an efficient machine code compiler and there are a lot of existing
+libraries, which make it a great multi purpose programming language.
 
-Up to now, OCaml is not a language well suited for \emph{learning and teaching
-programming}: It has a very rich type system, but type errors are reported only
-by a message and a single location in the code without giving any clues for the
-underlying reasons. On the other hand, OCaml comes with tools (e.g.
-\citeauthor{stolpmann}'s \emph{findlib}) which make it easy to handle libraries
-for developers, but it lacks a fool-proof system to use primed code.
+Up to now, OCaml is not a language well suited for \emph{learning} and
+\emph{teaching programming}:
+It has a very rich type system, but type errors are reported only with few
+information on the underlying reasons.
+Some practice is necessary to manage these.
+On the other hand, OCaml comes with tools (e.g.  \citeauthor{stolpmann}'s
+\emph{findlib}) which make it easy to handle libraries for developers, but it
+lacks a fool-proof system to use primed code in programming lessons.
 
 The objectives of this work are, in large, to make OCaml a
 programming language better suited for beginners and to teach programming. We
@@ -35,10 +36,11 @@ achieve this by
         OCaml's code generation facilities.
 \end{itemize}
 The project is hosted at
-\href{http://easyocaml.forge.ocamlcore.org}{http://easyocaml.forge.ocamlcore.org}.
+\url{http://easyocaml.forge.ocamlcore.org}  where an online demo of EasyOCaml's
+type inference and languge levels can be found, too.
 
 \subsection{Similar Projects}
-\label{hd001002}
+
 There are some projects which heavily influenced our work:
 
 \citet{haackwells04} have described and implemented a technique 
@@ -56,24 +58,24 @@ Finally, \emph{DrScheme} \citep{Felleisen98thedrscheme} is a programming
 environment for the Scheme language that is build for teaching 
 programming.  It has introduced the concept of language levels and teach 
 packs to restrict the syntax and broaden functionality especially for 
-exercises. These are included in EasyOCaml, too.
+exercises.
 
-This report has three goals:
-Firstly to present EasyOCaml and the concepts used and developed for it (target
-audience: the users) through section~2--4.
-Then it describes the usage of the programs \texttt{ecaml} and \texttt{ecamlc} for usaga in appendix~\ref{sec:manual}.
-Afterwards it combines these concepts with the actual implementation and
+\easyocaml\ uses and combines ideas of all these project for the attempt to
+make \ocaml\ better suited for learning and teaching programming.
+
+\input{language}
+
+\subsection*{Goals of this report}
+This report is split in a less formal part \ref{part:concepts} which is easily readable
+and a more formal part which acts as a reference for the user and developer.
+This report has four goals:
+
+Firstly to present EasyOCaml and the concepts used in and developed for it
+(target audience: the users) through section~2--5.
+Then, it describes the usage of the programs \texttt{ecaml} and \texttt{ecamlc}
+for usage in section~\ref{sec:manual}.
+Afterwards it combines the concepts with the actual implementation and
 describes its architecture in code (target audience: the developers) in
 section~\ref{impldets}.
-Finally formal foundations for the type checker are given the appendix (target
-audience: the interested readers) in section~\ref{s:rules}.
-
-
-\subsection{Supported Language}
-
-\label{hd001001}
-EasyOCaml supports a strict subset of OCaml, namely Caml without module 
-declarations (called ``Caml-$m$''). Take a look into the file 
-easyocaml-features.pdf for more details on the supported features. 
-\what
-
+Finally, formal foundations for the type checker are given the section~\ref{sec:rules} (target
+audience: the interested readers).

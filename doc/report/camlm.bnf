@@ -1,0 +1,23 @@
+
+program = { strit [";;"] };
+
+strit = ( type_decl | exn_decl | value_decl | expr );
+
+exndecl = ( "exception" lident "=" uident [ "of" core_type ] );
+
+type_decl = ( "type" [ type_var | ("(" type_var { "," type_var } ")") ] lident "="
+              ( core_type | record_decl | variant_decl ) );
+
+core_type = ( prim_type
+          | type_var
+          | "(" core_type ( core_type / "*" ) ")"
+          | [ core_type | ( "(" core_type / "," ")" ) ] longident
+          )
+          ;
+
+longident = ( lident | uident "." longident );
+
+record_type = ( "{" field ":" [ "mutable" ] core_type );
+
+valuedecl = ( "let" "..." );
+expression = ( "..." );

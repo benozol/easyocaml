@@ -10,8 +10,9 @@ for both the compiler and the toploop:
 
 \begin{enumerate}
     \item \label{steps} Command line flags are evaluated to check 
-        the ``\texttt{-easy}'' flag and an error printer and possibly 
-        load a teach pack and/or language levels.
+        the ``\texttt{-easy}'' flag and an error printer and possibly load a
+        teach pack and/or language levels. See section
+        \ref{sec:commandlineflags} for information on the command line flags.
     \item \texttt{EzyCamlgrammar} parses the AST from the input, 
         possibly respecting restrictions from the language level which 
         yields an \texttt{EzyAst.imported\_structure}.
