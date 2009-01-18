@@ -1,5 +1,5 @@
 
-\subsection{Supported Language}
+\section{Supported Language}
 \label{sec:language}
 
 \easyocaml\ targets to be usable not only for the very first steps in
@@ -15,7 +15,7 @@ Here is the supported language features in more detail, which also can be
 pruned by teach packs. See section \ref{sec:grammar} for a complete grammar.
 
 
-\subsubsection*{Structure items}
+\subsection*{Structure items}
 
 \ocaml\ programs consist of a list of \emph{structure items}, which are used to
 declare values, types and exceptions. Expressions occur only as a part of
@@ -32,14 +32,14 @@ sructure items. \easyocaml\ supports
     syntactic sugar for \texttt{let \_ = e}.
 \end{itemize}
 
-\subsubsection*{Core types}
+\subsection*{Core types}
 Direct combinations of existing types are called \emph{core types} in \ocaml.
 \easyocaml\ allows as core types primitive types (\texttt{int}, \texttt{char},
 \texttt{string} and \texttt{float}), free and bound type variables, type arrows
 (types of functions), tuples and type constructors, i.e.\ application of
 parametrized types.
 
-\subsubsection*{Expressions}
+\subsection*{Expressions}
 
 Expressions are parts of a program that can be evaluated to a \ocaml\ value.
 \easyocaml\ supports simple expressions that can be found in \textsl{MiniML},
@@ -51,7 +51,7 @@ conditionals with optional \texttt{else} branch, \texttt{while} and
 \texttt{for} loops, sequences of expressions, exception handling (throwing and
 catching) as well as type annotations.
 
-\subsubsection*{Patterns}
+\subsection*{Patterns}
 
 In \easyocaml, pattern matching is possible in every place where it works in
 \ocaml, i.e.\ value matching (\texttt{match \ldots\ with \emph{pat} -> \ldots\ |
