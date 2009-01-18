@@ -2,27 +2,32 @@
 \section{Errors and Error Reporting Adaptibility}
 \label{sec:errors}
 
-EasyOCaml is essentially build for teaching programming . A such special
-attention is paid to the way errors are reported to achieve the following
-goals:
+\easyocaml\ is essentially build for teaching programming.
+As such, special attention is paid to the way errors are reported to achieve
+the following goals:
 
 Firstly, errors should provide a right amount of details, too few information
 is of course insufficient, but also too much information can be confusing. So,
 for example in type constructor clashes exactly those locations are reported,
-which are essential to the error.  Delivering more information on the reasons
-of type errors is exactly what EasyOCaml's type checker is made for.
+which are essential to the error.
+Delivering more information on the reasons of type errors is exactly what
+\easyocaml's type checker is made for.
 
 Secondly, error reporting should be adaptable: For a beginner, reading 
 errors in a foreign language can distract or even prevent him from 
-understanding an error. Furthermore, the error output should be adaptable in
-its overall structure to serve as the input for different kinds of
-presentation, e.g. plain text on command line or HTML to display it in a web
-browser.
+understanding it.
+Furthermore\new, the error output should be adaptable in its overall structure to
+serve as the input for different kinds of presentation, e.g. plain text on
+command line or HTML to display it in a web browser.
+Adaption of the language used for error reporting can be achieved by changing 
+the environment variable \texttt{LANG}. The formatting can be given by a
+command line argument (see section \ref{sec:manual} for details).
 
-The last section has explained the improvements of \easyocaml\ to type 
-error messages. I will describe the changes to the parser to build a foundation
-to include more information with the parsing errors below and the error
-adaption possibilities subsequently.
+I have explained the improvements of \easyocaml\ to type error messages in the
+last section and will describe the structure  of the errors handled by
+\easyocaml\ as well as the changes to the parser to build a foundation to
+include more information with the parsing errors below and the error adaption
+possibilities subsequently.
 
 \subsection{The structure of errors in EasyOCaml}
 \label{sec:easyerrors}
@@ -32,7 +37,7 @@ adaption possibilities subsequently.
 \label{hd003001}
 As mentioned, \easyocaml\ parses its input with a \camlpf\ parser.  
 Unfortunately, \camlpf's error messages are hard coded in English and never
-represented in data.  This is because \camlpf\ is a OCaml stream parser in its
+represented in data.  This is because \camlpf\ is a \ocaml\ stream parser in its
 core, and this requires parsing errors to be reported as exceptions which only
 allow just a string for information\ttfootnote[exception ]{Stream.Error of
 string}.
@@ -63,10 +68,10 @@ the following:
 \end{description}
 
 How are these errors represented in the string information of the stream error?
-Not without a hack, which is luckily hidden behind the interface of Camlp4:
+Not without a hack, which is luckily hidden behind the interface of \camlpf:
 Internally, the parsing exception contains a string of the format
 ``\texttt{<msg>\textbackslash 000<mrsh>}'' where \texttt{<msg>} is
-the usual Camlp4 error message and \texttt{<mrsh>} is the marshalled parsing
+the usual \camlpf\ error message and \texttt{<mrsh>} is the marshalled parsing
 error as just described.
 This string is again decomposed in the interface function for
 parsing\ttfootnote[function ]{Camlp4.Struct.Grammar.Entry.action\_parse}, and reported as
