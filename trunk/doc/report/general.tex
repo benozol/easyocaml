@@ -3,39 +3,41 @@
 
 This section covers some general information on architecture of \easyocaml\ and
 its language for orientation in supsequent parts.
+It will give a broad overview on \easyocaml's course of actions first.
+Every step is elaborated in more detail in subsequent sections, but they might
+be easier to understand with the knowledge of their role in \easyocaml.
+It will give a desription of the language supported by \easyocaml\ afterwards.
 
 \subsection{Outline of EasyOCaml's Course}
 
-I\what\ will give a broad overview on \easyocaml's course of actions here.
-Every step is elaborated in more detail in subsequent sections, but they might
-be easier to understand with the knowledge of their role in \easyocaml.
-
 By large \easyocaml's additions to the compiler and the toplevel loop do a
-fairly similar job: First, \easyocaml\ parses the command line flags. If they
-contain the \texttt{-easy} flag, flags for defining language levels, teach packs
-and error printers are accepted and loaden into \easyocaml.
+fairly similar job: First, they parse the command line flags. If they
+contain the \texttt{-easy} flag, \easyocaml's type checker is enabled and flags
+for defining language levels, teach packs and error printers are accepted and
+loaden into \easyocaml.
 
-Then, \easyocaml\ takes over the first stage of the compiler py parsing the
-input with a \camlpf parser. The parser incorporates modifications by the
+Then, \easyocaml\ takes over the first stage of the compiler by parsing the
+input with a \camlpf\ parser. The parser incorporates modifications by the
 language level to the availabel syntax. The resulting AST is annotated with
 fresh type variables.
 
 \easyocaml\ then tries to type check the program. It reads the definitions in
-the program and generates a set of constraints on the types of every elements of
-the program by traversing the AST. The constraints on the node's type are based
-on the node's usage and are detailed in the section \ref{sec:typeinfer} and
-\ref{sec:rules}.
+the program and generates a set of constraints on the types of every element of
+the program by traversing the AST. The constraints on the node's types are based
+on the node's usage and their generation is detailed in the section
+\ref{sec:typeinfer} and \ref{sec:rules}.
 Then, the type checker tries to solve those constraints. If they are unifiable,
-the type checker can assign a valid typing on the elements of the AST.
+the type checker can assign a valid typing on the elements of the AST and gives
+control back to \ocaml.
 Otherwise, \easyocaml\ tries to generate as many conflict sets (type errors) as
-possible from the constraints.
+possible from the constraints and reports them to the user.
 
 \subsection{Supported Language: Caml$_{-m}$}
 \label{sec:language}
 
 \easyocaml\ targets to be usable not only for the very first steps in
 programming, so a reasonable subset of the \ocaml\ language is supported.
-This language can be characterized as ``Caml without module declarations'',
+This language can be characterized as ``Caml minus module declarations'',
 hence its designation \camlm.
 
 Unlike simpler functional programming languages like \textit{Scheme} with only
@@ -53,7 +55,7 @@ declare values, types and exceptions.
 \begin{itemize}
   \item optionally parametrized \emph{type declarations} of type synonyms,
     records with optionally mutable fields and variant types.
-  \item \emph{exception declarations} like those of \ocaml.
+  \item \emph{exception declarations} like those in \ocaml.
   \item optionally recursive (\texttt{rec}) and multiple (\texttt{and})
     \emph{value declarations}, where bindings occur with arbitrary patterns.
     Note, that a languge level may require type annotations for toplevel value
@@ -63,8 +65,8 @@ declare values, types and exceptions.
 \end{itemize}
 
 \subsection*{Core types}
-Direct combinations of existing types are called \emph{core types} in \ocaml.
-As core types \easyocaml\ allows primitive types (\texttt{int}, \texttt{char},
+\emph{core types} are direct combinations of existing types are called in \ocaml.
+\easyocaml\ allows as core types primitive types (\texttt{int}, \texttt{char},
 \texttt{string} and \texttt{float}), free (in type annotations) and bound
 (within type declarations) type variables, type arrows (function types), tuples
 and type constructors, i.e.\ applications of parametrized types.
@@ -91,8 +93,8 @@ functional abstractions with the \texttt{function} keyword\ttfootnote{function
 \emph{pat} -> \ldots\ | \ldots} and exception catching\ttfootnote{try \ldots\
 with \emph{pat} -> \ldots\ | \ldots}.
 
-Pattern matching works for every possible value in \easyocaml, i.e.\ primitive
+Pattern matching works on every possible value in \easyocaml, i.e.\ primitive
 values, tuples, variants and records\footnote{version 0.49 lacks the
-implementation for pattern matching on the latter}, and can be nested in every
+implementation for pattern matching on the latter}, and can be nested at every
 level.
 

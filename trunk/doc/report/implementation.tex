@@ -3,56 +3,9 @@
 
 \label{impldets}
 
-\subsection{Outline of EasyOCaml's Pipeline}
+\subsection{Dependency Graph for EasyOCaml's modules}
 
-Here is a rough outline of EasyOCaml's pipeline which is quite similar 
-for both the compiler and the toploop:
-
-\begin{enumerate}
-    \item \label{steps} Command line flags are evaluated to check 
-        the ``\texttt{-easy}'' flag and an error printer and possibly load a
-        teach pack and/or language levels. See section
-        \ref{sec:commandlineflags} for information on the command line flags.
-    \item \texttt{EzyCamlgrammar} parses the AST from the input, 
-        possibly respecting restrictions from the language level which 
-        yields an \texttt{EzyAst.imported\_structure}.
-    \item \texttt{EzyGenerate} generates constraints from the AST 
-        (involving type information from the default environment and 
-        modules loaded by command line or teach packs/language levels).  
-        This yields a quadruple 
-        \texttt{generated\_structure~*~AtConstrSet.t~*~PostProcess.t~*~EzyEnv.t} 
-        where
-        \begin{description}
-            \item[\texttt{generated\_structure}] is the AST 
-                annotated with type variables and unique identifiers.
-            \item[\texttt{AtConstrSet.t}] is a set of constraints on 
-                the type variables in the AST.
-            \item[\texttt{PostProcess.t}] is build gradually during 
-                constraint generation and contains sets of different 
-                types of errors (from \texttt{EzyErrors}) as well as 
-                checks which can only processed after constraint 
-                unification (i.e. type annotations)
-            \item[\texttt{EzyEnv.t}] is used to keep track of local 
-                variables and after constraint generation contains 
-                information on the global types and values of the 
-                program.
-        \end{description}
-    \item \texttt{EzyTyping.solve} tries to solve the generated 
-        constrains.  If solving succeeds, the program is typed by a 
-        substitution on the variables in the generated AST and the 
-        environment and contains type errors otherwise.
-    \item The last step, reimporting the 
-        \texttt{EzyEnrichedAst.generated\_structure} with typing 
-        information given by type substitution to OCaml's original typed 
-        tree is not yet done.  We type the code again with OCaml's 
-        original type checker and compare the result to verify its 
-        correctness.
-\end{enumerate}
-
-The goal of this section is to describe roughly the modules implemented 
-for EasyOCaml and locate functions for the EasyOCaml's steps in 
-~\ref{steps}.
-
+\ldots
 
 \subsection{Utilities and Miscellaneous}
 
