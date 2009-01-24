@@ -162,8 +162,8 @@ conditional expression.
 The constraint generation results in the generated type variable $ty_3$ and the
 union of all occurring constraint and error sets.
 
-Furthermore, \easyocaml\ features type annotations of the form
-\texttt{(lexp:ct)}.  Special considerations are necessary for them:
+Furthermore, \easyocaml\ features type annotations of the form $(lexp:ct)$.
+Special considerations are necessary for them:
 OCaml's current type checker ignores the type annotations whilst unification by
 using the expression $lexp$'s inferred type for further type checking and only
 checks its validity as to $ct$ later on.  So type inference and error reporting
@@ -186,12 +186,11 @@ afterwards, by proving that the annotated type is a subtype of the inferred type
 
 That way, \easyocaml\ assumes the programmer's annotation to be valid and
 meaningful during type inference of the context of $lexp$ and checks for
-contradiction of the annotated expression's type against the annotation
-afterwards.
+contradiction to the expression's type against the annotation afterwards.
 
 Patterns \& rules\more
 
-Other idiosyncracies of \easyocaml's type checker regard the handling of
-errorneous use of variant constructors, record fields and mutable data. The
-detection and handling of non-type errors is described in the next section.
-
+\easyocaml's constraint generation does a second task anon: It checks th
+validity of the variables, record constructors, field accesses and type
+constructions. The handling of those errors and others are described in the
+next section.
