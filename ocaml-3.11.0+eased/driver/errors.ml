@@ -90,4 +90,4 @@ let original_report ppf = function
 let report = ref original_report
 
 let report_error ppf exn =
-  fprintf ppf "@[a@]@." !report exn
+  fprintf ppf "@[%a@]@." !report exn
