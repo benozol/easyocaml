@@ -1,13 +1,8 @@
-\documentclass[12pt,titlepage,abstracton]{scrartcl} % BCOR8.25mm
+\documentclass[11pt,titlepage,abstracton]{scrartcl} % BCOR8.25mm
 
 \usepackage{mystyle}
 \usepackage{myrules}
 \usepackage{myheadings}
-
-\newcommand\ocaml{\textsl{OCaml}}
-\newcommand\easyocaml{\textsl{EasyOCaml}}
-\newcommand\camlpf{\textsl{Camlp4}}
-\newcommand\camlm{\textsl{Caml}$_{-m}$}
 
 \title{EasyOCaml: Making OCaml More Pleasant \large \\[0.5em]
 Concepts, Implementation and Technicalities}
@@ -27,10 +22,10 @@ Concepts, Implementation and Technicalities}
 \input{conclusion}
 \clearpage \part{Manual, formalities and implementation} \label{part:implem}
 \input{manual}
-\clearpage\input{grammar}
-\clearpage\input{implementation}
-\clearpage\input{rules}
-\bibliographystyle{apalike}
+\include{grammar}
+\include{rules}
+\include{implementation}
+\bibliographystyle{chicago}
 \clearpage\bibliography{easyocaml}
 \end{document}
 

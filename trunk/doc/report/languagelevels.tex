@@ -2,43 +2,42 @@
 \section{Language Levels and Teachpacks}
 \label{sec:teachpacks}
 
-Language levels are a facility to describe the initial state of the 
-EasyOCaml compiler or toplevel system in means of the environment which 
-is accessible to the user and the available syntax.  Language levels are 
-useful for teaching programming, as they can be designed just for 
-specific exercises -- probably providing an easy interface to some 
-advanced API and restrictions on the syntactic elements taught so far, 
-to avoid syntax errors regarding unknown syntactic elements.
+Language levels and teach packs are didactical tools to simplify a language and
+its handling for beginners. They were introduced by \drscheme\
+\citep{Felleisen98thedrscheme}  for two reasons: First, their Scheme language is
+split into a ``tower of languages''---that is different levels of syntactical
+and semantical richness. And language levels are used to specify the available
+language. Second, language levels and teach packs can provide arbitrary code to
+the user in a simple and encapsulated way. In contrast, teach packs contain only
+additional code and can extend a currently active language level.
 
-Here is in more detail, what language levels can define: The available 
-\emph{syntactic features}.  One can specify the syntactic elements which 
-are allowed for patterns, expressions, structure items and type 
-declarations, in high detail. Currently, most of these restrictions are 
-implemented by deleting the according entries from the grammar (thanks 
-to the power of Camlp4!).  However, some features like mandatory type 
-annotations for toplevel values are checked afterwards while importing 
-the AST to EasyOCaml's AST.
+That way language levels and teachpack are a mean to adapt the languale to the
+knowledge of students at a dedicated state of the class: Reasonable levels of
+the tower of languages are e.g.\ a first-order functional language, a
+higher-order functional language or a language with imperative features like
+mutable date.
 
-Settings of \emph{path inclusion} and \emph{object loading and opening}.  
-Teach packs can specify the directories which are included for searching 
-objects, just like the \texttt{-I} command line flag.  A teach pack can 
-contain objects itself and the specification which have to be loaded 
-(just like putting them on the command line).  Furthermore, teach packs 
-can specify which modules are opened on startup.
+\easyocaml, however, gives fine grained control over the available syntax. Every
+option of the non-terminal nodes in the grammar (structure items, type
+declarations  expressions, patterns) can be switched on and off. This can be
+done even independently for different usages, e.g. the patterns in value
+matching\ttfootnote{match \dots\ with \emph{pat} -> \dots} can be configured
+in a different way than the patterns in functional
+abstractions\ttfootnote{function \emph{pat} -> \dots}. This is implemented by
+deleting the minimal common disabled set of options from the \camlpf\ grammar.
+At a second stage (namely while transforming the \ocaml\ AST into \easyocaml's),
+all remaining restrictions are examined.
 
-Teach packs can specify the settings for path inclusion and object 
-loading. Whereas only one language level can be loaded, teach packs can 
-extend a possible language level.
+As mentioned, language levels and teach packs can be used to provide code at
+starting time of the compiler and toplevel loop in a simple manner. They contain
+a list of modules which ought to be availble to the user each with an annotation
+if they are opened at start-up time. That way the predefined module
+\texttt{Pervasives} can be extended to any needs.
+Section \ref{sec:manual} shows how to define your own language level or teach
+pack.
 
 The user can specify which language level and teach pack to use by the 
 \texttt{-easylevel} and \texttt{-easyteachpack} command line parameter 
-respectively. EasyOCaml then searches for it in the following 
-directories:
-
-
-The idea of teach packs and language levels is taken from DrScheme.  See 
-\href{http://docs.plt-scheme.org/drscheme/extending-drscheme.html}{http://docs.plt-scheme.org/drscheme/extending-drscheme.html}
-for more information.
-
-
+respectively. \easyocaml\ then searches for it in a dedicated directory as
+described in section \ref{sec:directory}.
 

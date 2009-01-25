@@ -7,14 +7,17 @@ This section describe the extensions of the \texttt{ocaml} and \texttt{ocamlc} p
 \subsection{Command Line Parameters}
 \label{sec:commandlineflags}
 
-There are some command line flags to control \easyocaml:
-
 \begin{description}
   \item[\texttt{-easy}] This flag enables \easyocaml\ and is obligatory for
     usage of all other command line flags desribed here.
     It enables an alternative type checking algorithm wich gives more
     information on the type errors.
-  \item[\texttt{-easyteachpack <teachpack>}] Enables a teachpack named \texttt{<teachpack>}.
+  \item[\texttt{-easyerrorprinter <printer>}] Load the error formatting plugin
+    into the compiler.
+  \item[\texttt{-easylevel <level>}] Enables a language level named
+    \texttt{<teachpack>} which is installed in a configuration directory.
+  \item[\texttt{-easyteachpack <teachpack>}] Enables a teach pack named
+    \texttt{<teachpack>} which is installed in a configuration directory.
 \end{description}
 
 \subsection{Environment Variables}
@@ -24,10 +27,32 @@ There are some command line flags to control \easyocaml:
     The real value controls the maximal amount of
     time \easyocaml\ may use to enumerate type errors (note, that the underlying algorithm
     has exponential time consumptions).
+  \item[\texttt{EASYOCAML\_ONLY\_TYPECHECK}] Exit the compiler after type checking without any code generation.
+  \item[\texttt{LANG}, \texttt{LANGUAGE}]  Controls internationalization of error messages. Possible
+    values: ``en'', ``fr'', ``de''.
+  \item[\texttt{EASYOCAML\_LOGLEVEL}] Controls debugging details. Possible values are ``error'', ``warn'', ``info'', ``debug'', and ``trace''.
+  \item[\texttt{EASYOCAML\_GLOBAL\_DIR}] Specifies the global configuration directory as described below.
+  \item[\texttt{EASYOCAML\_USER\_DIR}] Specifies the user configuration directory as described below.
 \end{description}
 
+\subsection{Defining Languge Levels}
+TBD
+
+\subsection{Defining Error Formatter}
+
+Error formatter for \easyocaml\ are given in \ocaml\ code. They must call
+\texttt{EzyErrors.register} to register functions to print common, heavy and
+fatal errors. After compiling the code with access to \easyocaml's code, the
+resulting object file can be loaden into the compiler at runtime.
+
+It is recommended to use the functions \texttt{EzyErrors.print\_errors},
+\texttt{EzyErrors.print\_heavies} and \texttt{EzyErrors.print\_fatal} to
+actually phrase the error and only define the layout with the plugin. This is
+favorable, because those functions are already internationalized and provide a
+common phrasing between the error printing plugins.
 
 \subsection{The EasyOCaml Directory}
+\label{sec:directory}
 
 \easyocaml\ searches for language levels and teachpacks in a designated
 configuration directory.
@@ -38,7 +63,7 @@ the global configuration directory is determined (in descending
 preference):
 
 \begin{enumerate}
-    \item Environment variable EASYOCAML\_GLOBAL\_DIR
+    \item Environment variable \texttt{EASYOCAML\_GLOBAL\_DIR}
     \item Compile-time option
 \end{enumerate}
 
@@ -46,8 +71,8 @@ Here's how the user configuration directory is determined (in descending
 preference):
 
 \begin{enumerate}
-    \item Environment variable EASYOCAML\_USER\_DIR
-    \item \$HOME/.easyocaml
+    \item Environment variable \texttt{EASYOCAML\_USER\_DIR}
+    \item \texttt{\$HOME/.easyocaml}
 \end{enumerate}
 
 \easyocaml's configuration directory must have the following structure:
