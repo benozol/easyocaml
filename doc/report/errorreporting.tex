@@ -117,11 +117,11 @@ parser's state.
 For internationalization of error messages and different structures of error
 messages for different display settings, \easyocaml\ provides adaptability of
 error messages by a plugin system.  Error reporting plugins should use
-\texttt{EzyError}`s internationalized functions to output the error's
-description (\texttt{EzyErrors.print*\_desc}) to keep them uniform but can
-print it any structure:  Currently, a plain text format is default and a HTML
-printer which highlights the locations of an error in source code and a
-XML/Sexp printer for usage in an IDE are delivered with EasyOCaml.
+\texttt{EzyError}'s internationalized functions to output the description of
+the error (\texttt{EzyErrors.print*\_desc}) to keep them uniform but it can
+print it in any structure:  Currently, a plain text format is the default and a
+HTML printer which highlights the locations of an error in source code and a
+XML/Sexp printer for usage in an IDE are delivered with \easyocaml.
 
 The user can register an error printer via the command line flag 
 \texttt{-easyerrorprinter}.  The module is dynamically linked and 

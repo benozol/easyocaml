@@ -13,6 +13,14 @@
 \newcommand\new{$^{*}$\protect\marginpar{$^{*}$\emph{***}}}
 \newcommand\ttfootnote[2][]{\footnote{#1\texttt{#2}}}
 
+\newcommand\program[1]{#1}
+\newcommand\ocaml{\program{OCaml}}
+\newcommand\easyocaml{\program{EasyOCaml}}
+\newcommand\camlpf{\program{Camlp4}}
+\newcommand\camlm{\program{Caml}$_{-m}$}
+\newcommand\drscheme{\program{DrScheme}}
+
+
 \usepackage[automark]{scrpage2} %Paket scrpage2 benutzen
 \pagestyle{scrheadings} %Seitenstil scrheadings verwenden
 \renewcommand*{\sectionmark}[1]{%
@@ -24,3 +32,5 @@
 \ohead{\pagemark}
 \setheadwidth{textwithmarginpar}
 \setheadsepline{.1pt}
+
+\setcounter{tocdepth}{2}

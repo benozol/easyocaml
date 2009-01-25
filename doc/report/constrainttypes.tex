@@ -3,7 +3,7 @@
 \label{sec:typeinfer}
 
 The type inference currently used by \ocaml\ has the algorithm $\mathcal W$ by
-\citet{milner78} at its core.
+\citet{damasmilner} at its core.
 Although very efficient for most programs and broadly extended to \ocaml's 
 requirements, it lacks sort of a memory:
 Infering the type of a variable is done by accumulating (unifying) information
@@ -70,10 +70,19 @@ itself.
 So, the reported type error contains exactly those locations of the program
 which lead to the error.
 
+Contrary to this approach, other type checkers report whole subtrees of the
+program as the reason of an error. This often yields to non-minimality of the
+reported error (as the subtree might contain locations which do not contribute
+to the error). To correctly display only the minimal (and complete) set of
+progam points, \citeauthor{haackwells04} use \emph{error slices}: All subtrees
+of the program, which do not contribute to the error are pruned and replaced by
+elipsises, leaving only a scaffold of the program containing the blamed program
+points.
+
 In addition to type errors, \citeauthor{haackwells04}' technique also enables the 
 type checker to collect all unbound variables in the program.
 Their types are assumed as free type variables to avoid a type error, but
-reported after solving the constraints or with the type errors after error
+reported after unifying the constraints or with the type errors after error
 enumeration.
 
 
@@ -188,7 +197,22 @@ That way, \easyocaml\ assumes the programmer's annotation to be valid and
 meaningful during type inference of the context of $lexp$ and checks for
 contradiction to the expression's type against the annotation afterwards.
 
-Patterns \& rules\more
+Constraint generation rules for patterns have the form
+\[\Delta;\ pat \Downarrow_p \langle ty,\ C,\ b\rangle.\]
+\noindent and provide the type of the pattern and a set of contraints on that and all
+nested patterns. But contrary to constraint generation rules for expressions,
+all occurring variables are provided as bound to given parts of the matched
+value and accordingly equiped with a type in $b$.
+
+Additionaly there is a fourth kind of constraint generation rules:
+\[\Delta;\ pat\ \code{->}\ lexp {\color{Gray}\ |\ rules} \Downarrow_r \langle
+ty_p,\ ty_e,\ C,\ u\rangle.\]
+\noindent This covers the combination of patterns and expressions as in used in the value
+mathing, functional abstraction and exception catching to deal with different
+variants of the matched value. The rule arranges the bound variables of the
+patterns to be available while generating constraints on the right hand side
+expressions and further generates constraints on the equality of the pattern's
+as well as the expression's types.
 
 \easyocaml's constraint generation does a second task anon: It checks th
 validity of the variables, record constructors, field accesses and type

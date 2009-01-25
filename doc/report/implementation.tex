@@ -1,13 +1,14 @@
 
 \section{Details of the Implementation}
-
 \label{impldets}
 
-\subsection{Dependency Graph for EasyOCaml's modules}
+\subsection{Dependency Graph of EasyOCaml's modules}
 
-\ldots
+\includegraphics[width=\textwidth]{dot_deps}
 
-\subsection{Utilities and Miscellaneous}
+\subsection{Short Descriptions of the Modules}
+
+\subsubsection{Utilities and Miscellaneous}
 
 Two rather independent modules for code used in EasyOCaml
 
@@ -29,8 +30,8 @@ The rest of the modules contains the code for the EasyOCaml
 implementation:
 
 
-\subsection{Error Reporting}
-\label{hd005003}
+\subsubsection{Error Reporting}
+
 EasyOCaml offers sophisticated facilities to represent errors, to allow 
 as detailed error reporting as possible.  Furthermore, new error 
 reporting plugins can be registered.
@@ -46,7 +47,7 @@ reporting plugins can be registered.
 \end{description}
 
 
-\subsection{Teachpacks and Language Levels}
+\subsubsection{Teachpacks and Language Levels}
 
 \begin{description}
     \item[EzyConfig] Constants of the teach pack system (e.g. the 
@@ -70,7 +71,7 @@ reporting plugins can be registered.
 \end{description}
 
 
-\subsection{Abstract Syntax Tree}
+\subsubsection{Abstract Syntax Tree}
 
 The following modules contain representation, manipulation, parsing and 
 restrictions on EasyOCaml's AST.
@@ -105,7 +106,7 @@ restrictions on EasyOCaml's AST.
 \end{description}
 
 
-\subsection{Type Constraints}
+\subsubsection{Type Constraints}
 
 \begin{description}
     \item[EzyTypingCoreTypes] Contains base types for the 
@@ -121,7 +122,7 @@ restrictions on EasyOCaml's AST.
         category to generate constraints and/or errors.
 \end{description}
 
-\subsection{Typing}
+\subsubsection{Typing}
 
 \begin{description}
     \item[EzyTyping] Unification of constraint set which yield a 
@@ -137,7 +138,7 @@ restrictions on EasyOCaml's AST.
 \end{description}
 
 
-\subsection{Camlp4}
+\subsubsection{Camlp4}
 \begin{description}
   \item[OcamlSpecificErrors]
     \label{mod:ocamlspecificerrors}
