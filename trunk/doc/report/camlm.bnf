@@ -3,21 +3,29 @@ program = { strit [";;"] };
 
 strit = ( type_decl | exn_decl | value_decl | expr );
 
-exndecl = ( "exception" lident "=" uident [ "of" core_type ] );
+exn_decl = ( "exception" lident "=" uident [ "of" core_type ] );
 
-type_decl = ( "type" [ type_var | ("(" type_var { "," type_var } ")") ] lident "="
+type_decl = ( "type" [ type_params ] lident "="
               ( core_type | record_decl | variant_decl ) );
 
 core_type = ( prim_type
           | type_var
-          | "(" core_type ( core_type / "*" ) ")"
-          | [ core_type | ( "(" core_type / "," ")" ) ] longident
+          | "(" core_type / "*" ")"
+          | [ type_params ] longident
           )
           ;
 
+prim_type = ( "int" | "float" | "string" | "bool" );
+
+record_decl = ( "{" ( field ":" [ "mutable" ] core_type ) / ";" "}" );
+
+type_params = core_type | ( "(" core_type / "," ")" );
+
+variant_decl = ( uident [ "of" core_type / "*" ] ) / "|" ;
+
+value_decl = ( "let" pattern [ ":" core_type ] "=" expr );
+
+expr= ( "..." );
+pattern = ( "..." );
+
 longident = ( lident | uident "." longident );
-
-record_type = ( "{" field ":" [ "mutable" ] core_type );
-
-valuedecl = ( "let" "..." );
-expression = ( "..." );
