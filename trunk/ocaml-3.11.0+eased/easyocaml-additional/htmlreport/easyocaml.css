@@ -28,10 +28,13 @@ span.standard {
   color: gray; /*#ccc*/
   background-color: white;
   font-weight: normal;
+  font-style: normal;
 }
 span.error {
   color: black;
+  font-style: italic;
   font-weight: bold;
+  background-color: white;
 }
 .currenterror span.endpoint1 {
   color: black;
