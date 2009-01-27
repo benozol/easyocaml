@@ -78,7 +78,7 @@ module Restrict (Spec: sig value spec : EzyFeatures.program_feats; end) (Syntax:
               DELETE_RULE Gram patt: "[|"; sem_patt; "|]" END;
             } else ();
             if not pat_spec.p_record then do {
-              DELETE_RULE Gram patt: "{"; label_patt; "}" END;
+              DELETE_RULE Gram patt: "{"; label_patt_list; "}" END;
             } else ();
             if not pat_spec.p_type_annotation then do {
               DELETE_RULE Gram patt: "("; SELF; ":"; ctyp; ")" END;
@@ -129,12 +129,14 @@ module Restrict (Spec: sig value spec : EzyFeatures.program_feats; end) (Syntax:
     } else ();
 
     if not expr_spec.e_sequence then do {
-      DELETE_RULE Gram expr: SELF; ";"; SELF END;
+(*       DELETE_RULE Gram expr: seq_expr END; *)
+(*       DELETE_RULE Gram expr: SELF; ";"; SELF END; *)
       (* DELETE_RULE Gram expr: SELF; ";" END; *)
-      DELETE_RULE Gram expr: "("; SELF; ";"; ")" END;
-      DELETE_RULE Gram expr: "("; SELF; ";"; sequence; ")" END;
-      DELETE_RULE Gram expr: "begin"; sequence; "end" END;
-      (* DELETE_RULE Gram expr: "begin"; "end" END; *)
+(*       DELETE_RULE Gram expr: "("; SELF; ";"; ")" END; *)
+(*       DELETE_RULE Gram expr: "("; SELF; ";"; sequence; ")" END; *)
+       DELETE_RULE Gram expr: "begin"; sequence; "end" END; 
+       DELETE_RULE Gram expr: "begin"; "end" END; 
+       DELETE_RULE Gram expr: "("; SELF; ","; comma_expr; ")" END;
     } else ();
     if Option.is_none expr_spec.e_let_in && Option.is_none expr_spec.e_let_rec_in then do {
       DELETE_RULE Gram expr: "let"; opt_rec; binding; "in"; expr LEVEL ";" END;
@@ -162,7 +164,7 @@ module Restrict (Spec: sig value spec : EzyFeatures.program_feats; end) (Syntax:
       DELETE_RULE Gram expr: "while"; sequence; "do"; do_sequence END;
     } else ();
     if not expr_spec.e_tuple then do {
-      DELETE_RULE Gram expr: SELF; ","; LIST1 NEXT SEP "," END;
+      DELETE_RULE Gram expr: SELF; ","; comma_expr END;
     } else ();
     if not expr_spec.e_reference_update then do {
       DELETE_RULE Gram expr: SELF; ":="; expr LEVEL "top" END;
