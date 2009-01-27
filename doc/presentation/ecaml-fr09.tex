@@ -7,13 +7,13 @@
 \usepackage{alltt}
 \usepackage{myrules}
 
-%\renewcommand\comment[1]{}
-
 \author{Benus Becker}
 \title{EasyOCaml}
 \subtitle{}
 \date{28. Januar 2009}
-\institute{Universität Freiburg}% \\ Institut für Informatik \\ Abtg.\ für Programmiersprachen}
+\institute{Universität Freiburg
+% \\ Institut für Informatik \\ Abtg.\ für Programmiersprachen
+}
 \keywords{ocaml, types}
 \subject{Studienarbeit}
 
@@ -30,8 +30,8 @@
       Error: This expression has type unit but is here used with type int}
       \pause
     \item[EasyOCaml]\ \\
-      \only<+>{\includegraphics[rotate=90,width=0.75\textwidth]{mightadd}}
-      \only<+>{\includegraphics[rotate=90,width=0.75\textwidth]{mightadd1}}
+      \includegraphics<-3>[rotate=90,width=0.75\textwidth]{mightadd}
+      \includegraphics<4->[rotate=90,width=0.75\textwidth]{mightadd1}
   \end{description}
 \end{frame}
 
@@ -42,10 +42,11 @@
         \item Parser
         \item Typchecker
       \end{itemize}
-    \item didaktische Hilfsmittel
+    \item Didaktische Hilfsmittel
       \begin{itemize}
         \item Einschränkungen der Syntax
         \item Bereitstellung von Code
+        \item Anpassbarkeit der Fehlerausgabe
       \end{itemize}
     \item Integration in das existierende OCaml System
       \begin{itemize}
@@ -71,24 +72,23 @@
       \begin{itemize}
         \item Standard IDE für Programmierkurse in Scheme
         \item einfacher Debugger
-        \item Language Levels und Teach Packs
+        \item Sprachlevel und Teachpacks
       \end{itemize}
   \end{description}
 \end{frame}
 
 \begin{frame}{Unterstützte Sprache}
   Caml$_{-m}$: Caml ohne Moduldeklarationen
-  \begin{description}
-    \item[Werte]
-      Primitive, Tupel, Listen, Arrays, Varianten, Records, Funktionen, Ausnahmen.
-    \item[\emph{Structure items}]
-      Typ-, Ausnahmen-, Wertdeklarationen und Expressions.
-    \item[\emph{Pattern}]
-      Geschachtelt auf alle möglichen Werte.
-    \item[Ausdrücke]
-      Konstruktoren, Ausnahmebehandlung, Konditionale, Abstraktionen, Typannotationen.
-  \end{description}
-  \comment{Einschränkbar durch Language Levels}
+  \begin{itemize}
+    \item Primitive: \texttt{float}, \texttt{int}, \texttt{bool}, \texttt{string}
+    \item Tupel \interitem\ Listen \interitem\ Arrays
+    \item Varianten, Records
+    \item Deklarationen von \interitem\ (polymorphen) Typen
+      \interitem\ Ausnahmen \interitem\ Werten
+    \item Schachtelbare, auf alle möglichen Werte anwendbare Patterns
+    \item Konstruktoren, Ausnahmebehandlung, Konditionale, Abstraktionen, Typannotationen.
+  \end{itemize}
+  \comment{Einschränkbar durch Sprachlevels}
   \comment{Alle Teile der stdlib ohne format typbar}
 \end{frame}
 
@@ -97,7 +97,7 @@
   \begin{itemize}
     \item Kommandozeilenparameter: \texttt{-easy}, \texttt{-easyerrorprinter},
       \texttt{-easylevel}, \texttt{-easyteachpack}
-    \item Modifikation des Parsers, Laden von Teach Packs
+    \item Modifikation des Parsers, Laden von Sprachlevels und Teachpacks
     \item Syntaxanalyse mit Camlp4
     \item Constraintbasierte Typrekonstruktion
     \item Zurückführung in den Compiler bzw.\ die REPL
@@ -107,17 +107,18 @@
 
 \begin{frame}{Typchecker}
   \framesubtitle{Haack \& Wells, 2004}
-    \texttt{\# let f b x y = x + \underline{if b then y} ;;\\
-   * Type error: Type constructor clash between int and unit.
-   Slice: .. + if .. then .. else () ..}
+  \begin{description}
+    \item[OCaml] \texttt{let f b x y = x + \underline{if b then y}}
+    \item[EasyOCaml] \texttt{function x -> .. if .. then x .. (+)~x ..}%TODO
+      \comment{fake!}
+  \end{description}
    \comment{
      $\mathcal W$ erzeugt und löst Constraints gleichzeitig: Keine Nachprüfung möglich \\
-     Trennung von Generierung und Lösung
-   }
+     Trennung von Generierung und Lösung}
   \begin{itemize}
     \item Ziele
       \begin{itemize}
-        \item mehrere Fehler auf einmal berichten
+        \item möglichst viele Fehler anzeigen
         \item Fehler sind minimal und vollständig\comment{definieren}
       \end{itemize}
       \pause
@@ -129,7 +130,7 @@
         \item Minimierung der Fehler
       \end{enumerate}
       \pause
-    \item Gleichzeitig mit Constraintgenerierung: Unbekannte Variablen erkennen
+    \item gleichzeitig mit Constraintgenerierung: Erkennung unbekannte Variablen
   \end{itemize}
 \end{frame}
 
@@ -138,7 +139,7 @@
   \begin{itemize}
     \item Syntaktische Kategorien
       \begin{description}
-        \item[Deklarationen] $\Delta;\ strit \Downarrow_s \langle \Delta,\ C,\ u\rangle$
+        \item[Deklarationen] $\Delta;\ strit \Downarrow_s \langle \Delta',\ C,\ u\rangle$
         \item[Ausdrücke] $\Delta;\ lexp \Downarrow_e \langle ty,\ C,\ u\rangle$
         \item[Pattern] $\Delta;\ pat \Downarrow_p \langle ty,\ C,\ b\rangle$ 
       \end{description}
@@ -163,10 +164,10 @@
 \end{frame}
 
 \begin{frame}{Typannotationen}
-  $(lexp : ct)$
+  $(lexp : ct)$\\[1em]
   \begin{itemize}
-    \item $lexp$ und Kontext werden unabhängig getypt
-    \item Validität der Annotation wird nachträglich geprüft
+    \item Typinferenz für $lexp$ und Kontext unabhängig
+    \item nachträgliche Prüfung der Validität der Annotation
   \end{itemize}
 \[\inferrule[Type-Annot]{
 \etyjudge \Delta {lexp} {ty} {C_0} u \\
@@ -179,65 +180,117 @@ ty' \text{ is a fresh instance of } ct \\
       \comment{Annotation wird als korrekt angenommen}
 \end{frame}
 
-\begin{frame}{Beispiel: Generierung von Typconstraint}
-  \texttt{x + if b then y}
-\end{frame}
+%\begin{frame}{Beispiel: Generierung von Typconstraint}
+%  \texttt{x + if b then y}
+%\end{frame}
 
 \begin{frame}{Fehlerbehandlung}
   Drei Klassen von Fehlern
-  \begin{itemize}
-    \item Einfach: Meldung nach Typrekonstruktion
-    \item Schwer: Meldung nach Constraintgenerierung
+  \begin{description}
+    \item[Einfach] Meldung nach Typrekonstruktion: \\
+      Typfehler, unbekannte Variablen
+    \item[Schwer] Meldung nach Constraintgenerierung: \\
+      ungültige Varianten-, Recordkonstruktion, Variablenbindungen in Patterns
       \comment{Analyse der Validität von Varianten, Records, Typkonstruktionen}
-    \item Fatal: Sofortige Meldung
-  \end{itemize}
+    \item[Fatal] Sofortige Meldung: Syntaxfehler, unbekannte Module
+  \end{description}
   Anpassung der Fehlermeldungen
   \begin{itemize}
-    \item Internationalisierung der Fehlerbeschreibung
-      \comment{Gesteuert durch Umgebungsvariable}
+    \item Lokalisierung der Fehlerbeschreibung (Umgebungsvariable)
     \item Formatierung für unterschiedliche Ausgaben (Plugin)
       \comment{Funktionen werden registriert in dynamisch geladenem Code}
+      \singleitem{textbasiert \interitem\ HTML \interitem\ XML}
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Language Levels und Teach Packs}
+\begin{frame}{Sprachlevel und Teachpacks}
   \begin{itemize}
-    \item Definition und einfache Auslieferung verfügbarer Sprachkonstrukte und
-      vordefiniertem Codes
+    \item Definition und einfache Auslieferung verfügbarer Sprachkonstrukte
+      und vordefiniertem Codes
       \comment{um die Sprache an Übungen und Inhalt von Kursen anzupassen}
     \item Interface
-      \begin{description}
-        \item[Sprachspezifikation]\ \\
-          \begin{itemize}
-            \item Deaktivierung von Optionen für die nicht-terminale Deklaration,
-              Ausdruck, Pattern im Parser
-            \item[$\Rightarrow$]direkte Manipulation des Parsers
-              \comment{keine Meldungen bzgl.\ unbekannter Kategorien}
-            \item für jede Benutzung unabhängig
-          \end{itemize}
-          \comment{
-            Patterns können anders in try-with und match-with sein \\
-            Parser wird auf den ggT eingeschränkt, anderes wird danach getestet
-          }
-        \item[Vordefinierter Code] 
-          Liste von (zu öffnenden) Modulen
-          \comment{
-            Language Levels definieren Sprache und vorgegebenen Code \\
-            Teach Packs enthalten nur Code und können Ll.s erweitern
-          }
-      \end{description}
+      \begin{itemize}
+        \item (De-)Aktivierung von Optionen für die nicht-terminale Deklaration, Ausdruck, Pattern im Parser
+        \item Liste von (zu öffnenden) Modulen
+      \end{itemize}
+%     \begin{description}
+%       \item[Sprachspezifikation]\ \\
+%         \begin{itemize}
+%           \item 
+%           \item[$\Rightarrow$]direkte Manipulation des Parsers
+%             \comment{keine Meldungen bzgl.\ unbekannter Kategorien}
+%           \item für jede Benutzung unabhängig
+%         \end{itemize}
+%         \comment{
+%           Patterns können anders in try-with und match-with sein \\
+%           Parser wird auf den ggT eingeschränkt, anderes wird danach getestet
+%         }
+%       \item[Vordefinierter Code] 
+%         \comment{
+%           Sprachlevel definieren Sprache und vorgegebenen Code \\
+%           Teachpacks enthalten nur Code und können Ll.s erweitern
+%         }
+%     \end{description}
   \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Beispiel Sprachlevel}
+  \begin{columns}
+    \begin{column}{0.4\linewidth}
+  \texttt{lang-minimal/mylist.ml}
+  \hrule
+  \begin{scriptsize}\begin{verbatim}
+let (+) = Pervasives.(+)
+let (-) = Pervasives.(-)
+let ( * ) = Pervasives.( * )
+let (/) = Pervasives.(/)
+
+let succ = Pervasives.succ
+let pred = Pervasives.pred
+  \end{verbatim}\end{scriptsize}
+  \texttt{lang-minimal/mylist.ml}
+  \hrule
+  \begin{scriptsize}\begin{verbatim}
+let cons h t = h :: t
+let iter = List.iter
+let map = List.map
+let fold = List.fold_left
+  \end{verbatim}\end{scriptsize}
+    \end{column}
+    \begin{column}{0.6\linewidth}
+  \texttt{lang-minimal/LANG\_META.ml}
+  \hrule
+  \begin{scriptsize}\begin{verbatim}
+ let _ =
+  let match_pf =
+    let full_pf = all_pattern_feats true in
+    { full_pf with p_nested = false } in
+  let prf = 
+    { pr_expr_feats =
+        { (all_expr_feats true) with
+          e_try = None;
+          e_match = Some match_pf;
+          e_raise = false } ;
+      pr_struct_feats = all_struct_feats true } in
+  EzyLangLevel.configure prf
+    ["Mypervasives", true; "Mylist", true] 
+    ["mypervasives.cmo"; "mylist.cmo"]
+  \end{verbatim}\end{scriptsize}
+    \end{column}
+  \end{columns}
 \end{frame}
 
 \begin{frame}{Änderungen am Parser}
   EasyOCaml parst mit Camlp4 Parser
   \begin{itemize}
-    \item hart kodierte Beschreibung
-    \item Streamparser erlauben nur Zeichenketten als Information
-      \singleitem[$\Rightarrow$]{\tt exception Stream.Error of string}
+    \item[{\bf\small +}] veränderbar zur Laufzeit
+    \item[{\bf\small --}] hart kodierte Fehlermeldung
+      \singleitem{Streamparser erlauben nur Zeichenketten als Information}
   \end{itemize}
-  Lösung (?)
+  Lösung
   \begin{itemize}
+    \item Variantentyp beschreibt Fehler: \\
+      \singleitem{Ungültiger Anfang \interitem\ Erwartung \dots\ \interitem\ Sprachspezifisch}
     \item interne Struktur der Zeichenkette: \texttt{"<msg>\textbackslash 000<mshl>"}
     \item Wiederherstellung des ``gemarshalten'' Fehlers in der Interfacefunktion 
   \end{itemize}
@@ -246,30 +299,30 @@ ty' \text{ is a fresh instance of } ct \\
 \begin{frame}{Bisherige und weitere Entwicklung}
   \begin{itemize}
     \item[\checkmark] Typchecker für Teilsprache von OCaml
-    \item[\checkmark] Internationalisierte und anpassbare Fehlermeldungen
+    \item[\checkmark] internationalisierte und anpassbare Fehlermeldungen
     \item[\checkmark] Hilfsmittel für die Lehre mit OCaml
     \item[\checkmark] Integration in original Compiler und REPL
-    \item[\checkmark] Anpassbare Fehlermeldungen für den Parser
-    \item[\checkmark] HTML Fehlerausgaben
+    \item[\checkmark] anpassbare Fehlermeldungen für den Parser
+    \item[\checkmark] HTML/XML/sexp Fehlerausgaben
     \item[\checkmark] Portierung auf OCaml 3.11
     \pause
     \item Integration in DrOCaml oder Camelia
     \item Heuristiken/Tips zum Lösen von Fehlern
     \item Fehlermeldungen mit mehr Informationen versehen
-    \item selbstdokumentierende Language Levels und Teach Packs
+    \item selbstdokumentierende Sprachlevel und Teachpacks
     \item dynamisch getypter Interpreter
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Fazit}
+%\begin{frame}{Fazit}
 %  \begin{itemize}
 %  \end{itemize}
-  \begin{itemize}
-    \item Zweigeteilt: Arbeit am Typchecker -- Integration in OCaml
-    \item moderne Forschungsergebnisse (Haack \& Wells) anwenden
-    \item OCaml verbessern und open source zu arbeiten
-  \end{itemize}
-\end{frame}
+%  \begin{itemize}
+%    \item Zweigeteilt: Arbeit am Typchecker -- Integration in OCaml
+%    \item moderne Forschungsergebnisse (Haack \& Wells) anwenden
+%    \item OCaml verbessern und open source zu arbeiten
+%  \end{itemize}
+%\end{frame}
 
 \begin{frame}{Quellenangaben}
   \nocite{leroy2008}
