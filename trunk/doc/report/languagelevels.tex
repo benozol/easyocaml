@@ -17,16 +17,24 @@ the tower of languages are e.g.\ a first-order functional language, a
 higher-order functional language or a language with imperative features like
 mutable date.
 
-\easyocaml, however, gives fine grained control over the available syntax. Every
-option of the non-terminal nodes in the grammar (structure items, type
+To use the full parser and to check for the syntactical restraints afterwards
+would facititate syntax errors regarding syntactical categories not included in
+the current language level---very confusing for beginners. 
+\easyocaml, however, directly manipulates the parser to the requirements of the
+language level such that the parser itself does not even ``know'' about the
+syntactical categories not part of the language level and so does not report
+errors regarding to them.
+
+\easyocaml\ gives further fine grained control over the available syntax.
+Every option for non-terminal nodes in the grammar (structure items, type
 declarations  expressions, patterns) can be switched on and off. This can be
 done even independently for different usages, e.g. the patterns in value
-matching\ttfootnote{match \dots\ with \emph{pat} -> \dots} can be configured
-in a different way than the patterns in functional
+matching\ttfootnote{match \dots\ with \emph{pat} -> \dots} can be configured in
+a different way than the patterns in functional
 abstractions\ttfootnote{function \emph{pat} -> \dots}. This is implemented by
 deleting the minimal common disabled set of options from the \camlpf\ grammar.
-At a second stage (namely while transforming the \ocaml\ AST into \easyocaml's),
-all remaining restrictions are examined.
+At a second stage (namely while transforming the \ocaml\ AST into
+\easyocaml's), all remaining restrictions are examined.
 
 As mentioned, language levels and teach packs can be used to provide code at
 starting time of the compiler and toplevel loop in a simple manner. They contain

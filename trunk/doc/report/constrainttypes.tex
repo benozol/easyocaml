@@ -26,17 +26,17 @@ the extensions we made for \easyocaml.
 
 \citet{haackwells04} describe an algorithm which exceeds algorithm $\mathcal W$
 in two ways:
-Firstly, every type error report contains information on exactly those
+First every type error report contains information on exactly those
 locations in the program which are essential to the error, by means of dropping
 one of them would vanish the error.
-Secondly, it is able to report all type errors in a program at once (whilst
+Second it is able to report all type errors in a program at once (whilst
 locations which are involved in several type errors are most notable the source
 of the errors, by the way).
 
 In a sense, algorithm $\mathcal W$ does two things at once while traversing the 
 AST: It generates information on the types of the variables and unifies it with
 existing type information anon.  \citeauthor{haackwells04}' algorithm works in
-some sense by separating these steps.
+some sense by separating those steps.
 
 During \emph{constraint generation} every node of the AST is\wha\ annotated with
 a type variable. While traversing the AST, information on those type variables
@@ -97,8 +97,7 @@ polymorphic variable bindings.
 %declaration of values, record types, variant types and type synonyms.
 This is good to describe the algorithms involved, but we had to extend it to the
 language \camlm---as loosely described in section \ref{sec:language} and more
-formally in section \ref{sec:grammar}---and \easyocaml's much richer type
-system.
+formally in section \ref{sec:grammar}---and the much richer type system.
 I will describe the constraint generation rules for \easyocaml\ by example
 here, section \ref{sec:rules} exposes the complete set of rules.
 
