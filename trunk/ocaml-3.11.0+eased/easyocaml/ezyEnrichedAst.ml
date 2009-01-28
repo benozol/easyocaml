@@ -446,7 +446,7 @@ let import_strit prf strit =
                           | Parsetree.Ptype_variant ctors, None, { F.t_variant = true } ->
                               Variant ctors
                           | Parsetree.Ptype_record fls, None, { F.t_record = Some mutable_allowed } ->
-                              if mutable_allowed || List.for_all (fun (_, m, _, _) -> m = Asttypes.Mutable) fls then
+                              if mutable_allowed || List.for_all (fun (_, m, _, _) -> m = Asttypes.Immutable) fls then
                                 Record fls
                               else
                                 strit_import_error "t_record mutability"

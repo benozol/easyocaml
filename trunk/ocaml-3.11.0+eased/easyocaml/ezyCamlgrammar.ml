@@ -136,7 +136,6 @@ module Restrict (Spec: sig value spec : EzyFeatures.program_feats; end) (Syntax:
 (*       DELETE_RULE Gram expr: "("; SELF; ";"; sequence; ")" END; *)
        DELETE_RULE Gram expr: "begin"; sequence; "end" END; 
        DELETE_RULE Gram expr: "begin"; "end" END; 
-       DELETE_RULE Gram expr: "("; SELF; ","; comma_expr; ")" END;
     } else ();
     if Option.is_none expr_spec.e_let_in && Option.is_none expr_spec.e_let_rec_in then do {
       DELETE_RULE Gram expr: "let"; opt_rec; binding; "in"; expr LEVEL ";" END;
