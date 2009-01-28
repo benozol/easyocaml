@@ -1,5 +1,5 @@
 \documentclass
-[handout]
+%[handout]
 {beamer}
 \usepackage{folien}
 \usepackage[utf8]{inputenc}
@@ -45,7 +45,7 @@
         \item Parser
         \item Typchecker
       \end{itemize}
-    \item Didaktische Hilfsmittel
+    \item didaktische Hilfsmittel (Sprachlevels und Teachpacks)
       \begin{itemize}
         \item Einschränkungen der Syntax
         \item Bereitstellung von Code
@@ -88,21 +88,20 @@
     \item Varianten, Records
     \item Deklarationen von \interitem\ (polymorphen) Typen
       \interitem\ Ausnahmen \interitem\ Werten
-    \item Schachtelbare, auf alle möglichen Werte anwendbare Patterns
+    \item schachtelbare, auf alle möglichen Werte anwendbare Patterns
     \item Konstruktoren, Ausnahmebehandlung, Konditionale, Abstraktionen, Typannotationen.
   \end{itemize}
   \comment{Einschränkbar durch Sprachlevels}
   \comment{Alle Teile der stdlib ohne format typbar}
 \end{frame}
 
-\begin{frame}{Einbettung in OCaml}
-  Ablauf von EasyOCaml
+\begin{frame}{Ablauf von EasyOCaml}
   \begin{itemize}
     \item Kommandozeilenparameter: \texttt{-easy}, \texttt{-easyerrorprinter},
       \texttt{-easylevel}, \texttt{-easyteachpack}
     \item Modifikation des Parsers, Laden von Sprachlevels und Teachpacks
     \item Syntaxanalyse mit Camlp4
-    \item Constraintbasierte Typrekonstruktion
+    \item Constraint-basierte Typinferenz
     \item Zurückführung in den Compiler bzw.\ die REPL
       \comment{bisher typt Ocaml selbst erneut}
   \end{itemize}
@@ -111,8 +110,9 @@
 \begin{frame}{Typchecker}
   \framesubtitle{Haack \& Wells, 2004}
   \begin{description}
-    \item[OCaml] \texttt{let f b x y = x + \underline{if b then y}}
-    \item[EasyOCaml] \texttt{function x -> .. if .. then x .. (+)~x ..}%TODO
+    \item[OCaml]
+      \texttt{\small let f b x = let y = if b then x in \underline x + y}
+    \item[EasyOCaml] \texttt{\small function x -> .. if .. then x .. (+)~x ..}
       \comment{fake!}
   \end{description}
    \comment{
@@ -133,7 +133,8 @@
         \item Minimierung der Fehler
       \end{enumerate}
       \pause
-    \item gleichzeitig mit Constraintgenerierung: Erkennung unbekannte Variablen
+    \item gleichzeitig mit Constraintgenerierung:\\
+      Erkennung unbekannter Variablen
   \end{itemize}
 \end{frame}
 
@@ -158,7 +159,7 @@
       \[\inferrule[Record Access]
       {
        \etyjudge \Delta {lexp} {ty} C u \\
-       \Delta\onrecord(f) = \langle ty_f,\ ty_,\ \cdot \rangle \\
+       \Delta\onrecord(f) = \langle ty_f,\ ty_r,\ \cdot \rangle \\
        C_0 = \{a \xlongequal {l} ty_f,\ ty \xlongequal l ty_r\} \\
        a \text{ fresh}}
        {\etyjudge \Delta {(lexp\code{.}f)^l} a {C_0 \cup C} u}\]
@@ -239,8 +240,8 @@ ty' \text{ is a fresh instance of } ct \\
 
 \begin{frame}[fragile]{Beispiel Sprachlevel}
   \begin{columns}
-    \begin{column}{0.4\linewidth}
-  \texttt{lang-minimal/mylist.ml}
+    \begin{column}{0.3\linewidth}
+  \texttt{lang-fun/mylist.ml}
   \hrule
   \begin{scriptsize}\begin{verbatim}
 let (+) = Pervasives.(+)
@@ -251,7 +252,7 @@ let (/) = Pervasives.(/)
 let succ = Pervasives.succ
 let pred = Pervasives.pred
   \end{verbatim}\end{scriptsize}
-  \texttt{lang-minimal/mylist.ml}
+  \texttt{lang-fun/mylist.ml}
   \hrule
   \begin{scriptsize}\begin{verbatim}
 let cons h t = h :: t
@@ -260,24 +261,32 @@ let map = List.map
 let fold = List.fold_left
   \end{verbatim}\end{scriptsize}
     \end{column}
-    \begin{column}{0.6\linewidth}
-  \texttt{lang-minimal/LANG\_META.ml}
+    \begin{column}{0.7\linewidth}
+  \texttt{lang-fun/LANG\_META.ml}
   \hrule
   \begin{scriptsize}\begin{verbatim}
- let _ =
-  let match_pf =
-    let full_pf = all_pattern_feats true in
-    { full_pf with p_nested = false } in
-  let prf = 
-    { pr_expr_feats =
-        { (all_expr_feats true) with
-          e_try = None;
-          e_match = Some match_pf;
-          e_raise = false } ;
-      pr_struct_feats = all_struct_feats true } in
-  EzyLangLevel.configure prf
-    ["Mypervasives", true; "Mylist", true] 
-    ["mypervasives.cmo"; "mylist.cmo"]
+open EzyLangLevel
+let _ =
+  let pr_f = {
+    pr_expr_feats = {
+      (all_expr_feats true) with
+        e_reference_update = false; (* forbid [x := e] *)
+        e_record_field_update = false;  (* forbid [x.f <- e] *)
+        e_if_then = false;              (* forbid [if e then f] *)
+        e_sequence = false;             (* forbid [e;f] *)
+    };
+    pr_struct_feats = {
+      (all_struct_feats true) with
+          (* make annotations for global variables mandatory *)
+          s_annot_optional = false;   
+          s_type = Some {
+            (all_type_feats true) with
+                (* forbid declaration of mutable record fields *)
+                t_record = Some false } } } in
+  configure pr_f [
+    "Mylist", true;
+    "Mypervasives", true;
+  ] ["mylist.cmo"; "mypervasives.cmo"]
   \end{verbatim}\end{scriptsize}
     \end{column}
   \end{columns}
@@ -293,7 +302,7 @@ let fold = List.fold_left
   Lösung
   \begin{itemize}
     \item Variantentyp beschreibt Fehler: \\
-      \singleitem{Ungültiger Anfang \interitem\ Erwartung \dots\ \interitem\ Sprachspezifisch}
+      \singleitem{Ungültiger Anfang \interitem\ Enttäuchte Erwartung \interitem\ sprachspezifischer/künstlicher Fehler}
     \item interne Struktur der Zeichenkette: \texttt{"<msg>\textbackslash 000<mshl>"}
     \item Wiederherstellung des ``gemarshalten'' Fehlers in der Interfacefunktion 
   \end{itemize}
@@ -302,15 +311,15 @@ let fold = List.fold_left
 \begin{frame}{Bisherige und weitere Entwicklung}
   \begin{itemize}
     \item[\checkmark] Typchecker für Teilsprache von OCaml
-    \item[\checkmark] internationalisierte und anpassbare Fehlermeldungen
     \item[\checkmark] Hilfsmittel für die Lehre mit OCaml
-    \item[\checkmark] Integration in original Compiler und REPL
-    \item[\checkmark] anpassbare Fehlermeldungen für den Parser
+    \item[\checkmark] internationalisierte und anpassbare Fehlermeldungen
+    \item[\checkmark] erweitertes Fehlersystem für Camlp4
     \item[\checkmark] HTML/XML/sexp Fehlerausgaben
+    \item[\checkmark] Integration in original Compiler und REPL
     \item[\checkmark] Portierung auf OCaml 3.11
     \pause
     \item Integration in DrOCaml oder Camelia
-    \item Heuristiken/Tips zum Lösen von Fehlern
+    \item Heuristiken/Tipps zum Lösen von Fehlern
     \item Fehlermeldungen mit mehr Informationen versehen
     \item selbstdokumentierende Sprachlevel und Teachpacks
     \item dynamisch getypter Interpreter

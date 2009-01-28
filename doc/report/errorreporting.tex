@@ -6,35 +6,35 @@
 As such, special attention is paid to the way errors are reported to achieve
 the following goals:
 
-Firstly, errors should provide a right amount of details, too few information
+First errors should provide a right amount of details, too few information
 is of course insufficient, but also too much information can be confusing. So,
 for example in type constructor clashes exactly those locations of the program
 should be reported, which are essential to the error.
 Delivering more information on the underlying reasons of type errors is exactly
 what \easyocaml's type checker is made for.
 
-Secondly, error reporting should be adaptable: Reading errors in a foreign
+Second error reporting should be adaptable: Reading errors in a foreign
 language can distract or even prevent for a beginner from understanding it.
 So internationalization of error messages is necessary.
 Furthermore, the error output should be adaptable in its overall structure to
 serve as the input for different kinds of presentation, e.g. plain text on
 command line, or HTML to display it in a web browser.
 Adaption of the language used for error reporting can be achieved by changing 
-the environment variable \texttt{LANG}. The formatting can be given by a
+the environment variable \texttt{LANG}. The formatting plugin can be given by a
 command line argument (see section \ref{sec:manual} for details).
 
 The last section has explained the improvements of \easyocaml\ to the type error
-messages in the last section and this one will describe the structure  of the
-errors handled by \easyocaml\ as well as the changes to the parser to build a
-foundation to include more information with the parsing errors below and the
-error adaption possibilities subsequently.
+messages and this one will describe the structure  of the errors handled by
+\easyocaml\ as well as the changes to the parser to build a foundation to
+include more information with the parsing errors below and thereafter the error
+adaption possibilities.
 
 \subsection{The Structure of Errors in EasyOCaml}
 \label{sec:easyerrors}
 
 While\new parsing and type checking, \easyocaml\ can detect different errors.
-Differences are made between the following three classes of errors\footnote{the
-file \texttt{ezyErrors.mli} provides a complete and well documented list of
+Differences are made between the following three classes of errors\footnote{The
+file \texttt{ezyErrors.mli} provides a complete and well documented list of the
 errors}:
 
 The compiler attempts to report errors as late as possible to collect as many
@@ -65,8 +65,8 @@ parsing errors.
 
 \subsection{New Errors for Camlp4}
 
-As mentioned, the program code is parsed py a \camlpf\ parser in  \easyocaml.
-Unfortunately, \camlpf's error messages are hard coded in English and never
+As mentioned, the program code is parsed by a \camlpf\ parser in  \easyocaml.
+Unfortunately, \camlpf's error messages are hard-coded in English and never
 represented in data which prohibits the adaption of format and language while
 reporting.  This is because \camlpf\ is a \ocaml\ stream parser in its core,
 which requires parsing errors to be reported as exceptions with just a string

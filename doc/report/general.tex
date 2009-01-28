@@ -28,7 +28,9 @@ on the node's usage and their generation is detailed in the section
 \ref{sec:typeinfer} and \ref{sec:rules}.
 Then, the type checker tries to solve those constraints. If they are unifiable,
 the type checker can assign a valid typing on the elements of the AST and gives
-control back to \ocaml.
+control back to \ocaml\footnote{Note, that up to now the program is type checked
+again by \ocaml\ and the results are compared to validate our type checker. This
+might change in upcoming versions of \easyocaml.}.
 Otherwise, \easyocaml\ tries to generate as many conflict sets (type errors) as
 possible from the constraints and reports them to the user.
 
