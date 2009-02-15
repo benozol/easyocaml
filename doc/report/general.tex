@@ -1,33 +1,34 @@
 
 \section{General Functionality of EasyOCaml}
+\label{sec:general}
 
-This section covers some general information on architecture of \easyocaml\ and
-its language for orientation in supsequent parts.
-It will give a broad overview on \easyocaml's course of actions first.
+This section covers some general information on \easyocaml's architecture and
+its language for orientation in subsequent sections.
+It will give a broad overview on \easyocaml's sequence plan.
 Every step is elaborated in more detail in subsequent sections, but they might
-be easier to understand with the knowledge of their role in \easyocaml.
-It will give a desription of the language supported by \easyocaml\ afterwards.
+be easier to understand with the knowledge of their role within \easyocaml.
+This section wraps up the a desription of the language supported by \easyocaml.
 
 \subsection{Outline of EasyOCaml's Course}
 
-By large \easyocaml's additions to the compiler and the toplevel loop do a
-fairly similar job: First, they parse the command line flags. If they
+By large, \easyocaml's additions to the compiler and the toplevel loop do a
+fairly similar job: First, both programs parse the command line flags. If they
 contain the \texttt{-easy} flag, \easyocaml's type checker is enabled and flags
 for defining language levels, teach packs and error printers are accepted and
 loaden into \easyocaml.
 
 Then, \easyocaml\ takes over the first stage of the compiler by parsing the
 input with a \camlpf\ parser. The parser incorporates modifications by the
-language level to the availabel syntax. The resulting AST is annotated with
-fresh type variables.
+language level to the availabel syntax. The resulting abstract syntax tree (AST)
+is annotated with fresh type variables for the next stage.
 
-\easyocaml\ then tries to type check the program. It reads the definitions in
+\easyocaml\ then tries to infer the types in the program. It reads the definitions in
 the program and generates a set of constraints on the types of every element of
 the program by traversing the AST. The constraints on the node's types are based
 on the node's usage and their generation is detailed in the section
 \ref{sec:typeinfer} and \ref{sec:rules}.
 Then, the type checker tries to solve those constraints. If they are unifiable,
-the type checker can assign a valid typing on the elements of the AST and gives
+the type checker can assign a valid typing on the elements of the AST and passes
 control back to \ocaml\footnote{Note, that up to now the program is type checked
 again by \ocaml\ and the results are compared to validate our type checker. This
 might change in upcoming versions of \easyocaml.}.
@@ -38,15 +39,17 @@ possible from the constraints and reports them to the user.
 \label{sec:language}
 
 \easyocaml\ targets to be usable not only for the very first steps in
-programming, so a reasonable subset of the \ocaml\ language is supported.
+programming, so a significant subset of the \ocaml\ language is supported.
 This language can be characterized as ``Caml minus module declarations'',
-hence its designation \camlm.
+hence its designation: \camlm.
 
 Unlike simpler functional programming languages like \textit{Scheme} with only
 a single syntactic category \emph{expression}, \ocaml\ makes a distinction
-between \emph{structure items}, \emph{expressions} and \emph{patterns}.  Here
-are the supported language features in more detail, which also can be pruned by
-teach packs. See section \ref{sec:grammar} for a complete grammar.
+between \emph{structure items}, \emph{expressions} and \emph{patterns}.
+The options for each syntactic category which will be described in the
+following, can be pruned by language levels in high detail, as given in
+section~\ref{sec:teachpacks}.
+See section \ref{sec:grammar} for the complete grammar.
 
 
 \subsection*{Structure items}
@@ -57,17 +60,18 @@ declare values, types and exceptions.
 \begin{itemize}
   \item optionally parametrized \emph{type declarations} of type synonyms,
     records with optionally mutable fields and variant types.
-  \item \emph{exception declarations} like those in \ocaml.
+  \item \emph{exception declarations}.
   \item optionally recursive (\texttt{rec}) and multiple (\texttt{and})
-    \emph{value declarations}, where bindings occur with arbitrary patterns.
-    Note, that a languge level may require type annotations for toplevel value
-    declarations.
-  \item Toplevel evaluations. Note that the toplevel evaluation of \texttt{e} is just
-    syntactic sugar for the value declaration \texttt{let \_ = e}.
+    \emph{value declarations}, where bindings occur in arbitrary patterns for
+    non-recursive declarations.  Languge levels may enforce mandatory type
+    annotations for toplevel value declarations.
+  \item \emph{Toplevel evaluations}. Note that a toplevel evaluation of
+    \texttt{e} is just syntactic sugar for the dummy value declaration
+    \texttt{let \_ = e}.
 \end{itemize}
 
 \subsection*{Core types}
-\emph{core types} are direct combinations of existing types are called in \ocaml.
+Direct combinations of existing types are called \emph{core types} in \ocaml.
 \easyocaml\ allows as core types primitive types (\texttt{int}, \texttt{char},
 \texttt{string} and \texttt{float}), free (in type annotations) and bound
 (within type declarations) type variables, type arrows (function types), tuples
@@ -88,7 +92,7 @@ catching) as well as type annotations.
 
 \subsection*{Patterns}
 
-In \easyocaml, pattern matching is possible in every place where it works in
+In \easyocaml, pattern matching is possible in every site where it works in
 \ocaml, i.e.\ in value matching\ttfootnote{match \ldots\ with \emph{pat} ->
 \ldots\ | \ldots}, in variable bindings\ttfootnote{let \emph{pat} = \ldots}, in
 functional abstractions with the \texttt{function} keyword\ttfootnote{function
@@ -96,7 +100,8 @@ functional abstractions with the \texttt{function} keyword\ttfootnote{function
 with \emph{pat} -> \ldots\ | \ldots}.
 
 Pattern matching works on every possible value in \easyocaml, i.e.\ primitive
-values, tuples, variants and records\footnote{version 0.49 lacks the
-implementation for pattern matching on the latter}, and can be nested at every
+values, tuples, variants and records\footnote{The current version of \easyocaml\
+still lacks the implementation for pattern matching on the latter.}, and can be
+nested at every
 level.
 

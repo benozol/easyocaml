@@ -11,25 +11,25 @@ on its usages while traversing the abstract syntax tree (AST).
 Broadly spoken, a type constructor clash is detected as the usage just
 inspected contradicts the information collected so far.
 Therefore, \ocaml's type checker cannot report any contextual reasons for a type
-error but it reports only the location where the error became obvious to the
-type checker.
-Much work while debugging type errors in \ocaml\ comprises thus of manually
+error, but it reports only the location where the \emph{error became obvious} to
+the type checker.
+Thus much work while debugging type errors in \ocaml\ comprises of manually
 searching for other usages of the mis-typed variable in the program which might
 have lead to the type constructor clash.
 
-I will first loosely describe the algorithm by \citeauthor{haackwells04}---see
-their \citeyear{haackwells04} paper for a rigid explanation---and then explain
-the extensions we made for \easyocaml.
-
+This section first gives a loose description of \citeauthor{haackwells04}'s type
+inference algorithm which covers the very problems just mentioned
+---see their \citeyear{haackwells04} paper for a rigid explanation.
+It explains the extensions we made for \easyocaml\ afterwards.
 
 \subsection{Haack \& Wells's Type Checking Algorithm}
 
 \citet{haackwells04} describe an algorithm which exceeds algorithm $\mathcal W$
 in two ways:
-First every type error report contains information on exactly those
+First, every type error report contains information on exactly those
 locations in the program which are essential to the error, by means of dropping
 one of them would vanish the error.
-Second it is able to report all type errors in a program at once (whilst
+Second, it is able to report all type errors in a program at once (whilst
 locations which are involved in several type errors are most notable the source
 of the errors, by the way).
 
@@ -38,7 +38,7 @@ AST: It generates information on the types of the variables and unifies it with
 existing type information anon.  \citeauthor{haackwells04}' algorithm works in
 some sense by separating those steps.
 
-During \emph{constraint generation} every node of the AST is\wha\ annotated with
+During \emph{constraint generation} every node of the AST is annotated with
 a type variable. While traversing the AST, information on those type variables
 is collected from the usage of each node. This information is stored as a set of
 constraints on the type variables.
@@ -62,18 +62,17 @@ amount which can be specified by an environment variable (see section
 
 The result of error enumeration is a set of errors, each represented as a
 complete set of locations whose nodes in the AST have contributed to the error
-(\emph{complete} in being a superset of the locations which caused the type
-error). By application of error minimization on each error, the algorithm
+(\emph{complete} in being a superset of the locations which actually caused the type
+error). By application of the error minimization to each error, the algorithm
 further guarantees \emph{minimality} of the reported errors, in the sense that
-removing the constraints annotated with a single location would vanish the error
-itself.
-So, the reported type error contains exactly those locations of the program
-which lead to the error.
+removing a single constraint would vanish the constraint conflict, i.e.\ the
+error itself.  So, the reported type error contains exactly those locations of
+the program which lead to the error.
 
 Contrary to this approach, other type checkers report whole subtrees of the
 program as the reason of an error. This often yields to non-minimality of the
-reported error (as the subtree might contain locations which do not contribute
-to the error). To correctly display only the minimal (and complete) set of
+reported error as the subtree might contain locations which do not contribute
+to the error. To correctly display only the minimal (and complete) set of
 progam points, \citeauthor{haackwells04} use \emph{error slices}: All subtrees
 of the program, which do not contribute to the error are pruned and replaced by
 elipsises, leaving only a scaffold of the program containing the blamed program
@@ -81,9 +80,9 @@ points.
 
 In addition to type errors, \citeauthor{haackwells04}' technique also enables the 
 type checker to collect all unbound variables in the program.
-Their types are assumed as free type variables to avoid a type error, but
-reported after unifying the constraints or with the type errors after error
-enumeration.
+Their types are assumed as free type variables during type inference to avoid
+an artificial type error, but reported after unifying the constraints or with
+the type errors after error enumeration.
 
 
 \subsection{Extensions for EasyOCaml}
@@ -93,12 +92,10 @@ enumeration.
 \textsl{MiniML}, a subset of the \textsl{ML} language only supporting
 variables, infix operations, functional abstraction, application and local
 polymorphic variable bindings.
-%\easyocaml\ features a much richer type system, as it facilitates the
-%declaration of values, record types, variant types and type synonyms.
 This is good to describe the algorithms involved, but we had to extend it to the
 language \camlm---as loosely described in section \ref{sec:language} and more
 formally in section \ref{sec:grammar}---and the much richer type system.
-I will describe the constraint generation rules for \easyocaml\ by example
+This section will describe the constraint generation rules for \easyocaml\ by example
 here, section \ref{sec:rules} exposes the complete set of rules.
 
 In the following, $\Delta$ always denotes an environment (store) for current
@@ -117,42 +114,40 @@ $\Delta'$ denotes the environment $\Delta$ extended by declarations in $strit$
 and $C$ is a set of constraints collected in $strit$.
 $u$ is a set of errors in $strit$ which are desribed in more detail in section
 \ref{sec:easyerrors}.
-Those declarations, constraints and errors are accumulated while generating
-traversing the program's structure items.
+Those declarations, constraints and errors are accumulated while traversing the
+program's structure items.
 
 This is the rule for the declaration of a variant type:
 
-\vspace{1em}\centerline{
-\inferrule[Variant Decl]
+\[\inferrule[Variant Decl]
 {\Delta' = \Delta\onvar[t \mapsto \{ \langle K_1, ty_1\rangle^{l_1}, \dots, \langle K_n, ty_n\rangle^{l_n}\}^l]}
-{\styjudge \Delta {(\code{type}\ t = K_1\ \code{of}^{l_1}\ ty_1\ \code | \dots \code | K_n\ \code{of}^{l_n}\ ty_n)^l} {\Delta'} \emptyset \emptyset}}
-\vspace{1em}
-
-\noindent It just extends the current environment $\Delta$ with the variant constructors
+{\styjudge \Delta {(\code{type}\ t = K_1\ \code{of}^{l_1}\ ty_1\ \code | \dots \code | K_n\ \code{of}^{l_n}\ ty_n)^l} {\Delta'} \emptyset \emptyset} \]
+It just extends the current environment $\Delta$ with the variant constructors
 $K_1$ to $K_n$ with the given types.
 Note, that the locations are stored to make a reference on the type declaration
 in case of a typing error related to one of those variant constructors.
+All this new information is available in $\Delta\onvar$ during constraint
+generation of the subsequent program code and can be used to assert the proper
+argument and result types of variant constructors.
 
-Constraint generation rules for expressions are better examples for
-accumulating constraint sets.
+Constraint generation rules for expressions are better examples for the process
+of accumulating constraint sets.
 As a simple starting point, we will discuss the rule for \texttt{if} expressions
 without an \texttt{else} branch here.
 \ocaml\ provides the test expression to be of type \type{bool}, the expression
 in the branch of type \type{unit} and the whole expression of type \type{unit},
-too. The rule implements this a follows:
+too. The rule implements this as follows:
 
-\vspace{1em}\centerline{
-\inferrule[If-then]
+\[\inferrule[If-then]
 {\etyjudge \Delta {lexp_1} {ty_1} {C_1} {u_1} \\
  \etyjudge \Delta {lexp_2} {ty_2} {C_2} {u_2} \\
  C_0 = \{ ty_1 \xlongequal l \type{bool},\ ty_2 \xlongequal l \type{unit},\ a \xlongequal l \type{unit} \} \\
  a \text{ fresh}}
 {\etyjudge \Delta {(\code{if}\ lexp_1\ \code{then}\ lexp_2)^l} a C {u_1 \cup u_2}}
-}\vspace{1em}
-
+\]
 Constraint generation is applied here to $lexp_1$ (and $exp_2$ respectively),
-resulting  in the type $ty_1$ which is in fact a type variable constraint to
-the result type of $lexp_1$ in $C_1$.
+resulting  in the type $ty_1$ (and $ty_2$) which is in fact a type variable
+constraint to the result type of $lexp_1$ in $C_1$ ($lexp_2$ in $C_2$).
 The rule generates three additional constraints.  The first one, $ty_1
 \xlongequal l \type{bool}$, asserts the result type $ty_1$ of expression
 $lexp_1$ to be of type $\type{bool}$.
@@ -160,18 +155,17 @@ The second, $ty_2 \xlongequal l \type{unit}$ asserts the result type $ty_2$ of
 the expression $lexp_1$ to be of type $\type{unit}$.
 The third one, $ty_3 \xlongequal l \type{unit}$, asserts that a freshly
 generated type variable $ty_3$, which represents the type of the whole
-conditional expression, is of type $\type{unit}$.
+conditional expression, to be of type $\type{unit}$.
 
 Note, that all new constraints are annotated with the location $l$ of the
 overall expression. This facilitates the blaming of it in case of a type error
 resulting from a conflict with one of the constraints special to this
 conditional expression.
-
 The constraint generation results in the generated type variable $ty_3$ and the
 union of all occurring constraint and error sets.
 
-Furthermore, \easyocaml\ features type annotations of the form $(lexp:ct)$.
-Special considerations are necessary for them:
+A more particular feature of \easyocaml\ are type annotations of the form
+$(lexp:ct)$.  Special considerations are necessary for them:
 OCaml's current type checker ignores the type annotations whilst unification by
 using the expression $lexp$'s inferred type for further type checking and only
 checks its validity as to $ct$ later on.  So type inference and error reporting
@@ -181,39 +175,36 @@ In contrast, \easyocaml\ assumes the expression to have the denoted type while
 type checking, type checks the expression isolated and tests the validity
 afterwards, by proving that the annotated type is a subtype of the inferred type.
 
-\vspace{1em}\centerline{
-\inferrule[Type-Annot]{
-  \etyjudge{\Delta}{lexp}{ty}{C_0}{u} \\
-  C_1 = \{a \xlongequal l b,\ b \xlongequal {l'} ty',\ ty \xlongequal l c,\ c \xlongequal {l'} ty',\ a \succcurlyeq^l ct\} \\
-  a,\ b,\ c \text{ fresh} \\
-  ty' \text{ is a fresh instance of } ct \\
+\[\inferrule[Type-Annot]{
+\etyjudge \Delta {lexp} {ty} {C_0} u \\
+C_1 = \{a \xlongequal l ty',\ ty \succcurlyeq^l ct\} \\
+a \text{ fresh} \\
+ty' \text{ is a fresh instance of } ct \\
 }{
-  \etyjudge{\Delta}{(lexp : ct^{l'})^l}{a} {C_0 \cup C_1}{u}
-}
-}\vspace{1em}
-
+  \etyjudge{\Delta}{(lexp : ct)^l}{a} {C_0 \cup C_1} {u}
+}\]
 That way, \easyocaml\ assumes the programmer's annotation to be valid and
 meaningful during type inference of the context of $lexp$ and checks for
 contradiction to the expression's type against the annotation afterwards.
 
 Constraint generation rules for patterns have the form
-\[\Delta;\ pat \Downarrow_p \langle ty,\ C,\ b\rangle.\]
-\noindent and provide the type of the pattern and a set of contraints on that and all
-nested patterns. But contrary to constraint generation rules for expressions,
-all occurring variables are provided as bound to given parts of the matched
-value and accordingly equiped with a type in $b$.
+\[\Delta;\ pat \Downarrow_p \langle ty,\ C,\ b\rangle\]
+and provide the type of the values that can be matched with it as well as a set
+of contraints on it and all nested patterns. But contrary to constraint
+generation rules for expressions, all occurring variables are provided as bound
+to given parts of the matched value and accordingly equiped with a type in $b$.
 
-Additionaly there is a fourth kind of constraint generation rules:
+Additionaly, there is a kind of auxiliary constraint generation rules:
 \[\Delta;\ pat\ \code{->}\ lexp {\color{Gray}\ |\ rules} \Downarrow_r \langle
 ty_p,\ ty_e,\ C,\ u\rangle.\]
-\noindent This covers the combination of patterns and expressions as in used in the value
-mathing, functional abstraction and exception catching to deal with different
-variants of the matched value. The rule arranges the bound variables of the
-patterns to be available while generating constraints on the right hand side
-expressions and further generates constraints on the equality of the pattern's
-as well as the expression's types.
+This covers the mapping of patterns to expressions as used in the value
+matching, functional abstraction and exception catching to deal with different
+variants of a value.
+The rule arranges the bound variables of the patterns to be available while
+generating constraints on the right hand side expressions and further generates
+constraints on the equality of the pattern's as well as the expression's types.
 
-\easyocaml's constraint generation does a second task anon: It checks th
+\easyocaml's constraint generation does a second task anon: It checks the
 validity of the variables, record constructors, field accesses and type
-constructions. The handling of those errors and others are described in the
+constructions. The handling of those and other errors are described in the
 next section.
