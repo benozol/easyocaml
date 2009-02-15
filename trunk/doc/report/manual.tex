@@ -9,15 +9,18 @@ This section describe the extensions of the \texttt{ocaml} and \texttt{ocamlc} p
 
 \begin{description}
   \item[\texttt{-easy}] This flag enables \easyocaml\ and is obligatory for
-    usage of all other command line flags desribed here.
+    the usage of all other command line flags desribed here.
     It enables an alternative type checking algorithm wich gives more
     information on the type errors.
-  \item[\texttt{-easyerrorprinter <printer>}] Load the error formatting plugin
-    into the compiler.
+  \item[\texttt{-easyerrorprinter <printer>}] Loads an error formatting plugin
+    into the compiler. This must be an \ocaml\ object that calls functions as
+    given in section \ref{sec:errorfmt}.
   \item[\texttt{-easylevel <level>}] Enables a language level named
-    \texttt{<teachpack>} which is installed in a configuration directory.
+    \texttt{<teachpack>} which is installed in a configuration directory (see
+    section \ref{sec:directory}).
   \item[\texttt{-easyteachpack <teachpack>}] Enables a teach pack named
-    \texttt{<teachpack>} which is installed in a configuration directory.
+    \texttt{<teachpack>} which is installed in a configuration directory (see
+    section \ref{sec:directory}).
 \end{description}
 
 \subsection{Environment Variables}
@@ -39,6 +42,7 @@ This section describe the extensions of the \texttt{ocaml} and \texttt{ocamlc} p
 TBD
 
 \subsection{Defining Error Formatter}
+\label{sec:errorfmt}
 
 Error formatter for \easyocaml\ are given in \ocaml\ code. They must call
 \texttt{EzyErrors.register} to register functions to print common, heavy and
