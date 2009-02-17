@@ -24,6 +24,7 @@ This section describe the extensions of the \texttt{ocaml} and \texttt{ocamlc} p
 \end{description}
 
 \subsection{Environment Variables}
+\label{sec:envvars}
 
 \begin{description}
   \item[\texttt{EASYOCAML\_ENUM\_TIMEOUT}] \label{man:timeout}
@@ -38,24 +39,54 @@ This section describe the extensions of the \texttt{ocaml} and \texttt{ocamlc} p
   \item[\texttt{EASYOCAML\_USER\_DIR}] Specifies the user configuration directory as described below.
 \end{description}
 
-\subsection{Defining Languge Levels}
-TBD
+\subsection{Defining Languge Levels and Teach Packs}
+
+A\new\ language level must specify the syntax and the modules available to the user.
+This is done in \easyocaml\ in the following way. Each language level consists
+of a directory in the configuration directory as described in
+section~\ref{sec:directory}. The name of the directory defines
+the name of the language level. The directory must contain a file name
+\texttt{LANG\_META.ml} which actually defines the language level. This is done
+by calling the function \texttt{EzyLangLevel.configure}. This function expects
+the specification of the available syntax and modules as arguments.
+
+Syntactic features are given by record values for every syntactic category.
+Functions to generate minimal and maximal specifications are available for
+convenience.
+
+The available modules are specified in the call to
+\texttt{EzyLangLevel.configure} just by two lists. The first one is a list of
+\ocaml\ module names paired with a boolean value designating if they are opened
+on start-up (like \texttt{Pervasives} is by default). The second constists of
+the file names which contain those modules.
+
+Teach packs are defined in an appropriate directory as described in
+section~\ref{sec:directory} and must contain a file called
+\texttt{TEACHPACK\_META.ml}. The actual teach pack in defined by a call to
+\texttt{EzyTeachpack.configure} which expects the modules descriptions in two
+lists like just described.
+ 
+Note that this fashion to define language levels and teach packs might change in
+future versions of \easyocaml.  A plain text file is sufficient because \ocaml\
+code is necessary neither to specify the syntax nor to specify the available
+modules.
 
 \subsection{Defining Error Formatter}
 \label{sec:errorfmt}
 
-Error formatter for \easyocaml\ are given in \ocaml\ code. They must call
-\texttt{EzyErrors.register} to register functions to print common, heavy and
-fatal errors. After compiling the code with access to \easyocaml's code, the
-resulting object file can be loaden into the compiler at runtime.
+Error formatter for \easyocaml\ are given in compiled \ocaml\ code. They must
+call \texttt{EzyErrors.register} to register functions to print common, heavy
+and fatal errors. After compiling the code with access to \easyocaml's code,
+the resulting object file can be loaden into the compiler at runtime with help
+of the \texttt{-easyerrorprinter} command line flag.
 
 It is recommended to use the functions \texttt{EzyErrors.print\_errors},
 \texttt{EzyErrors.print\_heavies} and \texttt{EzyErrors.print\_fatal} to
 actually phrase the error and only define the layout with the plugin. This is
 favorable, because those functions are already internationalized and provide a
-common phrasing between the error printing plugins.
+common phrasing between the different error printing plugins.
 
-\subsection{The EasyOCaml Directory}
+\subsection{The Configuration Directory}
 \label{sec:directory}
 
 \easyocaml\ searches for language levels and teachpacks in a designated
