@@ -4,7 +4,7 @@
 
 This section covers some general information on \easyocaml's architecture and
 its language for orientation in subsequent sections.
-It will give a broad overview on \easyocaml's sequence plan.
+It will give a broad overview on the sequence plan.
 Every step is elaborated in more detail in subsequent sections, but they might
 be easier to understand with the knowledge of their role within \easyocaml.
 This section ends with a desription of the supported language.
@@ -12,14 +12,14 @@ This section ends with a desription of the supported language.
 \subsection{Outline of EasyOCaml's Course}
 
 By large, \easyocaml's additions to the compiler and the toplevel loop do a
-fairly similar job: First, both programs parse the command line flags. If they
-contain the \texttt{-easy} flag, \easyocaml's type checker is enabled and flags
-for defining language levels, teach packs and error printers are accepted and
-loaden into \easyocaml.
+fairly similar job: First, both programs parse the command line flags.
+On recognizing the \texttt{-easy} flag, \easyocaml's type checker is enabled,
+flags for defining language levels, teach packs and error printers are accepted
+and the according code is loaden into \easyocaml.
 
 Then, \easyocaml\ takes over the first stage of the compiler by parsing the
 input with a \camlpf\ parser. The parser incorporates modifications by the
-language level to the availabel syntax. The resulting abstract syntax tree (AST)
+language level to the available syntax. The resulting abstract syntax tree (AST)
 is annotated with fresh type variables for the next stage.
 
 \easyocaml\ then tries to infer the types in the program. It reads the definitions in
@@ -29,7 +29,7 @@ on the node's usage and their generation is detailed in the section
 \ref{sec:typeinfer} and \ref{sec:rules}.
 Then, the type checker tries to solve those constraints. If they are unifiable,
 the type checker can assign a valid typing on the elements of the AST and passes
-control back to \ocaml\footnote{Note, that up to now the program is type checked
+control back to \ocaml\footnote{Note that up to now the program is type checked
 again by \ocaml\ and the results are compared to validate our type checker. This
 might change in upcoming versions of \easyocaml.}.
 Otherwise, \easyocaml\ tries to generate as many conflict sets (type errors) as
@@ -47,7 +47,7 @@ Unlike simpler functional programming languages like \textit{Scheme} with only
 a single syntactic category \emph{expression}, \ocaml\ makes a distinction
 between \emph{structure items}, \emph{expressions} and \emph{patterns}.
 The options for each syntactic category which will be described in the
-following, can be pruned by language levels in high detail, as given in
+following and can be pruned by language levels in high detail, as given in
 section~\ref{sec:teachpacks}.
 See section \ref{sec:grammar} for the complete grammar.
 
@@ -62,10 +62,10 @@ declare values, types and exceptions.
     records with optionally mutable fields and variant types.
   \item \emph{exception declarations}.
   \item optionally recursive (\texttt{rec}) and multiple (\texttt{and})
-    \emph{value declarations}, where bindings occur in arbitrary patterns for
-    non-recursive declarations.  Languge levels may enforce mandatory type
+    \emph{value declarations}, where bindings can occur in arbitrary patterns
+    for non-recursive declarations.  Languge levels may enforce mandatory type
     annotations for toplevel value declarations.
-  \item \emph{Toplevel evaluations}. Note that a toplevel evaluation of
+  \item \emph{Toplevel evaluations}. Note that a toplevel evaluation 
     \texttt{e} is just syntactic sugar for the dummy value declaration
     \texttt{let \_ = e}.
 \end{itemize}
@@ -88,15 +88,15 @@ binding.
 Despite those, it features the construction of tuples, records and variants,
 conditionals with optional \texttt{else} branch, \texttt{while} and
 \texttt{for} loops, sequences of expressions, exception handling (raising and
-catching) as well as type annotations.
+catching), as well as type annotations.
 
 \subsection*{Patterns}
 
-In \easyocaml, pattern matching is possible in every site where it works in
+In \easyocaml, pattern matching is possible at every site where it works in
 \ocaml, i.e.\ in value matching\ttfootnote{match \ldots\ with \emph{pat} ->
 \ldots\ | \ldots}, in variable bindings\ttfootnote{let \emph{pat} = \ldots}, in
 functional abstractions with the \texttt{function} keyword\ttfootnote{function
-\emph{pat} -> \ldots\ | \ldots} and exception catching\ttfootnote{try \ldots\
+\emph{pat} -> \ldots\ | \ldots}, and exception catching\ttfootnote{try \ldots\
 with \emph{pat} -> \ldots\ | \ldots}.
 
 Pattern matching works on every possible value in \easyocaml, i.e.\ primitive

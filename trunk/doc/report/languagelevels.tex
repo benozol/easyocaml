@@ -4,28 +4,30 @@
 
 Language levels and teach packs are didactical tools to simplify a language and
 its handling for beginners. They were introduced by \drscheme\
-\citep{Felleisen98thedrscheme}  with two goals in mind: First, their Scheme language is
-split into a ``tower of languages''---that is different levels of syntactic
-and semantic richness. And language levels can specify the available
-language. Second, language levels and teach packs can provide arbitrary code to
+\citep{Felleisen98thedrscheme}  with two goals in mind:
+First, they split the Scheme language into a ``tower of languages''---that is
+different levels of syntactic and semantic richness.
+And language levels can specify the available language.
+Second, language levels and teach packs can provide arbitrary code to
 the user in a simple and encapsulated way. In contrast, teach packs contain only
-additional code and can extend a currently active language level.
+additional code but can extend a currently active language level.
 
-That way language levels and teachpack are a mean to adapt the languale to the
+Language levels and teachpack are a mean to adapt the languale to the
 knowledge of students at a dedicated state of the class: Reasonable levels of
 the tower of languages are e.g.\ a first-order functional language, a
-higher-order functional language or a language with imperative features like
+higher-order functional language or a language with imperative features and
 mutable date.
 
 To use a full-fledged parser and to check for the syntactical restraints afterwards
 would facilitate syntax errors regarding syntactical categories not included in
 the current language level---very confusing for beginners. 
 \easyocaml, however, directly manipulates the parser to the requirements of the
-language level such that the parser itself does not even ``know'' about the
-syntactical categories not part of the language level and so does not report
-errors regarding to them.
+language level.
+The parser itself does not even ``know'' about the syntactical
+categories not part of the language level and  does not report errors regarding
+to them in the sequel.
 
-\easyocaml\ further gives fine grained control over the available syntax.
+\easyocaml\ further grants fine grained control over the available syntax.
 Every option for non-terminal nodes in the grammar (structure items, type
 declarations  expressions, patterns) can be switched on and off. This can be
 done even independently for different usages, e.g. the patterns in value
@@ -39,9 +41,8 @@ At a second stage (namely while transforming the \ocaml\ AST into
 As mentioned, language levels and teach packs can be used to provide code at
 start-up time of the compiler and toplevel loop in a simple manner. They contain
 a list of modules which ought to be availble to the user. Each goes with an
-annotation if they are opened at start-up time. That way, the predefined module
-\texttt{Pervasives} can be extended to any needs.
-Section \ref{sec:manual} shows how to define your own language level or teach
+annotation if they are opened at start-up time.
+Section \ref{sec:manual} shows how to define custom language level or teach
 pack.
 
 The user can specify which language level and teach pack to use by some command
