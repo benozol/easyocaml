@@ -4,9 +4,9 @@
 
 Language levels and teach packs are didactical tools to simplify a language and
 its handling for beginners. They were introduced by \drscheme\
-\citep{Felleisen98thedrscheme}  for two reasons: First, their Scheme language is
-split into a ``tower of languages''---that is different levels of syntactical
-and semantical richness. And language levels are used to specify the available
+\citep{Felleisen98thedrscheme}  with two goals in mind: First, their Scheme language is
+split into a ``tower of languages''---that is different levels of syntactic
+and semantic richness. And language levels can specify the available
 language. Second, language levels and teach packs can provide arbitrary code to
 the user in a simple and encapsulated way. In contrast, teach packs contain only
 additional code and can extend a currently active language level.
@@ -17,35 +17,35 @@ the tower of languages are e.g.\ a first-order functional language, a
 higher-order functional language or a language with imperative features like
 mutable date.
 
-To use the full parser and to check for the syntactical restraints afterwards
-would facititate syntax errors regarding syntactical categories not included in
+To use a full-fledged parser and to check for the syntactical restraints afterwards
+would facilitate syntax errors regarding syntactical categories not included in
 the current language level---very confusing for beginners. 
 \easyocaml, however, directly manipulates the parser to the requirements of the
 language level such that the parser itself does not even ``know'' about the
 syntactical categories not part of the language level and so does not report
 errors regarding to them.
 
-\easyocaml\ gives further fine grained control over the available syntax.
+\easyocaml\ further gives fine grained control over the available syntax.
 Every option for non-terminal nodes in the grammar (structure items, type
 declarations  expressions, patterns) can be switched on and off. This can be
 done even independently for different usages, e.g. the patterns in value
 matching\ttfootnote{match \dots\ with \emph{pat} -> \dots} can be configured in
-a different way than the patterns in functional
-abstractions\ttfootnote{function \emph{pat} -> \dots}. This is implemented by
+a different way than the patterns in functional abstractions.
+This is implemented by
 deleting the minimal common disabled set of options from the \camlpf\ grammar.
 At a second stage (namely while transforming the \ocaml\ AST into
 \easyocaml's), all remaining restrictions are examined.
 
 As mentioned, language levels and teach packs can be used to provide code at
-starting time of the compiler and toplevel loop in a simple manner. They contain
-a list of modules which ought to be availble to the user each with an annotation
-if they are opened at start-up time. That way the predefined module
+start-up time of the compiler and toplevel loop in a simple manner. They contain
+a list of modules which ought to be availble to the user. Each goes with an
+annotation if they are opened at start-up time. That way, the predefined module
 \texttt{Pervasives} can be extended to any needs.
 Section \ref{sec:manual} shows how to define your own language level or teach
 pack.
 
-The user can specify which language level and teach pack to use by the 
-\texttt{-easylevel} and \texttt{-easyteachpack} command line parameter 
-respectively. \easyocaml\ then searches for it in a dedicated directory as
-described in section \ref{sec:directory}.
+The user can specify which language level and teach pack to use by some command
+line parameter as described in section~\ref{sec:manual}.
+\easyocaml\ then searches for it in a dedicated directory as described in
+section \ref{sec:directory}.
 
