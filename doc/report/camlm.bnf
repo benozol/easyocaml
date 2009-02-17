@@ -12,6 +12,7 @@ core_type = ( prim_type
           | type_var
           | "(" core_type / "*" ")"
           | [ type_params ] longident
+          | core_type "->" core_type
           )
           ;
 
@@ -23,9 +24,69 @@ type_params = core_type | ( "(" core_type / "," ")" );
 
 variant_decl = ( uident [ "of" core_type / "*" ] ) / "|" ;
 
-value_decl = ( "let" pattern [ ":" core_type ] "=" expr );
+value_decl =
+        ( "let" ( (pattern [ ":" core_type ] "=" expr) / "and" )
+        | "let" "rec" ( (lident [ ":" core_type ] "=" expr) / "and" ) );
 
-expr= ( "..." );
-pattern = ( "..." );
+field_assigns = ( (field "=" expr) / ";" );
+
+expr= ( constant
+      | longident
+      | "(" expr ")"
+      | "begin" expr "end"
+      | expr / ","
+      | expr "::" expr
+      | "[" expr / ";" "]"
+      | "[|" expr / ";" "|]"
+      | "{" field_assigns "}"
+      | "{" expr "with" field_assigns "}"
+      | "(" expr ":" core_type ")"
+      | expr  expr +
+      | expr infix_op expr
+      | expr "." longident
+      | expr "." longident "<-" expr
+      | expr "." "(" expr ")"
+      | expr "." "(" expr ")" "<-" expr
+      | "if" expr "then" expr "else" expr
+      | "while" expr "do" expr "done"
+      | "for" lident "=" expr "to" expr "do" expr "done"
+      | expr ";" expr
+      | "match" expr "with" rules
+      | "function" rules
+      | "fun" lident + "->" expr
+      | "try" expr "with" rules
+      | value_decl "in" expr
+      | "assert" expr
+      | uident expr
+      | praefix_op expr
+      );
+
+const = ( integer
+        | float
+        | string
+        | character
+        | "true"
+        | "false"
+        | "()"
+        | "[]"
+        ); 
+
+rules = ( (pattern "->" expr) / "|" );
+
+pattern =
+   ( const
+   | "_"
+   | pattern "as" lident
+   | "(" pattern ")"
+   | "(" pattern ":" core_type ")"
+   | pattern "|" pattern
+   | uident pattern
+   | pattern / ","
+#  | "{" (field "=" pattern) / ";" "}"
+   | "[" pattern / ";" "]"
+   | pattern "::" pattern
+   | "[|" pattern / ";" "|]"
+   );
+        
 
 longident = ( lident | uident "." longident );

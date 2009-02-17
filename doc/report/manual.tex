@@ -80,9 +80,9 @@ and fatal errors. After compiling the code with access to \easyocaml's code,
 the resulting object file can be loaden into the compiler at runtime with help
 of the \texttt{-easyerrorprinter} command line flag.
 
-It is recommended to use the functions \texttt{EzyErrors.print\_errors},
-\texttt{EzyErrors.print\_heavies} and \texttt{EzyErrors.print\_fatal} to
-actually phrase the error and only define the layout with the plugin. This is
+It is recommended to use the functions \texttt{print\_errors},
+\texttt{print\_heavies} and \texttt{print\_fatal} from the module \texttt{EzyErrors}
+to actually phrase the error and only define the layout with the plugin. This is
 favorable, because those functions are already internationalized and provide a
 common phrasing between the different error printing plugins.
 

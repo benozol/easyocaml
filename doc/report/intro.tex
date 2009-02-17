@@ -55,16 +55,17 @@ hints how to fix errors based on certain heuristics.
 Finally, \program{DrScheme} \citep{Felleisen98thedrscheme} is a programming 
 environment for the Scheme language which is built for teaching
 programming.  Beside the integration of the editor and the REPL as well as an
-easy to use debugger (\emph{stepper}), it has first introduced the concept of language
-levels and teach packs to restrict the syntax and broaden functionality
-especially for exercises.
+easy-to-use debugger (\emph{stepper}), \program{DrScheme} has first introduced
+the concept of language levels and teach packs to restrict the syntax and
+broaden functionality especially for exercises.
 
 Here is the way \easyocaml\ puts together those elements: The type checker is an
 extension of \citet{haackwells04}'s  algorithm to a significant subset of
 \ocaml. It is fairly similar to \program{DrScheme} in scope, as it features languge levels
 and teach packs in the same way as \program{DrScheme} does for usage in programming
 courses. Although not yet implemented, \easyocaml\ can build the basis for a
-tutoring system like \program{Helium} in giving advises for user errors.
+tutoring system like \program{Helium} by providing enough information to give
+advises in case of an error.
 
 
 \subsection*{Goals Of This Report}
@@ -74,18 +75,18 @@ This report is split in a rather ``narrative'' part \ref{part:concepts}%
 which acts as a reference for users and developers---answering the question:
 \emph{how?}.
 
-The report has four goals:
+The report has several goals:
 First to present \easyocaml\ and the concepts used in and developed for it
 (target audience: the users). Beside general informations in
 section~\ref{sec:general} it covers the implemented type inference algorithm in
 section~\ref{sec:typeinfer}, error handling in section~\ref{sec:errors} and
 language levels in section~\ref{sec:teachpacks}.
-Then, it describes the usage of the implementey programs \texttt{ecaml} and
+Then, it describes the usage of the implemented programs \texttt{ecaml} and
 \texttt{ecamlc} in section~\ref{sec:manual}.
-Afterwards formal foundations for the type checker are given the
-section~\ref{sec:rules} (target audience: the interested readers).
 The grammar of \easyocaml's language is given in rail road diagrams in section
 \ref{sec:grammar}.
+Afterwards formal foundations for the type checker are given the
+section~\ref{sec:rules} (target audience: the interested readers).
 Finally, section \ref{impldets} combines the concepts of the first sections with
 the actual implementation and describes the scheme of the code (target audience:
 the developers).
