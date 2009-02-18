@@ -16,7 +16,7 @@ This section describe the extensions of the \texttt{ocaml} and \texttt{ocamlc} p
     into the compiler. This must be an \ocaml\ object that calls functions as
     given in section \ref{sec:errorfmt}.
   \item[\texttt{-easylevel <level>}] Enables a language level named
-    \texttt{<teachpack>} which is installed in a configuration directory (see
+    \texttt{<level>} which is installed in a configuration directory (see
     section \ref{sec:directory}).
   \item[\texttt{-easyteachpack <teachpack>}] Enables a teach pack named
     \texttt{<teachpack>} which is installed in a configuration directory (see
@@ -29,19 +29,24 @@ This section describe the extensions of the \texttt{ocaml} and \texttt{ocamlc} p
 \begin{description}
   \item[\texttt{EASYOCAML\_ENUM\_TIMEOUT}] \label{man:timeout}
     The real value controls the maximal amount of
-    time \easyocaml\ may use to enumerate type errors (note, that the underlying algorithm
-    has exponential time consumptions).
-  \item[\texttt{EASYOCAML\_ONLY\_TYPECHECK}] Exit the compiler after type checking without any code generation.
-  \item[\texttt{LANG}, \texttt{LANGUAGE}]  Controls internationalization of error messages. Possible
-    values: ``en'', ``fr'', ``de''.
-  \item[\texttt{EASYOCAML\_LOGLEVEL}] Controls debugging details. Possible values are ``error'', ``warn'', ``info'', ``debug'', and ``trace''.
-  \item[\texttt{EASYOCAML\_GLOBAL\_DIR}] Specifies the global configuration directory as described below.
-  \item[\texttt{EASYOCAML\_USER\_DIR}] Specifies the user configuration directory as described below.
+    time \easyocaml\ may use to enumerate type errors (note, that the underlying
+    algorithm has exponential time consumptions).
+  \item[\texttt{EASYOCAML\_ONLY\_TYPECHECK}] Exit the compiler after type
+    checking without any code generation.
+  \item[\texttt{LANG}, \texttt{LANGUAGE}]  Controls internationalization of
+    error messages.  Possible values: ``en'', ``fr'', ``de''.
+  \item[\texttt{EASYOCAML\_LOGLEVEL}] Controls logging details for debugging.
+    Possible values are ``error'', ``warn'', ``info'', ``debug'', and ``trace''.
+  \item[\texttt{EASYOCAML\_GLOBAL\_DIR}] Specifies the global configuration
+    directory as described below.
+  \item[\texttt{EASYOCAML\_USER\_DIR}] Specifies the user configuration
+    directory as described below.
 \end{description}
 
 \subsection{Defining Languge Levels and Teach Packs}
+\label{sec:definelanglevels}
 
-A\new\ language level must specify the syntax and the modules available to the user.
+A language level must specify the syntax and the modules available to the user.
 This is done in \easyocaml\ in the following way. Each language level consists
 of a directory in the configuration directory as described in
 section~\ref{sec:directory}. The name of the directory defines
@@ -54,11 +59,11 @@ Syntactic features are given by record values for every syntactic category.
 Functions to generate minimal and maximal specifications are available for
 convenience.
 
-The available modules are specified in the call to
-\texttt{EzyLangLevel.configure} just by two lists. The first one is a list of
-\ocaml\ module names paired with a boolean value designating if they are opened
-on start-up (like \texttt{Pervasives} is by default). The second constists of
-the file names which contain those modules.
+The available modules are specified just by two lists.
+The first one is a list of \ocaml\ module names paired with a boolean value
+designating if they are opened on start-up (like \texttt{Pervasives} is by
+default).
+The second constists of the file names which contain those modules.
 
 Teach packs are defined in an appropriate directory as described in
 section~\ref{sec:directory} and must contain a file called
@@ -82,9 +87,9 @@ of the \texttt{-easyerrorprinter} command line flag.
 
 It is recommended to use the functions \texttt{print\_errors},
 \texttt{print\_heavies} and \texttt{print\_fatal} from the module \texttt{EzyErrors}
-to actually phrase the error and only define the layout with the plugin. This is
-favorable, because those functions are already internationalized and provide a
-common phrasing between the different error printing plugins.
+to actually phrase the error and to define only the layout with the plugin. This
+is favorable, because the former functions are already internationalized and
+provide a common phrasing between the different error printing plugins.
 
 \subsection{The Configuration Directory}
 \label{sec:directory}
@@ -121,6 +126,6 @@ preference):
             ...
 \end{verbatim}
 
-Each language level and teach pack contains a module \texttt{LANG\_META} 
-which is loaded into EasyOCaml.
+Each language level contains a module \texttt{LANG\_META} which is loaded into
+EasyOCaml. Teach packs go with a module \texttt{TEACHPACK\_META}.
 

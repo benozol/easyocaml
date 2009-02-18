@@ -47,7 +47,7 @@ expr= ( constant
       | expr "." longident "<-" expr
       | expr "." "(" expr ")"
       | expr "." "(" expr ")" "<-" expr
-      | "if" expr "then" expr "else" expr
+      | "if" expr "then" expr [ "else" expr ]
       | "while" expr "do" expr "done"
       | "for" lident "=" expr "to" expr "do" expr "done"
       | expr ";" expr
@@ -82,9 +82,9 @@ pattern =
    | pattern "|" pattern
    | uident pattern
    | pattern / ","
+   | pattern "::" pattern
 #  | "{" (field "=" pattern) / ";" "}"
    | "[" pattern / ";" "]"
-   | pattern "::" pattern
    | "[|" pattern / ";" "|]"
    );
         

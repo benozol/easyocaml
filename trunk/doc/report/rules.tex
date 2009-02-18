@@ -507,6 +507,9 @@ a \fresh
 }{
   \etyjudge{\Delta}{(lexp : ct^{l'})^l}{a} {C_0 \cup C_1}{u}
 }
+This notion of validity of an instantiation constraint is 
+closely connected to value type enrichment as explained in
+Stefan Wehr's diploma thesis \citep[pages 15, 16]{Wehr2005}.
 
 \vspace{2em}
 
@@ -604,47 +607,3 @@ a,\ a_{id} \text{ fresh for } id \in \dom(b_1)}
 } {
   \ptyjudge \Delta {(pat : ct^{l'})^l} a {C_0 \cup C_1} b
 }
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\pagebreak
-%\subsection{Stefan's Section}
-%\inferrule[Type-Annot]{
-%  ty \text{ is a fresh instance of } tysc\\
-%  a \text{ fresh}\\
-%  \etyjudge{\Delta}{lexp}{ty'}{C}{u}
-%}{
-%\etyjudge{\Delta}{(lexp : tysc)^l}{a}
-%         {\{a \xlongequal l ty, ty' \succcurlyeq tysc\} \cup C}{u}
-%}
-%
-%Notes:
-%\begin{itemize}
-%\item $tysc$ stands for a type scheme of the form 
-%  $\forall \overline{a} . ty$
-%\item We propagate the constraint set $C$ from the premise
-%  to the conclusion to ensure that expression $lexp$ has
-%  a type.
-%\item A fresh instance of a type scheme
-%  $\forall \overline{a} . ty$ is the type $ty$ with
-%  all quantified type variables $\overline a$ replaced by
-%  fresh type variables.
-%\item The unification procedures leaves instantiations constraints of the 
-%  form $ty \succcurlyeq tysc$ untouched. 
-%\item When unification has finished,
-%  we apply the resulting substitution $s$ to all
-%  instantiation constraints $ty \succcurlyeq tysc$ to obtain
-%  $s(ty) \succcurlyeq s(tysc)$. After that, we check
-%  that the resulting instantiation constraints are valid.
-%\item An instantiation constraint 
-%  $ty \succcurlyeq \forall \overline{a} . ty'$ is valid
-%  if and only if 
-%  $\text{free}(ty) \cap \{\overline{a}\} = \emptyset$\footnote{%
-%  We can always fulfill this requirement by $\alpha$-renaming
-%  the quantified type variables $\overline a$.}
-%  and there exists a substitution $s$ with
-%  $\dom(s) \subseteq \text{free}(ty)$ and
-%  $s(ty) = ty'$.
-%  \\
-%  (This notion of validity of an instantiation constraint is 
-%  closely connected to value type enrichment as explained in
-%  Stefan Wehr's diploma thesis on page 15,16)
-%\end{itemize}

@@ -1,67 +1,68 @@
 
-\section{Errors and Error Reporting Adaptibility}
+\section{Errors and Error Reporting Adaptability}
 \label{sec:errors}
 
 \easyocaml\ is essentially build for teaching programming.
 As such, special attention is paid to the way errors are reported to achieve
 the following goals:
 
-First, errors should provide a right amount of details. Needless to say thattoo
-few information are insufficient. But also too much information can be
-confusing. So, for example in type constructor clashes exactly those locations
-of the program should be reported, which are essential to the error.
-Delivering more information on the underlying reasons of a type error is
-exactly what \easyocaml's type checker is made for.
+First, errors should provide a right amount of details: Needless to say that too
+few information are insufficient.
+But too much information can be just as confusing.
+So, for example in type constructor clashes exactly those locations
+of the program should be reported which are essential to the error.
+Delivering the right amount of information on the underlying reasons of a type
+error is exactly what \easyocaml's type checker is made for.
 
 Second, error reporting should be adaptable: Reading errors in a foreign
-language can distract a beginner or even prevent from understanding it.
+language can distract a beginner or even prevent him from understanding it.
 So internationalization of error messages is necessary.
 Furthermore, the error output should be adaptable in its overall structure to
-serve as the input for different kinds of presentation, e.g. 
-on command line, or in a web browser.
+serve for different kinds of presentation, e.g.  on command line, or in a web
+browser.
 
 The last section has explained the improvements of \easyocaml\ to the type
 error messages. This section will first describe the structure  of the errors
 handled by
 \easyocaml\ as well as the changes to the parser to build a foundation to
-include more information with the parsing errors and then the error
-adaption possibilities.
+include more information with the parsing errors, and then the error adaption
+possibilities.
 
 \subsection{The Structure of Errors in EasyOCaml}
 \label{sec:easyerrors}
 
 While parsing and type checking a program, \easyocaml\ can detect different errors.
 Those errors can be separated into three classes differing by the stage of the
-compilation process where they occur and in the impact on the further
+compilation process where they occur and in the impact on the subsequent
 compilation process.
 This section describes the error classes and gives some examples for the
 participating errors.  The file \texttt{ezyErrors.mli} provides a complete and
 well documented list of the errors.
 
 The compiler attempts to report errors as late as possible to collect as many
-errors as possible. \emph{Common errors} are reported at the very end after
-contstraint unification. So type errors (type constructor clashes, clashes of
-the arities of tuples and circular types) are of course of this kind.
+errors as possible. \emph{Common errors} are reported at the very end, i.e.\
+after constraint unification. So type errors (type constructor clashes, clashes
+of the arities of tuples and circular types) are quite natural of this kind.
 Furthermore, unbound variables are admittedly detected during constraint
 generation but provided with free type variables, such that constraint
 unification is possible without introducing any artificial errors.
-Other light errors like the attemt to change the value of immutable record
-fields are reported after constraint unification, too, and invalid type
+Other light errors like the attempt to change the value of immutable record
+fields are reported after constraint unification, too, as well as invalid type
 annotations.
 
 \emph{Heavy errors} are collected during and reported directly after constraint
 generation, because they prohibit even a transitionally type assignment 
 to the corresponding term. They include among others:
 Incoherent record constructions (e.g.\ fields from different records or several
-bindings of a field), several bindings of the same variable in a pattern, the usage of
-unknown variant constructors or wrong usage of type constructors (unknown or
-wrong number of type arguments).
+bindings of a single field), several bindings of the same variable in a pattern,
+the usage of unknown variant constructors or the wrong usage of type
+constructors (unknown or wrong number of type arguments).
 
 Syntactical errors (parsing errors) and accessing inexistent modules are
-\emph{fatal errors} and stop the compiler immediatly because they prevent
+\emph{fatal errors} and stop the compiler immediately because they prevent
 any reasonable continuation of the compilation process.
 
-The next section will describe our changes to \camlpf\ for more detailled
+The next section will describe our changes to \camlpf\ for more detailed
 parsing errors.
 
 \subsection{New Errors for Camlp4}
@@ -73,15 +74,15 @@ dynamically generates an \ocaml\ stream parser \citep{ocamlstreamparser}. Thus,
 it is possible to modify the grammar by deleting certain rules at runtime. We
 use this in the first place to prune a full-fledged \ocaml\ parser which is
 shipped with \camlpf\ to \camlm\ and then to implement the subset of the
-language given by the language level.
+language specified by the language level.
 
 But the foundation of \camlpf\ as an \ocaml\ stream parser yields to another
 problem: Stream parsers allow only a single exception type for passing parsing
 errors (internally and in the user interface). This exception can contain
 just a string for information on the detected error (\texttt{exception
 Stream.Error of string}). \camlpf's actual phrasing of the errors is hard-coded
-deep in the parser code in english which prevents the internationalization and
-format adaption necessary for \easyocaml.
+deep in the parser code in the English language which prevents the
+internationalization and format adaption necessary for \easyocaml.
 
 
 Nevertheless, we supplied \camlpf\ with a new error reporting system, up 
@@ -90,13 +91,12 @@ augment the information of parsing errors with more information on the state of
 the parser.
 
 Errors are represented in a variant type distinguishing the following forms of
-parsing errors in our new error system for \camlpf.
-
+parsing errors.
 \begin{description}
     \item[\texttt{Expected~(entry,~opt\_before,~context)}] describes the most
       common error when the parser recognizes a certain syntactic category in
       the program which does not match the category given by the grammar.
-      \texttt{entry} describe the expected category, \texttt{opt\_before}
+      \texttt{entry} describes the expected category, \texttt{opt\_before}
       optionally describes the category of the entry just parsed and
       \texttt{context} denotes the category of the phrase which contains the
       questionable entry.
@@ -107,13 +107,14 @@ parsing errors in our new error system for \camlpf.
       \texttt{Camlp4.Struct.Grammar.Fold} and included in the error type just
       for consistency.
     \item[\texttt{Specific\_error~err}] is raised for language-specific,
-      ``artificial'' errors.  In our fork of \camlpf, every grammar is
-      parameterized on the type of \texttt{err}. This type covers conflicts with
+      ``artificial'' errors.  Every grammar is parameterized on the type of
+      \texttt{err} in our fork of \camlpf. This type covers conflicts with
       the language which can not be expressed by the \camlpf\ grammar but are
-      checked in plain \ocaml\ code while parsing. Currified constructor in
-      OCaml are of this kind (further errors for EasyOCaml are specified in
-      subsection
-      \ref{mod:ocamlspecificerrors}).
+      checked in plain \ocaml\ code while parsing. 
+      This includes three errors for \ocaml:
+      Currified constructor, errors forcing an expression to be an identifier
+      and bad directives on the REPL (the corresponding error is given in
+      \texttt{Camlp4.Sig.OCamlSpecificError}).
 \end{description}
 
 But how are these errors represented in the string information of the stream
@@ -121,9 +122,9 @@ error?
 Not without a hack which is luckily hidden behind the interface of \camlpf:
 Internally, parsing exceptions contain a string with format
 ``\texttt{<msg>\textbackslash 000<mrsh>}'' where \texttt{<msg>} is
-the usual \camlpf\ error message and \texttt{<mrsh>} is the marshalled version
+the usual \camlpf\ error message and \texttt{<mrsh>} is the marshaled version
 of the parsing error as just described.
-This string is again decomposed in \camlpf's interface function for
+This string is decomposed again in \camlpf's interface function for
 parsing\ttfootnote[function ]{Camlp4.Struct.Grammar.Entry.action\_parse}, and
 reported as a parsing error to the user.
 
@@ -131,34 +132,35 @@ So \camlpf's parsing errors are now represented in structured data to
 apply \easyocaml's error reporting adaptabilities to them and to further extend
 them with more information on the parser's state.
 
-\subsection{Adaptibility}
+\subsection{Adaptability}
 
 For internationalization of error messages and adjusting the structure of the
 error messages to different display settings, \easyocaml\ provides two
 possibilities to adapt the error reporting.
 
-First, the language of the error messages is chosen via a environment variable.
+First, the language of the error messages is chosen via an environment variable.
 The functions for phrasing the errors in different languages are part of
 \easyocaml's error system. This has two reasons. On the one hand, \ocaml's
-format adaption does not capture different orders of the arguments which has
-forced us to provide this functionality as part of \easyocaml's program code. On
-the other hand, keeping the actual phrasing in the mainstream code suggests the
-error format plugins to the use common phrases for the messages.
-This simplities comparisions of errors under different display settings.
+format adaption does not capture different orders of the arguments. This has
+forced us to provide this functionality in \ocaml\ program code.
+On the other hand, keeping the actual phrasing in the mainstream code suggests
+the error format plugins to use common phrases for the messages.
+This simplifies comparisons of errors under different display settings.
 See section~\ref{sec:envvars} for more details on choosing the language.
 
-Second, error messages can be adapted in format by a so-called ``error reporting
-plugin''. Such a plugin consists of \ocaml\ code which defines arbitrary error
-formatting functions and registers them in \easyocaml's error system.
+Second, the format of the error messages can be adapted by so-called ``error
+reporting plugins''.
+A plugin consists of \ocaml\ code which defines arbitrary error formatting
+functions and registers them in \easyocaml's error system.
 As mentioned, those functions should use the provided functions for phrasing the
 errors to enforce conformity. But they can print them in any structure.
 Currently, a plain text formatter is the default for the usage on a command
 line.
-A HTML printer which highlights the locations of an error in source code is
-delivered with \easyocaml\ for clear display with help of a web browser, and a
-XML/Sexp printer for future usage in an IDE.
+A HTML printer which highlights the locations of an error in the source code
+with funny colors is delivered with \easyocaml\ for clear display with a
+web browser, and a XML/Sexp printer for future usage in an IDE.
 See section~\ref{sec:errorfmt} for more details on providing custom error
 reporting plugins.
 
-The following section describes the tools which EasyOCaml provides 
-specifically for teaching programming.
+The following section describes the tools EasyOCaml provides specifically for
+teaching programming.
