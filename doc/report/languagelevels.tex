@@ -2,7 +2,7 @@
 \section{Language Levels and Teachpacks}
 \label{sec:teachpacks}
 
-Language levels and teach packs are didactical tools to simplify a language and
+Language levels and teach packs are didactic tools to simplify a language and
 its handling for beginners. They were introduced by \drscheme\
 \citep{Felleisen98thedrscheme}  with two goals in mind:
 First, they split the Scheme language into a ``tower of languages''---that is
@@ -12,7 +12,7 @@ Second, language levels and teach packs can provide arbitrary code to
 the user in a simple and encapsulated way. In contrast, teach packs contain only
 additional code but can extend a currently active language level.
 
-Language levels and teachpack are a mean to adapt the languale to the
+Language levels and teach pack are a mean to adapt the language to the
 knowledge of students at a dedicated state of the class: Reasonable levels of
 the tower of languages are e.g.\ a first-order functional language, a
 higher-order functional language or a language with imperative features and
@@ -30,23 +30,23 @@ to them in the sequel.
 \easyocaml\ further grants fine grained control over the available syntax.
 Every option for non-terminal nodes in the grammar (structure items, type
 declarations  expressions, patterns) can be switched on and off. This can be
-done even independently for different usages, e.g. the patterns in value
-matching\ttfootnote{match \dots\ with \emph{pat} -> \dots} can be configured in
-a different way than the patterns in functional abstractions.
-This is implemented by
-deleting the minimal common disabled set of options from the \camlpf\ grammar.
+even done independently for different usages, e.g. the patterns in value
+matching can be configured in a different way than the patterns in functional
+abstractions.
+This is implemented by deleting the minimal common disabled set of options from
+the \camlpf\ grammar.
 At a second stage (namely while transforming the \ocaml\ AST into
 \easyocaml's), all remaining restrictions are examined.
 
 As mentioned, language levels and teach packs can be used to provide code at
 start-up time of the compiler and toplevel loop in a simple manner. They contain
-a list of modules which ought to be availble to the user. Each goes with an
+a list of modules which ought to be available to the user. Each goes with an
 annotation if they are opened at start-up time.
-Section \ref{sec:manual} shows how to define custom language level or teach
-pack.
+Section \ref{sec:definelanglevels} shows how to define custom language levels
+and teach packs.
 
 The user can specify which language level and teach pack to use by some command
-line parameter as described in section~\ref{sec:manual}.
+line parameter as described in section~\ref{sec:commandlineflags}.
 \easyocaml\ then searches for it in a dedicated directory as described in
 section \ref{sec:directory}.
 

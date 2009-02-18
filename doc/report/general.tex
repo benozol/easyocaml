@@ -7,7 +7,7 @@ its language for orientation in subsequent sections.
 It will give a broad overview on the sequence plan.
 Every step is elaborated in more detail in subsequent sections, but they might
 be easier to understand with the knowledge of their role within \easyocaml.
-This section ends with a desription of the supported language.
+This section ends with a description of the supported language.
 
 \subsection{Outline of EasyOCaml's Course}
 
@@ -15,7 +15,7 @@ By large, \easyocaml's additions to the compiler and the toplevel loop do a
 fairly similar job: First, both programs parse the command line flags.
 On recognizing the \texttt{-easy} flag, \easyocaml's type checker is enabled,
 flags for defining language levels, teach packs and error printers are accepted
-and the according code is loaden into \easyocaml.
+and the according code is loaded into \easyocaml.
 
 Then, \easyocaml\ takes over the first stage of the compiler by parsing the
 input with a \camlpf\ parser. The parser incorporates modifications by the
@@ -23,7 +23,7 @@ language level to the available syntax. The resulting abstract syntax tree (AST)
 is annotated with fresh type variables for the next stage.
 
 \easyocaml\ then tries to infer the types in the program. It reads the definitions in
-the program and generates a set of constraints on the types of every element of
+the program and generates a set of constraints on the types of every term of
 the program by traversing the AST. The constraints on the node's types are based
 on the node's usage and their generation is detailed in the section
 \ref{sec:typeinfer} and \ref{sec:rules}.
@@ -63,8 +63,9 @@ declare values, types and exceptions.
   \item \emph{exception declarations}.
   \item optionally recursive (\texttt{rec}) and multiple (\texttt{and})
     \emph{value declarations}, where bindings can occur in arbitrary patterns
-    for non-recursive declarations.  Languge levels may enforce mandatory type
-    annotations for toplevel value declarations.
+    for non-recursive declarations and identifiers otherwise.
+    Language levels may enforce mandatory type annotations for toplevel value
+    declarations.
   \item \emph{Toplevel evaluations}. Note that a toplevel evaluation 
     \texttt{e} is just syntactic sugar for the dummy value declaration
     \texttt{let \_ = e}.
@@ -79,8 +80,8 @@ and type constructors, i.e.\ applications of parametrized types.
 
 \subsection*{Expressions}
 
-Expressions are parts of a program which can be evaluated to a \ocaml\ value and
-occur only as part of structure items.
+Expressions are parts of a program which can be evaluated to a \ocaml\ value
+and occur only as part of a structure item.
 \easyocaml\ supports simple expressions that can be found in \textsl{MiniML},
 too, like variables, functions, infix operators, conditionals and variable
 binding.
@@ -93,11 +94,9 @@ catching), as well as type annotations.
 \subsection*{Patterns}
 
 In \easyocaml, pattern matching is possible at every site where it works in
-\ocaml, i.e.\ in value matching\ttfootnote{match \ldots\ with \emph{pat} ->
-\ldots\ | \ldots}, in variable bindings\ttfootnote{let \emph{pat} = \ldots}, in
-functional abstractions with the \texttt{function} keyword\ttfootnote{function
-\emph{pat} -> \ldots\ | \ldots}, and exception catching\ttfootnote{try \ldots\
-with \emph{pat} -> \ldots\ | \ldots}.
+\ocaml, i.e.\ in value matching, in variable bindings, in
+functional abstractions with the \texttt{function} keyword, and exception
+catching.
 
 Pattern matching works on every possible value in \easyocaml, i.e.\ primitive
 values, tuples, variants and records\footnote{The current version of \easyocaml\

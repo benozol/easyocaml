@@ -15,7 +15,7 @@ Two rather independent modules for code used in EasyOCaml
 \begin{description}
     \item[EzyUtils] Functionality which is not specific to 
         EasyOCaml, but extends the standard library (String, Set, Map). 
-        It contains also code copies from existing Libraries (from Core: 
+        It contains also copies code from existing Libraries (from Core: 
         Option, Monad, T2, T3, T4, such that EasyOCaml adds no 
         dependencies at bootstrap time) and new code for Logging and 
         some more (lexical comparison, tools on functions).
@@ -23,7 +23,7 @@ Two rather independent modules for code used in EasyOCaml
         different locations in the project.
     \item[EzyOcamlmodules] Extensions of the modules from the 
         standard OCaml system (e.g. Location, Path, Longident, Types, 
-        \ldots{}) as well as sets and maps over these.
+        \ldots{}) as well as sets and maps of these.
 \end{description}
 
 The rest of the modules contains the code for the EasyOCaml 
@@ -38,12 +38,11 @@ reporting plugins can be registered.
 
 \begin{description}
     \item[EzyErrorReportUtils] Code for type error slicing 
-        (described in Haack \& Wells), i.e. slicing an AST to only 
-        contain nodes from locations given in a set, substituting the 
-        rest with ellipses.
+      (described in \cite{haackwells04}), i.e. slicing an AST to only contain
+      nodes from locations given in a set, substituting the rest with ellipsis.
     \item[EzyErrors] Representation (types) of errors which can 
         occur in EasyOCaml, functions for pretty printing errors as well 
-        as functions for error reporting plugins to register themselves.
+        as functions to register error reporting plugins.
 \end{description}
 
 
@@ -87,11 +86,12 @@ restrictions on EasyOCaml's AST.
         is parametrized on some data it contains.  This is \texttt{unit} 
         for a parsed tree and typing information (mainly the type 
         variable) for a parsed tree after constraint generation. 
-        Furthermore, each syntactic category can be some ``dots'' which 
-        is only used in type error slicing.
+        Furthermore, each syntactic category can be an ellipsis which 
+        is only used in type error slicing. 
     \item[EzyCamlgrammar] The EasyOCaml Parser as a Camlp4 extension 
         of \texttt{Camlp4OCamlParser}.  It just deletes some entries in 
-        the latter (partially depending on the given features.
+        the latter partially depending on the features specified by the language
+        level.
     \item[EzyEnrichedAst] This module directly belongs to 
         \texttt{EzyAst} but we had to outsource it because of module 
         dependencies between \texttt{EzyErrors}.  It contains
@@ -111,12 +111,12 @@ restrictions on EasyOCaml's AST.
 \begin{description}
     \item[EzyTypingCoreTypes] Contains base types for the 
         constraints and their generation, closely related to the data 
-        described in Haack \& Wells (type variables, types, type 
+        described in \cite{haackwells04} (type variables, types, type 
         substitutions, intersection types, type environments)
     \item[EzyConstraints] Here are constraints annotated with only 
         one location (\texttt{AtConstr.t}) and constraints with sets of 
-        locations (Constr.t) defined, as well as set and maps of those.  
-        Furthermore a derived environment as described in Haack \& Wells 
+        locations (\texttt{Constr.t}) defined, as well as set and maps of those.
+        Furthermore a derived environment as described in \cite{haackwells04}
         is defined.
     \item[EzyGenerate] There is a function for every syntactic 
         category to generate constraints and/or errors.
@@ -125,10 +125,10 @@ restrictions on EasyOCaml's AST.
 \subsubsection{Typing}
 
 \begin{description}
-    \item[EzyTyping] Unification of constraint set which yield a 
+    \item[EzyTyping] Unification of a set of constraints which yield a 
         substitution on the variables and error enumeration and 
-        minimization as described by Haack \& Wells.  It furthermore 
-        contains the typing functions for structures which are used in 
+        minimization as described by \cite{haackwells04}.  It furthermore 
+        contains convenient typing functions for structures which are used in
         the compiler and toplevel.
     \item[EzyEnv] The \texttt{EzyEnv.t} is the typing environment 
         for EasyOCaml. Information on declared types and types of local 
@@ -137,9 +137,3 @@ restrictions on EasyOCaml's AST.
         variable substitution resulting from \texttt{EzyTyping.solve}.
 \end{description}
 
-
-\subsubsection{Camlp4}
-\begin{description}
-  \item[OcamlSpecificErrors]
-    \label{mod:ocamlspecificerrors}
-\end{description}

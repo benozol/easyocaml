@@ -4,8 +4,8 @@
 
 \label{hd001}
 \textsl{Objective Caml} \citep{leroy2008} is a programming language which unifies 
-functional, imperative and object oriented concepts in a ML-like 
-language with a powerful and sound type system.  Its main implementation%
+functional, imperative and object oriented concepts in a language of the ML
+family with a powerful and sound type system.  Its main implementation%
 \footnote{\url{http://caml.inria.fr}} ships with a platform independent byte code
 compiler and an efficient machine code compiler and there are a lot of
 libraries, which make it a great multi purpose programming language.
@@ -19,7 +19,7 @@ On the other hand, OCaml comes with tools (e.g.  \citeauthor{stolpmann}'s
 \emph{findlib}) which make it easy to handle libraries for developers, but it
 lacks a fool-proof system to use primed code in programming lessons.
 
-The objectives of \easyocaml\ in large are to make OCaml a programming language
+The objectives of \easyocaml\ are in large to make OCaml a programming language
 better suited for beginners and for teaching programming. We achieve this by
 
 \begin{itemize}
@@ -35,8 +35,8 @@ better suited for beginners and for teaching programming. We achieve this by
         \ocaml's code generation facilities.
 \end{itemize}
 The project is hosted at \url{http://easyocaml.forge.ocamlcore.org}.
-The website comes with an online demo of \easyocaml's type inference system and
-some languge levels.
+The website features an online demo of \easyocaml's type inference system and
+some language levels.
 
 \subsection*{Similar Projects}
 
@@ -57,15 +57,16 @@ environment for the Scheme language which is built for teaching
 programming.  Beside the integration of the editor and the REPL as well as an
 easy-to-use debugger (\emph{stepper}), \program{DrScheme} has first introduced
 the concept of language levels and teach packs to restrict the syntax and
-broaden functionality especially for exercises.
+to widen functionality especially for exercises.
 
-Here is the way \easyocaml\ puts together those elements: The type checker is an
-extension of \citet{haackwells04}'s  algorithm to a significant subset of
-\ocaml. It is fairly similar to \program{DrScheme} in scope, as it features languge levels
-and teach packs in the same way as \program{DrScheme} does for usage in programming
-courses. Although not yet implemented, \easyocaml\ can build the basis for a
-tutoring system like \program{Helium} by providing enough information to give
-advises in case of an error.
+Here is the way \easyocaml\ puts together those elements: Its type checker is
+an extension of \citet{haackwells04}'s  algorithm to a significant subset of
+\ocaml.
+It is fairly similar to \program{DrScheme} in scope, as it features language
+levels and teach packs for usage in programming courses.
+Although not yet implemented, \easyocaml\ can build the basis for a tutoring
+system like \program{Helium} by providing more information to give advises in
+case of an error.
 
 
 \subsection*{Goals Of This Report}
@@ -82,7 +83,7 @@ section~\ref{sec:general} it covers the implemented type inference algorithm in
 section~\ref{sec:typeinfer}, error handling in section~\ref{sec:errors} and
 language levels in section~\ref{sec:teachpacks}.
 Then, it describes the usage of the implemented programs \texttt{ecaml} and
-\texttt{ecamlc} in section~\ref{sec:manual}.
+\texttt{ecamlc} in section~\ref{sec:manual} by means of a manual.
 The grammar of \easyocaml's language is given in rail road diagrams in section
 \ref{sec:grammar}.
 Afterwards formal foundations for the type checker are given the
