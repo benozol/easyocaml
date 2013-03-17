@@ -10,23 +10,27 @@ let logger = new EzyUtils.Logger.logger "htmlErrorReport"
 let template () = format_of_string "
 <div>
   <span id='reset' onclick='javascript:reset()' class='othererror'>reset</span>
-  <p class='errorlistparagraph'>
+  <div class='errorlistparagraph'>
     <ul id='errorlist'></ul>
-  </p>
+  </div>
 </div>
 <br />
 <div>
-  <div class='code'><div class='currenterror'><span name='codeitem' id='null' />
+  <div class='code'>
+    <div class='currenterror'>
+      <span class='codeitem' id='null'></span>
 %a
-  </div></div>
-</div></div>
+    </div>
+  </div>
+</div>
 <script type='text/javascript'>
+<![CDATA[
   init([%a]);
+]]>
 </script>
 "
 
 let escape_quote char str =
-  (* let quote_re = Str.regexp_string char in Str.global_replace quote_re (char ^ String.make 1 char) *)
   let len = String.length str in
   let buf = Buffer.create len in
   let rec aux offset =
@@ -60,7 +64,7 @@ let escape_char char =
 let dont_newline p =
   print_wrap (fun ppf -> function '\n' -> () | c -> pp_print_char ppf c) p
 
-let loc_string loc = 
+let loc_string loc =
   format_str "'%a'" (escape_char '\'' Location.print) loc
 
 let force_source = function ExtLocation.Source loc -> loc | _ -> invalid_arg "force_source"
@@ -111,14 +115,16 @@ let print_fatal ppf (loc, fatal) =
   fprintf ppf "new LocalError('%a', %s)"
     (escape_char '\'' EzyErrors.print_fatal_error_desc) fatal
     (loc_string loc)
-  
+
 let pp_print_html_safe_char ppf c =
   pp_print_string ppf begin
     match c with
-      | ' ' -> "&nbsp;"
+      | ' ' -> "&#160;"
       | '&' -> "&amp;"
       | '>' -> "&gt;"
       | '<' -> "&lt;"
+      | '\'' -> "&apos;"
+      | '"' -> "&quot;"
       | '\n' -> "<br />"
       | _ -> String.make 1 c
   end
@@ -138,14 +144,23 @@ let print_program locs ppf code =
     LocationSet.cardinal fitting in
 
   let print_open_tag ppf loc =
-    fprintf ppf "<span name=%s id=%s>" name_string (loc_string loc) in
+    fprintf ppf "<span class=%s id=%s>" name_string (loc_string loc) in
 
+  let tag_counter = ref 0 in
   for i = 0 to String.length code - 1 do
-    for i = 1 to count_closing_locs i do
-      pp_print_string ppf "</span>" 
+    for i = 0 to count_closing_locs i - 1do
+      pp_print_string ppf "</span>";
+      decr tag_counter
     done ;
-    List.iter (print_open_tag ppf) (find_open_locs i) ;
+    List.iter
+      (fun loc ->
+        print_open_tag ppf loc;
+        incr tag_counter)
+      (find_open_locs i) ;
     pp_print_html_safe_char ppf code.[i]
+  done;
+  for i = 0 to !tag_counter - 1 do
+    pp_print_string ppf "</span>"
   done
 
 let name = "Html error reporting"
@@ -156,17 +171,21 @@ let print_program_aux ppf (ast, program) =
 let print_errors' ~program ast ppf errors =
   fprintf ppf (template ())
     print_program_aux (ast, program)
-    (List.print  (dont_newline print_error) ", ") (ErrorSet.elements errors)
+    (List.print  (dont_newline print_error) ", ")
+    (ErrorSet.elements errors)
 
 let print_heavies' ~program ast ppf heavies =
   fprintf ppf (template ())
     print_program_aux (ast, program)
-    (List.print  (dont_newline print_heavy) ", ") (HeavyErrorSet.elements heavies)
+    (List.print  (dont_newline print_heavy) ", ")
+    (HeavyErrorSet.elements heavies)
 
 let print_fatal' ~program loc ppf fatal =
   fprintf ppf (template ())
-    (print_program (LocationSet.singleton loc)) (Lazy.force program)
-    (dont_newline print_fatal) (loc, fatal)
+    (print_program (LocationSet.singleton loc))
+    (Lazy.force program)
+    (dont_newline print_fatal)
+    (loc, fatal)
 
 let print_valid ~program ted_str ppf =
   let print_program ppf =

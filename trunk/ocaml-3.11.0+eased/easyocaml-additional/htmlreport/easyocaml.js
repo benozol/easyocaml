@@ -65,8 +65,8 @@ function LocalError(desc, loc) {
 function init(errs) {
   errors = errs;
 
-  var spans = document.getElementsByName(codeItemName);
-  for(var i = 0; i < spans.length; i++) 
+  var spans = document.getElementsByClassName(codeItemName);
+  for(var i = 0; i < spans.length; i++)
     codeItems[spans[i].getAttribute('id')] = spans[i]
 
   for(var spanId in codeItems)
